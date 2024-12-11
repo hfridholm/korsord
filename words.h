@@ -25,11 +25,17 @@ typedef struct node_t trie_t;
 
 extern trie_t* trie_create(const char* filepath);
 
+extern void    trie_free(trie_t** trie);
+
+
 extern int     words_search(char*** words, size_t* count, trie_t* trie, const char* pattern);
 
 extern void    words_free(char*** words, size_t count);
 
-extern void    trie_free(trie_t** trie);
+
+extern void    word_use(trie_t* trie, const char* word);
+
+extern void    word_unuse(trie_t* trie, const char* word);
 
 #endif // WORDS_H
 
@@ -51,6 +57,7 @@ typedef struct node_t
 {
   node_t* children[ALPHABET_SIZE];
   bool    is_end_of_word;
+  bool    is_used;
 } node_t;
 
 /*
@@ -61,6 +68,7 @@ static inline node_t* node_create(void)
   node_t* node = malloc(sizeof(node_t));
 
   node->is_end_of_word = false;
+  node->is_used = false;
 
   for(int index = 0; index < ALPHABET_SIZE; index++)
   {
@@ -194,7 +202,7 @@ static inline void _words_search(char*** words, size_t* count, node_t* node, con
   // Base case - the end of the word
   if(pattern[index] == '\0')
   {
-    if(node->is_end_of_word)
+    if(node->is_end_of_word && !node->is_used)
     {
       word_append(words, count, word);
     }
@@ -334,6 +342,52 @@ trie_t* trie_create(const char* filepath)
   free(buffer);
 
   return trie;
+}
+
+/*
+ *
+ */
+void word_use(trie_t* trie, const char* word)
+{
+  node_t* node = (node_t*) trie;
+
+  for(int index = 0; word[index] != '\0'; index++)
+  {
+    int child_index = letter_index_get(word[index]);
+
+    if(!node->children[child_index])
+    {
+      node = NULL;
+      break;
+    }
+
+    node = node->children[child_index];
+  }
+
+  if(node) node->is_used = true;
+}
+
+/*
+ *
+ */
+void word_unuse(trie_t* trie, const char* word)
+{
+  node_t* node = (node_t*) trie;
+
+  for(int index = 0; word[index] != '\0'; index++)
+  {
+    int child_index = letter_index_get(word[index]);
+
+    if(!node->children[child_index])
+    {
+      node = NULL;
+      break;
+    }
+
+    node = node->children[child_index];
+  }
+
+  if(node) node->is_used = false;
 }
 
 #endif // WORDS_IMPLEMENT
