@@ -118,7 +118,7 @@ static inline char index_letter_get(int index)
 /*
  *
  */
-static inline int word_insert(trie_t* trie, const char* word)
+static inline void word_insert(trie_t* trie, const char* word)
 {
   node_t* node = (node_t*) trie;
 
@@ -194,7 +194,10 @@ static inline void _words_search(char*** words, size_t* count, node_t* node, con
   // Base case - the end of the word
   if(pattern[index] == '\0')
   {
-    word_append(words, count, word);
+    if(node->is_end_of_word)
+    {
+      word_append(words, count, word);
+    }
 
     return;
   }
@@ -218,8 +221,6 @@ static inline void _words_search(char*** words, size_t* count, node_t* node, con
     char letter = index_letter_get(child_index);
 
     snprintf(new_word, index + 2, "%.*s%c", index, word, letter);
-
-    printf("new_word: (%s)\n", new_word);
 
     _words_search(words, count, child, pattern, index + 1, new_word);
   }
@@ -322,8 +323,6 @@ trie_t* trie_create(const char* filepath)
   while(token)
   {
     char* word = string_lower(strdup(token));
-
-    printf("Inserting: (%s)\n", word);
 
     word_insert(trie, word);
 

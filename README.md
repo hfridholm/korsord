@@ -1,0 +1,3 @@
+# Korsord
+
+Swedish crossword generator
