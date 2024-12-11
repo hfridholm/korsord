@@ -34,6 +34,8 @@ typedef struct
   int       height;
   square_t* squares;
   int       count;
+  int       cross_count;
+  int       word_count;
 } grid_t;
 
 /*
@@ -59,6 +61,9 @@ grid_t* grid_create(int width, int height)
     return NULL;
   }
 
+  grid->cross_count = 0;
+  grid->word_count = 0;
+
   for(int index = 0; index < grid->count; index++)
   {
     grid->squares[index] = (square_t)
@@ -69,11 +74,35 @@ grid_t* grid_create(int width, int height)
     };
   }
 
+  // Set neccessary block squares
   grid->squares[0].type = TYPE_BLOCK;
+
+  grid->squares[width - 1].type = TYPE_BLOCK;
+
+  grid->squares[(height - 1) * width].type = TYPE_BLOCK;
 
   return grid;
 }
 
+/*
+ *
+ */
+void grid_copy(grid_t* copy, grid_t* grid)
+{
+  if(copy->count != grid->count) return;
+
+  for(int index = 0; index < copy->count; index++)
+  {
+    copy->squares[index] = grid->squares[index];
+  }
+
+  copy->cross_count = grid->cross_count;
+  copy->word_count = grid->word_count;
+}
+
+/*
+ *
+ */
 grid_t* grid_dup(grid_t* grid)
 {
   grid_t* dup_grid = malloc(sizeof(grid_t));
@@ -98,6 +127,9 @@ grid_t* grid_dup(grid_t* grid)
   {
     dup_grid->squares[index] = grid->squares[index];
   }
+
+  dup_grid->cross_count = grid->cross_count;
+  dup_grid->word_count = grid->word_count;
 
   return dup_grid;
 }
@@ -145,8 +177,10 @@ void grid_print(grid_t* grid)
 /*
  *
  */
-static void grid_vertical_word_insert(grid_t* grid, const char* word, int start_x, int start_y)
+static int grid_vertical_word_insert(grid_t* grid, const char* word, int start_x, int start_y)
 {
+  bool is_perfect = true;
+
   int index, y, square_index;
 
   for(index = 0; word[index] != '\0'; index++)
@@ -163,13 +197,24 @@ static void grid_vertical_word_insert(grid_t* grid, const char* word, int start_
     square_t square =
     {
       .type = TYPE_LETTER,
-      .letter = word[index],
-      .is_crossed = old_square.type == TYPE_LETTER
+      .letter = word[index]
     };
+
+    if(old_square.type == TYPE_LETTER)
+    {
+      grid->cross_count++;
+      square.is_crossed = true;
+    }
+    else is_perfect = false;
 
     grid->squares[square_index] = square;
   }
+
+
+  if(is_perfect) return 1;
+
   
+  // Insert block square at end of word
   y = start_y + index;
 
   square_index = (y * grid->width) + start_x;
@@ -178,13 +223,32 @@ static void grid_vertical_word_insert(grid_t* grid, const char* word, int start_
   {
     grid->squares[square_index].type = TYPE_BLOCK;
   }
+
+  // Insert neibouring block squares at start of word
+  if(start_y == 0)
+  {
+    if((start_x + 1) < grid->width)
+    {
+      square_index = (start_y * grid->width) + (start_x + 1);
+
+      grid->squares[square_index].type = TYPE_BLOCK;
+    }
+
+    square_index = (start_y * grid->width) + (start_x - 1);
+
+    grid->squares[square_index].type = TYPE_BLOCK;
+  }
+
+  return 0;
 }
 
 /*
  *
  */
-static void grid_horizontal_word_insert(grid_t* grid, const char* word, int start_x, int start_y)
+static int grid_horizontal_word_insert(grid_t* grid, const char* word, int start_x, int start_y)
 {
+  bool is_perfect = true;
+
   int index, x, square_index;
 
   for(index = 0; word[index] != '\0'; index++)
@@ -201,13 +265,24 @@ static void grid_horizontal_word_insert(grid_t* grid, const char* word, int star
     square_t square =
     {
       .type = TYPE_LETTER,
-      .letter = word[index],
-      .is_crossed = old_square.type == TYPE_LETTER
+      .letter = word[index]
     };
+
+    if(old_square.type == TYPE_LETTER)
+    {
+      grid->cross_count++;
+      square.is_crossed = true;
+    }
+    else is_perfect = false;
 
     grid->squares[square_index] = square;
   }
+
+
+  if(is_perfect) return 1;
+
   
+  // Insert block square at end of word
   x = start_x + index;
 
   square_index = (start_y * grid->width) + x;
@@ -216,6 +291,23 @@ static void grid_horizontal_word_insert(grid_t* grid, const char* word, int star
   {
     grid->squares[square_index].type = TYPE_BLOCK;
   }
+
+  // Insert neibouring block squares at start of word
+  if(start_x == 0)
+  {
+    if((start_y + 1) < grid->height)
+    {
+      square_index = ((start_y + 1) * grid->width) + start_x;
+
+      grid->squares[square_index].type = TYPE_BLOCK;
+    }
+
+    square_index = ((start_y - 1) * grid->width) + start_x;
+
+    grid->squares[square_index].type = TYPE_BLOCK;
+  }
+
+  return 0;
 }
 
 /*
@@ -223,6 +315,7 @@ static void grid_horizontal_word_insert(grid_t* grid, const char* word, int star
  */
 static void grid_horizontal_word_reset(grid_t* original, grid_t* grid, const char* word, int start_x, int start_y)
 {
+  // Reset word letters
   int index, x, square_index;
 
   for(index = 0; word[index] != '\0'; index++)
@@ -233,9 +326,16 @@ static void grid_horizontal_word_reset(grid_t* original, grid_t* grid, const cha
 
     if(square_index >= grid->count) break;
 
+
+    if(grid->squares[square_index].is_crossed)
+    {
+      grid->cross_count--;
+    }
+
     grid->squares[square_index] = original->squares[square_index];
   }
 
+  // Reset the block at the end of the word
   x = start_x + index;
 
   square_index = (start_y * grid->width) + x;
@@ -251,6 +351,7 @@ static void grid_horizontal_word_reset(grid_t* original, grid_t* grid, const cha
  */
 static void grid_vertical_word_reset(grid_t* original, grid_t* grid, const char* word, int start_x, int start_y)
 {
+  // Reset word letters
   int index, y, square_index;
 
   for(index = 0; word[index] != '\0'; index++)
@@ -261,9 +362,16 @@ static void grid_vertical_word_reset(grid_t* original, grid_t* grid, const char*
 
     if(square_index >= grid->count) break;
 
+
+    if(grid->squares[square_index].is_crossed)
+    {
+      grid->cross_count--;
+    }
+
     grid->squares[square_index] = original->squares[square_index];
   }
 
+  // Reset the block at the end of the word
   y = start_y + index;
 
   square_index = (y * grid->width) + start_x;
@@ -274,14 +382,14 @@ static void grid_vertical_word_reset(grid_t* original, grid_t* grid, const char*
   }
 }
 
-static int grid_vertical_word_gen(trie_t* trie, grid_t* grid, int cross_x, int cross_y);
+static int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x, int cross_y);
 
-static int grid_horizontal_word_gen(trie_t* trie, grid_t* grid, int cross_x, int cross_y);
+static int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x, int cross_y);
 
 /*
  * Recursive function
  */
-static int grid_horizontal_word_gen(trie_t* trie, grid_t* grid, int cross_x, int cross_y)
+static int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x, int cross_y)
 {
   if(!running) return 1;
 
@@ -292,9 +400,19 @@ static int grid_horizontal_word_gen(trie_t* trie, grid_t* grid, int cross_x, int
   if(square.type == TYPE_BLOCK) return 1;
 
 
+  if(grid->cross_count > best->cross_count)
+  {
+    printf("new best grid: %d\n", grid->cross_count);
+    grid_copy(best, grid);
+  }
+
+
+  // Instead of marking this as crossed, don't call _gen with this y
   if(cross_y == 0)
   {
     grid->squares[square_index].is_crossed = true;
+
+    grid->cross_count++;
 
     return 0;
   }
@@ -380,7 +498,15 @@ static int grid_horizontal_word_gen(trie_t* trie, grid_t* grid, int cross_x, int
 
         word_use(trie, word);
 
-        grid_horizontal_word_insert(new_grid, word, start_x, cross_y);
+        // If the word fits perfect, the crossword is solved?
+        if(grid_horizontal_word_insert(new_grid, word, start_x, cross_y) == 1)
+        {
+          words_free(&words, count);
+
+          grid_free(&new_grid);
+
+          return 0; // Change out these returns
+        }
 
         grid_print(new_grid);
 
@@ -392,9 +518,9 @@ static int grid_horizontal_word_gen(trie_t* trie, grid_t* grid, int cross_x, int
 
           if(new_grid->squares[square_index].is_crossed) continue;
 
-          usleep(1000);
+          // usleep(1000);
 
-          if(grid_vertical_word_gen(trie, new_grid, next_x, cross_y) != 0)
+          if(grid_vertical_word_gen(trie, best, new_grid, next_x, cross_y) != 0)
           {
             words_free(&words, count);
 
@@ -421,7 +547,7 @@ static int grid_horizontal_word_gen(trie_t* trie, grid_t* grid, int cross_x, int
 /*
  * Recursive function
  */
-static int grid_vertical_word_gen(trie_t* trie, grid_t* grid, int cross_x, int cross_y)
+static int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x, int cross_y)
 {
   if(!running) return 1;
 
@@ -432,9 +558,19 @@ static int grid_vertical_word_gen(trie_t* trie, grid_t* grid, int cross_x, int c
   if(square.type == TYPE_BLOCK) return 1;
 
 
+
+  if(grid->cross_count > best->cross_count)
+  {
+    grid_copy(best, grid);
+  }
+
+
+  // Instead of marking this as crossed, don't call _gen with this x
   if(cross_x == 0)
   {
     grid->squares[square_index].is_crossed = true;
+
+    grid->cross_count++;
 
     return 0;
   }
@@ -520,7 +656,15 @@ static int grid_vertical_word_gen(trie_t* trie, grid_t* grid, int cross_x, int c
 
         word_use(trie, word);
 
-        grid_vertical_word_insert(new_grid, word, cross_x, start_y);
+        // If the word fits perfect, the crossword is solved?
+        if(grid_vertical_word_insert(new_grid, word, cross_x, start_y) == 1)
+        {
+          words_free(&words, count);
+
+          grid_free(&new_grid);
+
+          return 0; // Change out these returns
+        }
 
         grid_print(new_grid);
 
@@ -532,9 +676,9 @@ static int grid_vertical_word_gen(trie_t* trie, grid_t* grid, int cross_x, int c
 
           if(new_grid->squares[square_index].is_crossed) continue;
 
-          usleep(1000);
+          // usleep(1000);
 
-          if(grid_horizontal_word_gen(trie, new_grid, cross_x, next_y) != 0)
+          if(grid_horizontal_word_gen(trie, best, new_grid, cross_x, next_y) != 0)
           {
             words_free(&words, count);
 
@@ -556,6 +700,22 @@ static int grid_vertical_word_gen(trie_t* trie, grid_t* grid, int cross_x, int c
   grid_free(&new_grid);
 
   return 0;
+}
+
+/*
+ *
+ */
+grid_t* grid_gen(trie_t* trie, int width, int height)
+{
+  grid_t* grid = grid_create(width, height);
+
+  grid_t* best = grid_dup(grid);
+
+  grid_vertical_word_gen(trie, best, grid, 1, 1);
+
+  grid_free(&grid);
+
+  return best;
 }
 
 /*
@@ -590,10 +750,11 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  grid_t* grid = grid_create(5, 5);
+  grid_t* grid = grid_gen(trie, 5, 6);
 
+  printf("Generated grid\n");
 
-  grid_vertical_word_gen(trie, grid, 1, 1);
+  grid_print(grid);
 
 
   grid_free(&grid);

@@ -120,7 +120,7 @@ static inline char index_letter_get(int index)
     return 'a' + index;
   }
 
-  return '-';
+  return '_';
 }
 
 /*
@@ -133,6 +133,9 @@ static inline void word_insert(trie_t* trie, const char* word)
   for(int index = 0; word[index] != '\0'; index++)
   {
     int child_index = letter_index_get(word[index]);
+
+    if(child_index == -1) return;
+
 
     if(!node->children[child_index])
     {
@@ -355,6 +358,9 @@ void word_use(trie_t* trie, const char* word)
   {
     int child_index = letter_index_get(word[index]);
 
+    if(child_index == -1) return;
+
+
     if(!node->children[child_index])
     {
       node = NULL;
@@ -377,6 +383,9 @@ void word_unuse(trie_t* trie, const char* word)
   for(int index = 0; word[index] != '\0'; index++)
   {
     int child_index = letter_index_get(word[index]);
+
+    if(child_index == -1) return;
+
 
     if(!node->children[child_index])
     {
