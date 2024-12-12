@@ -22,18 +22,18 @@ int grid_vertical_word_insert(grid_t* grid, const char* word, int start_x, int s
 
     square_index = (y * grid->width) + start_x;
 
-    if(square_index >= grid->count) break;
+    if(square_index >= grid->square_count) break;
 
 
     square_t old_square = grid->squares[square_index];
 
     square_t square =
     {
-      .type = TYPE_LETTER,
+      .type = SQUARE_LETTER,
       .letter = word[index]
     };
 
-    if(old_square.type == TYPE_LETTER)
+    if(old_square.type == SQUARE_LETTER)
     {
       grid->cross_count++;
       square.is_crossed = true;
@@ -52,9 +52,9 @@ int grid_vertical_word_insert(grid_t* grid, const char* word, int start_x, int s
 
   square_index = (y * grid->width) + start_x;
 
-  if(y < grid->height && square_index < grid->count)
+  if(y < grid->height && square_index < grid->square_count)
   {
-    grid->squares[square_index].type = TYPE_BLOCK;
+    grid->squares[square_index].type = SQUARE_BLOCK;
   }
 
   // Insert neibouring block squares at start of word
@@ -64,12 +64,12 @@ int grid_vertical_word_insert(grid_t* grid, const char* word, int start_x, int s
     {
       square_index = (start_y * grid->width) + (start_x + 1);
 
-      grid->squares[square_index].type = TYPE_BLOCK;
+      grid->squares[square_index].type = SQUARE_BLOCK;
     }
 
     square_index = (start_y * grid->width) + (start_x - 1);
 
-    grid->squares[square_index].type = TYPE_BLOCK;
+    grid->squares[square_index].type = SQUARE_BLOCK;
   }
 
   return 0;
@@ -90,18 +90,18 @@ int grid_horizontal_word_insert(grid_t* grid, const char* word, int start_x, int
 
     square_index = (start_y * grid->width) + x;
 
-    if(square_index >= grid->count) break;
+    if(square_index >= grid->square_count) break;
 
 
     square_t old_square = grid->squares[square_index];
 
     square_t square =
     {
-      .type = TYPE_LETTER,
+      .type = SQUARE_LETTER,
       .letter = word[index]
     };
 
-    if(old_square.type == TYPE_LETTER)
+    if(old_square.type == SQUARE_LETTER)
     {
       grid->cross_count++;
       square.is_crossed = true;
@@ -120,9 +120,9 @@ int grid_horizontal_word_insert(grid_t* grid, const char* word, int start_x, int
 
   square_index = (start_y * grid->width) + x;
 
-  if(x < grid->width && square_index < grid->count)
+  if(x < grid->width && square_index < grid->square_count)
   {
-    grid->squares[square_index].type = TYPE_BLOCK;
+    grid->squares[square_index].type = SQUARE_BLOCK;
   }
 
   // Insert neibouring block squares at start of word
@@ -132,12 +132,12 @@ int grid_horizontal_word_insert(grid_t* grid, const char* word, int start_x, int
     {
       square_index = ((start_y + 1) * grid->width) + start_x;
 
-      grid->squares[square_index].type = TYPE_BLOCK;
+      grid->squares[square_index].type = SQUARE_BLOCK;
     }
 
     square_index = ((start_y - 1) * grid->width) + start_x;
 
-    grid->squares[square_index].type = TYPE_BLOCK;
+    grid->squares[square_index].type = SQUARE_BLOCK;
   }
 
   return 0;
@@ -157,7 +157,7 @@ void grid_horizontal_word_reset(grid_t* original, grid_t* grid, const char* word
 
     square_index = (start_y * grid->width) + x;
 
-    if(square_index >= grid->count) break;
+    if(square_index >= grid->square_count) break;
 
 
     if(grid->squares[square_index].is_crossed)
@@ -173,7 +173,7 @@ void grid_horizontal_word_reset(grid_t* original, grid_t* grid, const char* word
 
   square_index = (start_y * grid->width) + x;
 
-  if(x < grid->width && square_index < grid->count)
+  if(x < grid->width && square_index < grid->square_count)
   {
     grid->squares[square_index] = original->squares[square_index];
   }
@@ -193,7 +193,7 @@ void grid_vertical_word_reset(grid_t* original, grid_t* grid, const char* word, 
 
     square_index = (y * grid->width) + start_x;
 
-    if(square_index >= grid->count) break;
+    if(square_index >= grid->square_count) break;
 
 
     if(grid->squares[square_index].is_crossed)
@@ -209,7 +209,7 @@ void grid_vertical_word_reset(grid_t* original, grid_t* grid, const char* word, 
 
   square_index = (y * grid->width) + start_x;
 
-  if(y < grid->height && square_index < grid->count)
+  if(y < grid->height && square_index < grid->square_count)
   {
     grid->squares[square_index] = original->squares[square_index];
   }

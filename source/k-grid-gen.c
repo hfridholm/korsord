@@ -22,7 +22,7 @@ int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross
 
   square_t square = grid->squares[square_index];
 
-  if(square.type == TYPE_BLOCK) return 1;
+  if(square.type == SQUARE_BLOCK) return 1;
 
 
   if(grid->cross_count > best->cross_count)
@@ -51,7 +51,7 @@ int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross
 
     square = grid->squares[square_index];
 
-    if(square.type == TYPE_BLOCK) break;
+    if(square.type == SQUARE_BLOCK) break;
   }
 
   start_x++;
@@ -64,7 +64,7 @@ int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross
 
     square = grid->squares[square_index];
 
-    if(square.type == TYPE_BLOCK) break;
+    if(square.type == SQUARE_BLOCK) break;
   }
 
   stop_x--;
@@ -82,7 +82,7 @@ int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross
 
     square = grid->squares[square_index];
 
-    if(square.type == TYPE_LETTER)
+    if(square.type == SQUARE_LETTER)
     {
       pattern[index] = square.letter;
     }
@@ -122,7 +122,7 @@ int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross
     {
       square_index = (cross_y * grid->width) + block_x;
 
-      if(grid->squares[square_index].type == TYPE_LETTER) continue;
+      if(grid->squares[square_index].type == SQUARE_LETTER) continue;
     }
 
 
@@ -193,7 +193,7 @@ int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x
 
   square_t square = grid->squares[square_index];
 
-  if(square.type == TYPE_BLOCK) return 1;
+  if(square.type == SQUARE_BLOCK) return 1;
 
 
 
@@ -222,7 +222,7 @@ int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x
 
     square = grid->squares[square_index];
 
-    if(square.type == TYPE_BLOCK) break;
+    if(square.type == SQUARE_BLOCK) break;
   }
 
   start_y++;
@@ -235,7 +235,7 @@ int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x
 
     square = grid->squares[square_index];
 
-    if(square.type == TYPE_BLOCK) break;
+    if(square.type == SQUARE_BLOCK) break;
   }
 
   stop_y--;
@@ -253,7 +253,7 @@ int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x
 
     square = grid->squares[square_index];
 
-    if(square.type == TYPE_LETTER)
+    if(square.type == SQUARE_LETTER)
     {
       pattern[index] = square.letter;
     }
@@ -293,7 +293,7 @@ int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x
     {
       square_index = (block_y * grid->width) + cross_x;
 
-      if(grid->squares[square_index].type == TYPE_LETTER) continue;
+      if(grid->squares[square_index].type == SQUARE_LETTER) continue;
     }
 
 
@@ -359,6 +359,16 @@ int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x
 grid_t* grid_gen(trie_t* trie, int width, int height)
 {
   grid_t* grid = grid_create(width, height);
+
+  // Set neccessary block squares
+  // Change this to a real prepare function
+  grid->squares[0].type = SQUARE_BLOCK;
+
+  grid->squares[width - 1].type = SQUARE_BLOCK;
+
+  grid->squares[(height - 1) * width].type = SQUARE_BLOCK;
+
+
 
   grid_t* best = grid_dup(grid);
 
