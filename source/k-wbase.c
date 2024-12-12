@@ -1,59 +1,27 @@
 /*
- * getwrds.h - get words that matches a pattern
+ * k-wbase.c - get words that matches a pattern
  *
- * These are the avaiable functions:
+ * Written by Hampus Fridholm
  *
+ * FUNCTIONS:
  *
  * trie_t* trie_create(const char* filepath)
+ *
+ * void    trie_free(trie_t** trie)
+ *
  *
  * int     words_search(char*** words, size_t* count, trie_t* trie, const char* pattern)
  *
  * void    words_free(char*** words, size_t count)
- *
- * void    trie_free(trie_t** trie)
  */
 
-#ifndef WORDS_H
-#define WORDS_H
-
-#include <stddef.h>
-
-typedef struct node_t node_t;
-
-typedef struct node_t trie_t;
-
-
-extern trie_t* trie_create(const char* filepath);
-
-extern void    trie_free(trie_t** trie);
-
-
-extern int     words_search(char*** words, size_t* count, trie_t* trie, const char* pattern);
-
-extern void    words_shuffle(char** words, size_t count);
-
-extern void    words_free(char*** words, size_t count);
-
-
-extern void    word_use(trie_t* trie, const char* word);
-
-extern void    word_unuse(trie_t* trie, const char* word);
-
-#endif // WORDS_H
-
-/*
- *
- */
-
-#ifdef WORDS_IMPLEMENT
-
-#include <stdbool.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
 
-#define ALPHABET_SIZE 29
+#include "k-wbase.h"
 
 typedef struct node_t
 {
@@ -417,5 +385,3 @@ void word_unuse(trie_t* trie, const char* word)
 
   if(node) node->is_used = false;
 }
-
-#endif // WORDS_IMPLEMENT
