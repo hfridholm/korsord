@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 typedef enum square_type_t
 {
@@ -35,6 +36,21 @@ typedef struct grid_t
   int       cross_count;
   int       word_count;
 } grid_t;
+
+extern bool pattern_is_allowed_crowd(grid_t* grid, int stop_x, int stop_y);
+
+extern bool pattern_is_allowed_trap(grid_t* grid, int stop_x, int stop_y);
+
+
+extern square_t* grid_xy_real_square_get(grid_t* grid, int x, int y);
+
+extern int       grid_xy_real_index_get(grid_t* grid, int x, int y);
+
+
+extern square_t* grid_xy_square_get(grid_t* grid, int x, int y);
+
+extern int       grid_xy_index_get(grid_t* grid, int x, int y);
+
 
 extern int  grid_vertical_word_insert(grid_t* grid, const char* word, int start_x, int start_y);
 

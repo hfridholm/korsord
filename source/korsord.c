@@ -84,17 +84,17 @@ int main(int argc, char* argv[])
 
 
   // 1. Load the word bases
-  trie_t* trie = trie_create("words.txt");
+  wbase_t* wbase = wbase_create("words.txt", NULL);
 
-  if(!trie)
+  if(!wbase)
   {
-    perror("Failed to create trie");
+    perror("Failed to create wbase");
 
     return 2;
   }
 
   // 2. Generate crossword grid with word bases
-  grid_t* grid = grid_gen(trie, 10, 5);
+  grid_t* grid = grid_gen(wbase, 10, 5);
 
   printf("Generated grid\n");
 
@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
 
   grid_free(&grid);
 
-  trie_free(&trie);
+  wbase_free(&wbase);
 
   return 0;
 }

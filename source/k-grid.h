@@ -7,17 +7,12 @@
 #ifndef K_GRID_H
 #define K_GRID_H
 
-typedef struct node_t trie_t;
-
 typedef struct grid_t grid_t;
 
-
-extern int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x, int cross_y);
-
-extern int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x, int cross_y);
+typedef struct wbase_t wbase_t;
 
 
-extern grid_t* grid_gen(trie_t* trie, int width, int height);
+extern grid_t* grid_gen(wbase_t* wbase, int width, int height);
 
 extern void grid_free(grid_t** grid);
 

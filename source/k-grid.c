@@ -8,6 +8,69 @@
 #include "k-grid-intern.h"
 
 /*
+ * X X X X X
+ * X . . . X
+ * X . . . X
+ * X . . . X
+ * X X X X X
+ *
+ * The outer most squares are not ment to be accessed
+ *
+ * They are a buffer when close to an edge
+ */
+
+/*
+ * Get the real index, including for the border squares
+ */
+int grid_xy_real_index_get(grid_t* grid, int x, int y)
+{
+  return (y * (grid->width + 2)) + x;
+}
+
+/*
+ * Get the real square, including border square
+ */
+square_t* grid_xy_real_square_get(grid_t* grid, int x, int y)
+{
+  int index = grid_xy_real_index_get(grid, x, y);
+
+  return grid->squares + index;
+}
+
+
+/*
+ * EXPECTS:
+ * - grid is allocated
+ *
+ * RETURN (int index)
+ * - -1 | Error
+ */
+int grid_xy_index_get(grid_t* grid, int x, int y)
+{
+  // 1. Check so x, y is inside grid
+  if(x < 0 || x >= grid->width)  return -1;
+
+  if(y < 0 || y >= grid->height) return -1;
+
+  return (y + 1) * (grid->width + 2) + (x + 1);
+}
+
+/*
+ * EXPECTS:
+ * - grid is allocated
+ *
+ * RETURN (square_t* square)
+ */
+square_t* grid_xy_square_get(grid_t* grid, int x, int y)
+{
+  int index = grid_xy_index_get(grid, x, y);
+
+  if(index == -1) return NULL;
+
+  return grid->squares + index;
+}
+
+/*
  * Create crossword grid struct
  *
  * RETURN (grid_t* grid)

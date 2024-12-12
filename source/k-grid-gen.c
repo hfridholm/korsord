@@ -19,7 +19,7 @@ extern pthread_mutex_t lock;
 /*
  * Recursive function
  */
-int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x, int cross_y)
+int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross_x, int cross_y)
 {
   if(!running) return 1;
 
@@ -37,19 +37,8 @@ int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross
 
   if(grid->cross_count > best->cross_count)
   {
-    // printf("new best grid: %d\n", grid->cross_count);
+    printf("new best grid: %d\n", grid->cross_count);
     grid_copy(best, grid);
-  }
-
-
-  // Instead of marking this as crossed, don't call _gen with this y
-  if(cross_y == 0)
-  {
-    grid->squares[square_index].is_crossed = true;
-
-    grid->cross_count++;
-
-    return 0;
   }
 
 
@@ -82,6 +71,19 @@ int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross
   int max_length = (1 + stop_x - start_x);
 
 
+  // If the length is 1, it should be marked as crossed
+  if(max_length == 1)
+  {
+    square_index = (cross_y * grid->width) + cross_x;
+
+    grid->squares[square_index].is_crossed = true;
+
+    grid->cross_count++;
+
+    return 0;
+  }
+
+
   char pattern[max_length + 1];
 
   for(int index = max_length; index-- > 0;)
@@ -100,6 +102,7 @@ int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross
   }
 
 
+  /*
   grid_t* new_grid = grid_dup(grid);
 
   char** words;
@@ -199,12 +202,16 @@ int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross
   pthread_mutex_unlock(&lock);
 
   return 0;
+
+  */
+
+  return 1;
 }
 
 /*
  * Recursive function
  */
-int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x, int cross_y)
+int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross_x, int cross_y)
 {
   if(!running) return 1;
 
@@ -222,18 +229,8 @@ int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x
 
   if(grid->cross_count > best->cross_count)
   {
+    printf("new best grid: %d\n", grid->cross_count);
     grid_copy(best, grid);
-  }
-
-
-  // Instead of marking this as crossed, don't call _gen with this x
-  if(cross_x == 0)
-  {
-    grid->squares[square_index].is_crossed = true;
-
-    grid->cross_count++;
-
-    return 0;
   }
 
 
@@ -266,6 +263,19 @@ int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x
   int max_length = (1 + stop_y - start_y);
 
 
+  // If the length is 1, it should be marked as crossed
+  if(max_length == 1)
+  {
+    square_index = (cross_y * grid->width) + cross_x;
+
+    grid->squares[square_index].is_crossed = true;
+
+    grid->cross_count++;
+
+    return 0;
+  }
+
+
   char pattern[max_length + 1];
 
   for(int index = max_length; index-- > 0;)
@@ -284,6 +294,8 @@ int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x
   }
 
 
+
+  /*
   grid_t* new_grid = grid_dup(grid);
 
   char** words;
@@ -383,12 +395,16 @@ int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x
   pthread_mutex_unlock(&lock);
 
   return 0;
+
+  */
+
+  return 1;
 }
 
 /*
  *
  */
-grid_t* grid_gen(trie_t* trie, int width, int height)
+grid_t* grid_gen(wbase_t* wbase, int width, int height)
 {
   grid_t* grid = grid_create(width, height);
 
@@ -404,7 +420,7 @@ grid_t* grid_gen(trie_t* trie, int width, int height)
 
   grid_t* best = grid_dup(grid);
 
-  grid_vertical_word_gen(trie, best, grid, 1, 1);
+  grid_vertical_word_gen(wbase, best, grid, 1, 1);
 
   grid_free(&grid);
 
