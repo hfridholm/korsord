@@ -16,12 +16,16 @@ g u l # g a n s k a
 
 Example:
 
-#####........#
-#####.........
-#.............
-SOCKERVADD#...
-..............
-#.............
+XXXXXXXXXXXXXXXX
+X#####........#X
+X#####.........X
+X#.............X
+XSOCKERVADD#...X
+X..............X
+X#.............X
+XXXXXXXXXXXXXXXX
 
 This requires better checking of block squares
 As the program is written right now, it only supports rectangular grids
+
+Pattern checking
