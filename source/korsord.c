@@ -10,11 +10,38 @@
 #include <signal.h>
 #include <time.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "k-grid.h"
 #include "k-wbase.h"
 
 bool running = false;
+
+pthread_mutex_t lock;
+grid_t* curr_grid = NULL;
+
+/*
+ *
+ */
+static void* print_routine(void* arg)
+{
+  printf("Start printing grid\n");
+
+  while(running)
+  {
+    pthread_mutex_lock(&lock);
+
+    if(curr_grid) grid_print(curr_grid);
+
+    pthread_mutex_unlock(&lock);
+
+    usleep(100000);
+  }
+
+  printf("Stop printing grid\n");
+
+  return NULL;
+}
 
 /*
  * Stop signal handler
@@ -43,14 +70,27 @@ int main(int argc, char* argv[])
 
   running = true;
 
+
+  pthread_mutex_init(&lock, NULL);
+
+  pthread_t thread;
+
+  if(pthread_create(&thread, NULL, print_routine, NULL) != 0)
+  {
+    perror("Failed to create thread");
+
+    return 1;
+  }
+
+
   // 1. Load the word bases
   trie_t* trie = trie_create("words.txt");
 
   if(!trie)
   {
-    perror("trie_create");
+    perror("Failed to create trie");
 
-    return 1;
+    return 2;
   }
 
   // 2. Generate crossword grid with word bases
@@ -59,6 +99,16 @@ int main(int argc, char* argv[])
   printf("Generated grid\n");
 
   grid_print(grid);
+
+
+  running = false;
+
+  // Wait for the second thread to finish
+  // pthread_cancel(thread);
+
+  pthread_join(thread, NULL);
+
+  pthread_mutex_destroy(&lock);
 
 
   grid_free(&grid);

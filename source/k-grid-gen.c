@@ -11,6 +11,11 @@
 
 extern bool running;
 
+#include <pthread.h>
+
+extern grid_t* curr_grid;
+extern pthread_mutex_t lock;
+
 /*
  * Recursive function
  */
@@ -23,6 +28,11 @@ int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross
   square_t square = grid->squares[square_index];
 
   if(square.type == SQUARE_BLOCK) return 1;
+
+
+  pthread_mutex_lock(&lock);
+  curr_grid = grid;
+  pthread_mutex_unlock(&lock);
 
 
   if(grid->cross_count > best->cross_count)
@@ -141,12 +151,15 @@ int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross
         {
           words_free(&words, count);
 
+          pthread_mutex_lock(&lock);
+          curr_grid = NULL;
           grid_free(&new_grid);
+          pthread_mutex_unlock(&lock);
 
           return 0; // Change out these returns
         }
 
-        grid_print(new_grid);
+        // grid_print(curr_grid);
 
         for(int i = 0; i < length; i++)
         {
@@ -162,7 +175,10 @@ int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross
           {
             words_free(&words, count);
 
+            pthread_mutex_lock(&lock);
+            curr_grid = NULL;
             grid_free(&new_grid);
+            pthread_mutex_unlock(&lock);
 
             return 2;
           }
@@ -177,7 +193,10 @@ int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross
     }
   }
 
+  pthread_mutex_lock(&lock);
+  curr_grid = NULL;
   grid_free(&new_grid);
+  pthread_mutex_unlock(&lock);
 
   return 0;
 }
@@ -195,6 +214,10 @@ int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x
 
   if(square.type == SQUARE_BLOCK) return 1;
 
+
+  pthread_mutex_lock(&lock);
+  curr_grid = grid;
+  pthread_mutex_unlock(&lock);
 
 
   if(grid->cross_count > best->cross_count)
@@ -312,7 +335,10 @@ int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x
         {
           words_free(&words, count);
 
+          pthread_mutex_lock(&lock);
+          curr_grid = NULL;
           grid_free(&new_grid);
+          pthread_mutex_unlock(&lock);
 
           return 0; // Change out these returns
         }
@@ -333,7 +359,10 @@ int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x
           {
             words_free(&words, count);
 
+            pthread_mutex_lock(&lock);
+            curr_grid = NULL;
             grid_free(&new_grid);
+            pthread_mutex_unlock(&lock);
 
             return 2;
           }
@@ -348,7 +377,10 @@ int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int cross_x
     }
   }
 
+  pthread_mutex_lock(&lock);
+  curr_grid = NULL;
   grid_free(&new_grid);
+  pthread_mutex_unlock(&lock);
 
   return 0;
 }
