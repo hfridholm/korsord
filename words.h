@@ -30,6 +30,8 @@ extern void    trie_free(trie_t** trie);
 
 extern int     words_search(char*** words, size_t* count, trie_t* trie, const char* pattern);
 
+extern void    words_shuffle(char** words, size_t count);
+
 extern void    words_free(char*** words, size_t count);
 
 
@@ -194,6 +196,23 @@ void words_free(char*** words, size_t count)
   free(*words);
 
   *words = NULL;
+}
+
+/*
+ *
+ */
+void words_shuffle(char** words, size_t count)
+{
+  for(int index = 0; index < count; index++)
+  {
+    int rand_index = (rand() % count);
+
+    char* temp_word = words[index];
+
+    words[index] = words[rand_index];
+
+    words[rand_index] = temp_word;
+  }
 }
 
 /*

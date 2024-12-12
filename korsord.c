@@ -402,7 +402,7 @@ static int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, in
 
   if(grid->cross_count > best->cross_count)
   {
-    printf("new best grid: %d\n", grid->cross_count);
+    // printf("new best grid: %d\n", grid->cross_count);
     grid_copy(best, grid);
   }
 
@@ -482,6 +482,17 @@ static int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, in
       if(block_x == (grid->width - 2) || block_x == (grid->width - 1)) continue;
     }
 
+    // Do not block corner
+    if(cross_y == 1)
+    {
+      if(block_x == (grid->width - 2) || block_x == (grid->width - 1)) continue;
+    }
+    if(cross_y == 2)
+    {
+      if(block_x == (grid->width - 1)) continue;
+    }
+
+    // Do not block letter
     if(block_x < grid->width)
     {
       square_index = (cross_y * grid->width) + block_x;
@@ -492,6 +503,8 @@ static int grid_horizontal_word_gen(trie_t* trie, grid_t* best, grid_t* grid, in
 
     if(words_search(&words, &count, trie, pattern) == 0 && count > 0)
     {
+      words_shuffle(words, count);
+
       for(int index = 0; index < count; index++)
       {
         char* word = words[index];
@@ -640,6 +653,17 @@ static int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int 
       if(block_y == (grid->height - 2) || block_y == (grid->height - 1)) continue;
     }
 
+    // Do not block corner
+    if(cross_x == 1)
+    {
+      if(block_y == (grid->height - 2) || block_y == (grid->height - 1)) continue;
+    }
+    if(cross_x == 2)
+    {
+      if(block_y == (grid->height - 1)) continue;
+    }
+
+    // Do not block letter
     if(block_y < grid->height)
     {
       square_index = (block_y * grid->width) + cross_x;
@@ -650,6 +674,8 @@ static int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int 
 
     if(words_search(&words, &count, trie, pattern) == 0 && count > 0)
     {
+      words_shuffle(words, count);
+
       for(int index = 0; index < count; index++)
       {
         char* word = words[index];
@@ -666,7 +692,7 @@ static int grid_vertical_word_gen(trie_t* trie, grid_t* best, grid_t* grid, int 
           return 0; // Change out these returns
         }
 
-        grid_print(new_grid);
+        // grid_print(new_grid);
 
         for(int i = 0; i < length; i++)
         {
@@ -750,7 +776,7 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  grid_t* grid = grid_gen(trie, 5, 6);
+  grid_t* grid = grid_gen(trie, 10, 5);
 
   printf("Generated grid\n");
 
