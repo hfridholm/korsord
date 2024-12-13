@@ -21,6 +21,17 @@ extern pthread_mutex_t lock;
 #define GEN_FAIL     2
 #define GEN_STOP     3
 
+/*
+ * If either grid_vertical_word_gen or
+ *           grid_horizontal_word_gen
+ * return GEN_DONE:
+ *
+ * That means that the genration was successfull.
+ *
+ * The added words should then be preserved upstream.
+ *
+ * The new_grid should be saved to upsteam grid.
+ */
 
 #include <unistd.h>
 
@@ -80,7 +91,7 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
   if(!running) return GEN_STOP;
 
 
-  // grid_print(grid); usleep(1000000);
+  grid_print(grid); usleep(100000);
 
 
   square_t* square = grid_xy_square_get(grid, cross_x, cross_y);
@@ -131,6 +142,8 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
 
   grid_t* new_grid = grid_dup(grid);
 
+  bool has_failed = true;
+
 
   char** words = NULL;
   size_t word_count = 0;
@@ -158,6 +171,7 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
     if(grid_horizontal_word_insert(new_grid, word, start_x, cross_y) == INSERT_PERFECT)
     {
       // If the word fits perfect, the crossword is solved?
+      has_failed = false;
       break;
     }
 
@@ -181,7 +195,6 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
       {
         // Here: The word couldn't solve the crossword
         word_is_done = false;
-
         break;
       }
 
@@ -204,6 +217,7 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
     if(word_is_done)
     {
       // Here: Every letter of word has been crossed
+      has_failed = false;
       break;
     }
 
@@ -216,10 +230,26 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
 
   words_free(&words, word_count);
 
+  if(has_failed)
+  {
+    pthread_mutex_lock(&lock);
+
+    curr_grid = NULL;
+
+    grid_free(&new_grid);
+
+    pthread_mutex_unlock(&lock);
+
+    return GEN_FAIL;
+  }
+
 
   pthread_mutex_lock(&lock);
 
-  curr_grid = NULL;
+  grid_copy(grid, new_grid);
+
+  curr_grid = grid;
+
   grid_free(&new_grid);
 
   pthread_mutex_unlock(&lock);
@@ -280,7 +310,7 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
   if(!running) return GEN_STOP;
 
 
-  // grid_print(grid); usleep(1000000);
+  grid_print(grid); usleep(100000);
 
 
   square_t* square = grid_xy_square_get(grid, cross_x, cross_y);
@@ -331,6 +361,11 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
 
   grid_t* new_grid = grid_dup(grid);
 
+  // Maybe: Change this to a default false statement
+  // so, it has to be sat to true to be triggered
+  // (rename has_failed to something like: has_not_failed)
+  bool has_failed = true;
+
 
   char** words = NULL;
   size_t word_count = 0;
@@ -358,6 +393,7 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
     if(grid_vertical_word_insert(new_grid, word, cross_x, start_y) == INSERT_PERFECT)
     {
       // If the word fits perfect, the crossword is solved?
+      has_failed = false;
       break;
     }
 
@@ -404,6 +440,7 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
     if(word_is_done)
     {
       // Here: Every letter of word has been crossed
+      has_failed = false;
       break;
     }
 
@@ -416,10 +453,26 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
 
   words_free(&words, word_count);
 
+  if(has_failed)
+  {
+    pthread_mutex_lock(&lock);
+
+    curr_grid = NULL;
+
+    grid_free(&new_grid);
+
+    pthread_mutex_unlock(&lock);
+
+    return GEN_FAIL;
+  }
+
 
   pthread_mutex_lock(&lock);
 
-  curr_grid = NULL;
+  grid_copy(grid, new_grid);
+
+  curr_grid = grid;
+
   grid_free(&new_grid);
 
   pthread_mutex_unlock(&lock);
@@ -434,16 +487,18 @@ grid_t* grid_gen(wbase_t* wbase, int width, int height)
 {
   grid_t* grid = grid_create(width, height);
 
+  grid_prep(grid);
+
   grid_t* best = grid_dup(grid);
 
-
-  for(int x = 0; x < grid->width; x++)
+  for(int x = 1; x < grid->width; x++)
   {
     for(int y = 0; y < grid->height; y++)
     {
       square_t* square = grid_xy_square_get(grid, x, y);
 
       if(square->type == SQUARE_EMPTY)
+      //(square->type == SQUARE_LETTER && !square->is_crossed))
       {
         grid_vertical_word_gen(wbase, best, grid, x, y);
       }

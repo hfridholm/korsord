@@ -98,7 +98,7 @@ int main(int argc, char* argv[])
   }
 
   // 2. Generate crossword grid with word bases
-  grid_t* grid = grid_gen(wbase, 5, 5);
+  grid_t* grid = grid_gen(wbase, 10, 10);
 
   printf("Generated grid\n");
 

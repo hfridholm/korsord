@@ -41,6 +41,9 @@ typedef struct grid_t
 } grid_t;
 
 
+extern int grid_prep(grid_t* grid);
+
+
 extern void grid_words_search(char*** words, size_t* count, wbase_t* wbase, const char* pattern, grid_t* grid, int start_x, int start_y, int max_length, bool vertical);
 
 
@@ -50,6 +53,8 @@ extern bool pattern_is_allowed_trap(grid_t* grid, int stop_x, int stop_y);
 
 
 extern void grid_xy_square_set_crossed(grid_t* grid, int x, int y);
+
+extern void grid_xy_real_square_set_block(grid_t* grid, int x, int y);
 
 
 extern square_t* grid_xy_real_square_get(grid_t* grid, int x, int y);
@@ -67,6 +72,8 @@ extern bool xy_square_is_letter(grid_t* grid, int x, int y);
 extern bool xy_real_square_is_block(grid_t* grid, int x, int y);
 
 extern bool xy_square_is_crossed(grid_t* grid, int x, int y);
+
+extern bool grid_xy_real_square_is_border(grid_t* grid, int x, int y);
 
 
 extern int  grid_vertical_word_insert(grid_t* grid, const char* word, int start_x, int start_y);

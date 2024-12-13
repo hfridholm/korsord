@@ -6,7 +6,7 @@
 #include "k-wbase-intern.h"
 
 /*
- *
+ * Note: Add smart realloc chunks of powers of 2
  */
 static int word_append(char*** words, size_t* count, char* word)
 {

@@ -31,3 +31,11 @@ This requires better checking of block squares
 As the program is written right now, it only supports rectangular grids
 
 Pattern checking
+
+
+Memory allocations
+
+memory should be allocated in large chunks
+The size of the allocated memory should be larger than count
+It can be allcoated in powers of 2 (2, 4, 8, 16).
+When to realloc: when count is at one of these powers of 2.

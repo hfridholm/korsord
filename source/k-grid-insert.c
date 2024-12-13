@@ -45,9 +45,6 @@ int grid_vertical_word_insert(grid_t* grid, const char* word, int start_x, int s
     // 3. Assign the new square
     *old_square = new_square;
   }
-
-  if(is_perfect) return INSERT_PERFECT;
-
   
   // Insert block square at end of word
   y = start_y + index;
@@ -57,7 +54,7 @@ int grid_vertical_word_insert(grid_t* grid, const char* word, int start_x, int s
   if(square) square->type = SQUARE_BLOCK;
 
 
-  return INSERT_DONE;
+  return is_perfect ? INSERT_PERFECT : INSERT_DONE;
 }
 
 /*
@@ -97,9 +94,6 @@ int grid_horizontal_word_insert(grid_t* grid, const char* word, int start_x, int
     *old_square = new_square;
   }
 
-  if(is_perfect) return INSERT_PERFECT;
-
-  
   // Insert block square at end of word
   x = start_x + index;
 
@@ -108,7 +102,7 @@ int grid_horizontal_word_insert(grid_t* grid, const char* word, int start_x, int
   if(square) square->type = SQUARE_BLOCK;
 
 
-  return INSERT_DONE;
+  return is_perfect ? INSERT_PERFECT : INSERT_DONE;
 }
 
 /*
