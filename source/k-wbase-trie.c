@@ -183,6 +183,8 @@ trie_t* trie_create(const char* filepath)
   {
     char* word = string_lower(strdup(token));
 
+    // printf("%s\n", word);
+
     trie_word_insert(trie, word);
 
     free(word);

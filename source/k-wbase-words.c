@@ -56,6 +56,10 @@ void words_shuffle(char** words, size_t count)
 }
 
 /*
+ * EXPECTS:
+ * - words are either allocated or NULL
+ * - count is defined as an integer
+ *
  * PARAMS
  * - char* word | The letters sience root
  */
@@ -102,9 +106,6 @@ static void _words_search(char*** words, size_t* count, node_t* node, const char
 int words_search(char*** words, size_t* count, trie_t* trie, const char* pattern)
 {
   if(!words || !count || !trie || !pattern) return 1;
-
-  *words = NULL;
-  *count = 0;
 
   _words_search(words, count, (node_t*) trie, pattern, 0, "");
 

@@ -30,4 +30,8 @@ extern void words_shuffle(char** words, size_t count);
 extern void words_free(char*** words, size_t count);
 
 
+extern void wbase_word_use(wbase_t* wbase, const char* word);
+
+extern void wbase_word_unuse(wbase_t* wbase, const char* word);
+
 #endif // K_WBASE_H

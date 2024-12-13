@@ -25,6 +25,7 @@ grid_t* curr_grid = NULL;
  */
 static void* print_routine(void* arg)
 {
+  /*
   printf("Start printing grid\n");
 
   while(running)
@@ -39,6 +40,7 @@ static void* print_routine(void* arg)
   }
 
   printf("Stop printing grid\n");
+  */
 
   return NULL;
 }

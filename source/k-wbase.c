@@ -67,3 +67,35 @@ void wbase_free(wbase_t** wbase)
 
   *wbase = NULL;
 }
+
+/*
+ *
+ */
+void wbase_word_use(wbase_t* wbase, const char* word)
+{
+  if(wbase->primary)
+  {
+    trie_word_use(wbase->primary, word);
+  }
+
+  if(wbase->backup)
+  {
+    trie_word_use(wbase->backup, word);
+  }
+}
+
+/*
+ *
+ */
+void wbase_word_unuse(wbase_t* wbase, const char* word)
+{
+  if(wbase->primary)
+  {
+    trie_word_unuse(wbase->primary, word);
+  }
+
+  if(wbase->backup)
+  {
+    trie_word_unuse(wbase->backup, word);
+  }
+}

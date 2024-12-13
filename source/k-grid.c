@@ -7,6 +7,8 @@
 #include "k-grid.h"
 #include "k-grid-intern.h"
 
+// Important: I have commentet out the new system with border in the code
+
 /*
  * X X X X X
  * X . . . X
@@ -24,7 +26,8 @@
  */
 int grid_xy_real_index_get(grid_t* grid, int x, int y)
 {
-  return (y * (grid->width + 2)) + x;
+  // return (y * (grid->width + 2)) + x;
+  return (y * grid->width) + x;
 }
 
 /*
@@ -52,7 +55,8 @@ int grid_xy_index_get(grid_t* grid, int x, int y)
 
   if(y < 0 || y >= grid->height) return -1;
 
-  return (y + 1) * (grid->width + 2) + (x + 1);
+  // return (y + 1) * (grid->width + 2) + (x + 1);
+  return (y * grid->width) + x;
 }
 
 /*
@@ -68,6 +72,36 @@ square_t* grid_xy_square_get(grid_t* grid, int x, int y)
   if(index == -1) return NULL;
 
   return grid->squares + index;
+}
+
+/*
+ *
+ */
+bool xy_real_square_is_block(grid_t* grid, int x, int y)
+{
+  square_t* square = grid_xy_real_square_get(grid, x, y);
+
+  return (square && square->type == SQUARE_BLOCK);
+}
+
+/*
+ *
+ */
+bool xy_square_is_letter(grid_t* grid, int x, int y)
+{
+  square_t* square = grid_xy_square_get(grid, x, y);
+
+  return (square && square->type == SQUARE_LETTER);
+}
+
+/*
+ *
+ */
+bool xy_square_is_crossed(grid_t* grid, int x, int y)
+{
+  square_t* square = grid_xy_square_get(grid, x, y);
+
+  return (square && square->is_crossed);
 }
 
 /*
@@ -87,7 +121,10 @@ grid_t* grid_create(int width, int height)
 
   grid->square_count = (width * height);
 
-  grid->squares = malloc(sizeof(square_t) * grid->square_count);
+  // int real_count = (width + 2) * (height + 2);
+  int real_count = grid->square_count;
+
+  grid->squares = malloc(sizeof(square_t) * real_count);
 
   if(!grid->squares)
   {
@@ -99,7 +136,7 @@ grid_t* grid_create(int width, int height)
   grid->cross_count = 0;
   grid->word_count = 0;
 
-  for(int index = 0; index < grid->square_count; index++)
+  for(int index = 0; index < real_count; index++)
   {
     grid->squares[index] = (square_t)
     {
@@ -127,7 +164,10 @@ grid_t* grid_copy(grid_t* copy, grid_t* grid)
     return NULL;
   }
 
-  for(int index = 0; index < copy->square_count; index++)
+  // int real_count = (grid->width + 2) * (grid->height + 2);
+  int real_count = grid->square_count;
+
+  for(int index = 0; index < real_count; index++)
   {
     copy->squares[index] = grid->squares[index];
   }
@@ -155,7 +195,10 @@ grid_t* grid_dup(grid_t* grid)
 
   dup->square_count = grid->square_count;
 
-  dup->squares = malloc(sizeof(square_t) * dup->square_count);
+  // int real_count = (grid->width + 2) * (grid->height + 2);
+  int real_count = grid->square_count;
+
+  dup->squares = malloc(sizeof(square_t) * real_count);
 
   if(!dup->squares)
   {
@@ -164,7 +207,7 @@ grid_t* grid_dup(grid_t* grid)
     return NULL;
   }
 
-  for(int index = 0; index < dup->square_count; index++)
+  for(int index = 0; index < real_count; index++)
   {
     dup->squares[index] = grid->squares[index];
   }

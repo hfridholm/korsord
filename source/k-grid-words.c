@@ -25,6 +25,19 @@ static bool length_is_allowed(grid_t* grid, int start_x, int start_y, int length
     stop_y = start_y;
   }
 
+  if(vertical)
+  {
+    int block_y = (start_y + length);
+
+    if(xy_square_is_letter(grid, start_x, block_y)) return false;
+  }
+  else
+  {
+    int block_x = (start_x + length);
+
+    if(xy_square_is_letter(grid, block_x, start_y)) return false;
+  }
+
   if(!pattern_is_allowed_trap(grid, stop_x, stop_y)) return false;
 
   if(!pattern_is_allowed_crowd(grid, stop_x, stop_y)) return false;
@@ -33,9 +46,11 @@ static bool length_is_allowed(grid_t* grid, int start_x, int start_y, int length
 }
 
 /*
- *
+ * EXPECTS:
+ * - words are either allocated or NULL
+ * - count is defined as an integer
  */
-int grid_words_search(char*** words, size_t* count, wbase_t* wbase, const char* pattern, grid_t* grid, int max_length, int start_x, int start_y, bool vertical)
+void grid_words_search(char*** words, size_t* count, wbase_t* wbase, const char* pattern, grid_t* grid, int start_x, int start_y, int max_length, bool vertical)
 {
   char** primary_words = NULL;
   size_t primary_count = 0;
@@ -58,6 +73,12 @@ int grid_words_search(char*** words, size_t* count, wbase_t* wbase, const char* 
 
   free(temp_pattern);
 
+  if(primary_count == 0 && backup_count == 0)
+  {
+    // No words was found
+    return;
+  }
+
   // 2. Shuffle the two word lists seperately
   words_shuffle(primary_words, primary_count);
 
@@ -68,6 +89,7 @@ int grid_words_search(char*** words, size_t* count, wbase_t* wbase, const char* 
 
   *words = malloc(sizeof(char*) * *count);
 
+  /*
   memcpy(*words, primary_words, sizeof(char*) * primary_count);
 
   memcpy(*words + primary_count, backup_words, sizeof(char*) * backup_count);
@@ -75,6 +97,19 @@ int grid_words_search(char*** words, size_t* count, wbase_t* wbase, const char* 
   free(primary_words);
 
   free(backup_words);
+  */
 
-  return 0;
+  for(int index = 0; index < primary_count; index++)
+  {
+    (*words)[index] = strdup(primary_words[index]);
+  }
+
+  for(int index = 0; index < backup_count; index++)
+  {
+    (*words)[primary_count + index] = strdup(backup_words[index]);
+  }
+
+  words_free(&primary_words, primary_count);
+
+  words_free(&backup_words, backup_count);
 }
