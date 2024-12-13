@@ -15,6 +15,8 @@
 #include "k-grid.h"
 #include "k-wbase.h"
 
+bool args_print = false;
+
 bool running = false;
 
 pthread_mutex_t lock;
@@ -25,6 +27,8 @@ grid_t* curr_grid = NULL;
  */
 static void* print_routine(void* arg)
 {
+  if(!args_print) return NULL;
+
   printf("Start printing grid\n");
 
   while(running)

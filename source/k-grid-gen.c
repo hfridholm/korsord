@@ -18,6 +18,8 @@ extern pthread_mutex_t lock;
 
 #define GEN_DONE     0
 #define GEN_NO_WORDS 1
+#define GEN_FAIL     2
+#define GEN_STOP     3
 
 
 #include <unistd.h>
@@ -26,23 +28,64 @@ extern pthread_mutex_t lock;
 int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross_x, int cross_y);
 
 /*
+ *
+ */
+static void start_and_stop_x_get(int* start_x, int* stop_x, grid_t* grid, int cross_x, int cross_y)
+{
+  for(*start_x = (cross_x + 1); (*start_x)-- > 0;)
+  {
+    square_t* square = grid_xy_square_get(grid, *start_x, cross_y);
+
+    if(!square || square->type == SQUARE_BLOCK) break;
+  }
+
+  (*start_x)++;
+
+  for(*stop_x = cross_x; *stop_x < grid->width; (*stop_x)++)
+  {
+    square_t* square = grid_xy_square_get(grid, *stop_x, cross_y);
+
+    if(!square || square->type == SQUARE_BLOCK) break;
+  }
+
+  (*stop_x)--;
+}
+
+/*
+ *
+ */
+int grid_horizontal_pattern_get(char* pattern, grid_t* grid, int max_length, int start_x, int y)
+{
+  for(int index = max_length; index-- > 0;)
+  {
+    int x = (start_x + index);
+
+    square_t* square = grid_xy_square_get(grid, x, y);
+
+    if(!square) return 1;
+
+    pattern[index] = (square->type == SQUARE_LETTER) ? square->letter : '_';
+  }
+
+  pattern[max_length] = '\0';
+
+  return 0;
+}
+
+/*
  * Recursive function
  */
 int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross_x, int cross_y)
 {
-  if(!running) return 1;
+  if(!running) return GEN_STOP;
 
 
-  grid_print(grid);
-
-  usleep(1000000);
+  // grid_print(grid); usleep(1000000);
 
 
-  int square_index = (cross_y * grid->width) + cross_x;
+  square_t* square = grid_xy_square_get(grid, cross_x, cross_y);
 
-  square_t square = grid->squares[square_index];
-
-  if(square.type == SQUARE_BLOCK) return 1;
+  if(!square || square->type == SQUARE_BLOCK) return GEN_FAIL;
 
 
   pthread_mutex_lock(&lock);
@@ -59,31 +102,10 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
   }
 
 
-  int start_x;
+  int start_x, stop_x;
 
-  for(start_x = (cross_x + 1); start_x-- > 0;)
-  {
-    square_index = (cross_y * grid->width) + start_x;
+  start_and_stop_x_get(&start_x, &stop_x, grid, cross_x, cross_y);
 
-    square = grid->squares[square_index];
-
-    if(square.type == SQUARE_BLOCK) break;
-  }
-
-  start_x++;
-
-  int stop_x;
-
-  for(stop_x = cross_x; stop_x < grid->width; stop_x++)
-  {
-    square_index = (cross_y * grid->width) + stop_x;
-
-    square = grid->squares[square_index];
-
-    if(square.type == SQUARE_BLOCK) break;
-  }
-
-  stop_x--;
 
   int max_length = (1 + stop_x - start_x);
 
@@ -91,9 +113,7 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
   // If the length is 1, it should be marked as crossed
   if(max_length == 1)
   {
-    square_index = (cross_y * grid->width) + cross_x;
-
-    grid->squares[square_index].is_crossed = true;
+    grid_xy_square_set_crossed(grid, cross_x, cross_y);
 
     grid->cross_count++;
 
@@ -103,22 +123,10 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
 
   char pattern[max_length + 1];
 
-  for(int index = max_length; index-- > 0;)
+  if(grid_horizontal_pattern_get(pattern, grid, max_length, start_x, cross_y) != 0)
   {
-    int x = (start_x + index);
-
-    square_index = (cross_y * grid->width) + x;
-
-    square = grid->squares[square_index];
-
-    if(square.type == SQUARE_LETTER)
-    {
-      pattern[index] = square.letter;
-    }
-    else pattern[index] = '_';
+    return GEN_FAIL;
   }
-
-  pattern[max_length] = '\0';
 
 
   grid_t* new_grid = grid_dup(grid);
@@ -167,12 +175,29 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
       if(xy_square_is_crossed(new_grid, next_x, cross_y)) continue;
 
       // Recursivly call the vertical gen function
-      if(grid_vertical_word_gen(wbase, best, new_grid, next_x, cross_y) == GEN_NO_WORDS)
+      int status = grid_vertical_word_gen(wbase, best, new_grid, next_x, cross_y);
+
+      if(status == GEN_NO_WORDS || status == GEN_FAIL)
       {
         // Here: The word couldn't solve the crossword
         word_is_done = false;
 
         break;
+      }
+
+      if(status == GEN_STOP)
+      {
+        words_free(&words, word_count);
+
+
+        pthread_mutex_lock(&lock);
+
+        curr_grid = NULL;
+        grid_free(&new_grid);
+
+        pthread_mutex_unlock(&lock);
+
+        return GEN_STOP;
       }
     }
 
@@ -203,23 +228,64 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
 }
 
 /*
+ *
+ */
+static void start_and_stop_y_get(int* start_y, int* stop_y, grid_t* grid, int cross_x, int cross_y)
+{
+  for(*start_y = (cross_y + 1); (*start_y)-- > 0;)
+  {
+    square_t* square = grid_xy_square_get(grid, cross_x, *start_y);
+
+    if(!square || square->type == SQUARE_BLOCK) break;
+  }
+
+  (*start_y)++;
+
+  for(*stop_y = cross_y; *stop_y < grid->height; (*stop_y)++)
+  {
+    square_t* square = grid_xy_square_get(grid, cross_x, *stop_y);
+
+    if(!square || square->type == SQUARE_BLOCK) break;
+  }
+
+  (*stop_y)--;
+}
+
+/*
+ *
+ */
+int grid_vertical_pattern_get(char* pattern, grid_t* grid, int max_length, int x, int start_y)
+{
+  for(int index = max_length; index-- > 0;)
+  {
+    int y = (start_y + index);
+
+    square_t* square = grid_xy_square_get(grid, x, y);
+
+    if(!square) return 1;
+
+    pattern[index] = (square->type == SQUARE_LETTER) ? square->letter : '_';
+  }
+
+  pattern[max_length] = '\0';
+
+  return 0;
+}
+
+/*
  * Recursive function
  */
 int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross_x, int cross_y)
 {
-  if(!running) return 1;
+  if(!running) return GEN_STOP;
 
 
-  grid_print(grid);
-
-  usleep(1000000);
+  // grid_print(grid); usleep(1000000);
 
 
-  int square_index = (cross_y * grid->width) + cross_x;
+  square_t* square = grid_xy_square_get(grid, cross_x, cross_y);
 
-  square_t square = grid->squares[square_index];
-
-  if(square.type == SQUARE_BLOCK) return 1;
+  if(!square || square->type == SQUARE_BLOCK) return GEN_FAIL;
 
 
   pthread_mutex_lock(&lock);
@@ -236,31 +302,10 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
   }
 
 
-  int start_y;
+  int start_y, stop_y;
 
-  for(start_y = (cross_y + 1); start_y-- > 0;)
-  {
-    square_index = (start_y * grid->width) + cross_x;
+  start_and_stop_y_get(&start_y, &stop_y, grid, cross_x, cross_y);
 
-    square = grid->squares[square_index];
-
-    if(square.type == SQUARE_BLOCK) break;
-  }
-
-  start_y++;
-
-  int stop_y;
-
-  for(stop_y = cross_y; stop_y < grid->height; stop_y++)
-  {
-    square_index = (stop_y * grid->width) + cross_x;
-
-    square = grid->squares[square_index];
-
-    if(square.type == SQUARE_BLOCK) break;
-  }
-
-  stop_y--;
 
   int max_length = (1 + stop_y - start_y);
 
@@ -268,9 +313,7 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
   // If the length is 1, it should be marked as crossed
   if(max_length == 1)
   {
-    square_index = (cross_y * grid->width) + cross_x;
-
-    grid->squares[square_index].is_crossed = true;
+    grid_xy_square_set_crossed(grid, cross_x, cross_y);
 
     grid->cross_count++;
 
@@ -280,22 +323,10 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
 
   char pattern[max_length + 1];
 
-  for(int index = max_length; index-- > 0;)
+  if(grid_vertical_pattern_get(pattern, grid, max_length, cross_x, start_y) != 0)
   {
-    int y = (start_y + index);
-
-    square_index = (y * grid->width) + cross_x;
-
-    square = grid->squares[square_index];
-
-    if(square.type == SQUARE_LETTER)
-    {
-      pattern[index] = square.letter;
-    }
-    else pattern[index] = '_';
+    return GEN_FAIL;
   }
-
-  pattern[max_length] = '\0';
 
 
   grid_t* new_grid = grid_dup(grid);
@@ -344,12 +375,29 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
       if(xy_square_is_crossed(new_grid, cross_x, next_y)) continue;
 
       // Recursivly call the vertical gen function
-      if(grid_horizontal_word_gen(wbase, best, new_grid, cross_x, next_y) == GEN_NO_WORDS)
+      int status = grid_horizontal_word_gen(wbase, best, new_grid, cross_x, next_y);
+
+      if(status == GEN_NO_WORDS || status == GEN_FAIL)
       {
         // Here: The word couldn't solve the crossword
         word_is_done = false;
 
         break;
+      }
+
+      if(status == GEN_STOP)
+      {
+        words_free(&words, word_count);
+
+
+        pthread_mutex_lock(&lock);
+
+        curr_grid = NULL;
+        grid_free(&new_grid);
+
+        pthread_mutex_unlock(&lock);
+
+        return GEN_STOP;
       }
     }
 
@@ -386,19 +434,21 @@ grid_t* grid_gen(wbase_t* wbase, int width, int height)
 {
   grid_t* grid = grid_create(width, height);
 
-  // Set neccessary block squares
-  // Change this to a real prepare function
-  grid->squares[0].type = SQUARE_BLOCK;
-
-  grid->squares[width - 1].type = SQUARE_BLOCK;
-
-  grid->squares[(height - 1) * width].type = SQUARE_BLOCK;
-
-
-
   grid_t* best = grid_dup(grid);
 
-  grid_vertical_word_gen(wbase, best, grid, 1, 1);
+
+  for(int x = 0; x < grid->width; x++)
+  {
+    for(int y = 0; y < grid->height; y++)
+    {
+      square_t* square = grid_xy_square_get(grid, x, y);
+
+      if(square->type == SQUARE_EMPTY)
+      {
+        grid_vertical_word_gen(wbase, best, grid, x, y);
+      }
+    }
+  }
 
   grid_free(&grid);
 

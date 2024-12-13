@@ -77,6 +77,16 @@ square_t* grid_xy_square_get(grid_t* grid, int x, int y)
 /*
  *
  */
+void grid_xy_square_set_crossed(grid_t* grid, int x, int y)
+{
+  square_t* square = grid_xy_square_get(grid, x, y);
+
+  if(square) square->is_crossed = true;
+}
+
+/*
+ *
+ */
 bool xy_real_square_is_block(grid_t* grid, int x, int y)
 {
   square_t* square = grid_xy_real_square_get(grid, x, y);

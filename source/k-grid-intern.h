@@ -49,6 +49,9 @@ extern bool pattern_is_allowed_crowd(grid_t* grid, int stop_x, int stop_y);
 extern bool pattern_is_allowed_trap(grid_t* grid, int stop_x, int stop_y);
 
 
+extern void grid_xy_square_set_crossed(grid_t* grid, int x, int y);
+
+
 extern square_t* grid_xy_real_square_get(grid_t* grid, int x, int y);
 
 extern int       grid_xy_real_index_get(grid_t* grid, int x, int y);
