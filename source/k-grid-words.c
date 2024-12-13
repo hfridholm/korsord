@@ -12,35 +12,24 @@
  */
 static bool length_is_allowed(grid_t* grid, int start_x, int start_y, int length, bool vertical)
 {
-  int stop_x, stop_y;
+  int block_x, block_y;
 
   if(vertical)
   {
-    stop_x = start_x;
-    stop_y = (start_y + length - 1);
+    block_x = start_x;
+    block_y = (start_y + length);
   }
   else
   {
-    stop_x = (start_x + length - 1);
-    stop_y = start_y;
+    block_x = (start_x + length);
+    block_y = start_y;
   }
 
-  if(vertical)
-  {
-    int block_y = (start_y + length);
+  if(xy_square_is_letter(grid, block_x, block_y)) return false;
 
-    if(xy_square_is_letter(grid, start_x, block_y)) return false;
-  }
-  else
-  {
-    int block_x = (start_x + length);
+  if(!pattern_is_allowed_trap(grid, block_x, block_y)) return false;
 
-    if(xy_square_is_letter(grid, block_x, start_y)) return false;
-  }
-
-  if(!pattern_is_allowed_trap(grid, stop_x, stop_y)) return false;
-
-  if(!pattern_is_allowed_crowd(grid, stop_x, stop_y)) return false;
+  if(!pattern_is_allowed_crowd(grid, block_x, block_y)) return false;
 
   return true;
 }

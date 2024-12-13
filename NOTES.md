@@ -39,3 +39,13 @@ memory should be allocated in large chunks
 The size of the allocated memory should be larger than count
 It can be allcoated in powers of 2 (2, 4, 8, 16).
 When to realloc: when count is at one of these powers of 2.
+
+
+New insight:
+
+Instead of getting start_x stop_x
+and checking which length is valid:
+
+Get a list of valid start_x and stop_x
+
+There are not just a block at end of word, but before word as well.
