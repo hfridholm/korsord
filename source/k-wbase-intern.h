@@ -27,11 +27,6 @@ typedef struct node_t
 } node_t;
 
 
-extern int  letter_index_get(char letter);
-
-extern char index_letter_get(int index);
-
-
 extern trie_t* trie_create(const char* filepath);
 
 extern void    trie_free(trie_t** trie);

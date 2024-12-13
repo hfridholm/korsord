@@ -47,7 +47,8 @@ static void start_and_stop_x_get(int* start_x, int* stop_x, grid_t* grid, int cr
   {
     square_t* square = grid_xy_square_get(grid, *start_x, cross_y);
 
-    if(!square || square->type == SQUARE_BLOCK) break;
+    if(!square || square->type == SQUARE_BLOCK ||
+                  square->type == SQUARE_BORDER) break;
   }
 
   (*start_x)++;
@@ -56,7 +57,8 @@ static void start_and_stop_x_get(int* start_x, int* stop_x, grid_t* grid, int cr
   {
     square_t* square = grid_xy_square_get(grid, *stop_x, cross_y);
 
-    if(!square || square->type == SQUARE_BLOCK) break;
+    if(!square || square->type == SQUARE_BLOCK ||
+                  square->type == SQUARE_BORDER) break;
   }
 
   (*stop_x)--;
@@ -266,7 +268,8 @@ static void start_and_stop_y_get(int* start_y, int* stop_y, grid_t* grid, int cr
   {
     square_t* square = grid_xy_square_get(grid, cross_x, *start_y);
 
-    if(!square || square->type == SQUARE_BLOCK) break;
+    if(!square || square->type == SQUARE_BLOCK ||
+                  square->type == SQUARE_BORDER) break;
   }
 
   (*start_y)++;
@@ -275,7 +278,8 @@ static void start_and_stop_y_get(int* start_y, int* stop_y, grid_t* grid, int cr
   {
     square_t* square = grid_xy_square_get(grid, cross_x, *stop_y);
 
-    if(!square || square->type == SQUARE_BLOCK) break;
+    if(!square || square->type == SQUARE_BLOCK ||
+                  square->type == SQUARE_BORDER) break;
   }
 
   (*stop_y)--;
@@ -483,17 +487,22 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
 /*
  *
  */
-grid_t* grid_gen(wbase_t* wbase, int width, int height)
+grid_t* grid_gen(wbase_t* wbase, const char* filepath)
 {
-  grid_t* grid = grid_create(width, height);
+  grid_t* grid = grid_model_load(filepath);
+
+  if(!grid)
+  {
+    return NULL;
+  }
 
   grid_prep(grid);
 
   grid_t* best = grid_dup(grid);
 
-  for(int x = 1; x < grid->width; x++)
+  for(int y = 0; y < grid->height; y++)
   {
-    for(int y = 0; y < grid->height; y++)
+    for(int x = 0; x < grid->width; x++)
     {
       square_t* square = grid_xy_square_get(grid, x, y);
 

@@ -98,12 +98,14 @@ int main(int argc, char* argv[])
   }
 
   // 2. Generate crossword grid with word bases
-  grid_t* grid = grid_gen(wbase, 10, 10);
+  grid_t* grid = grid_gen(wbase, "model.txt");
 
-  printf("Generated grid\n");
+  if(grid)
+  {
+    printf("Generated grid\n");
 
-  grid_print(grid);
-
+    grid_print(grid);
+  }
 
   running = false;
 
