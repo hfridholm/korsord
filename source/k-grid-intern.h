@@ -15,6 +15,24 @@
 #define INSERT_DONE    1
 #define INSERT_PERFECT 2
 
+#define GWORDS_DONE     0
+#define GWORDS_NO_WORDS 1
+#define GWORDS_FAIL     2
+#define GWORDS_SINGLE   3
+ 
+/*
+ * gword_t - grid word
+ *
+ * This struct represents a word 
+ * that starts and stops somewhere
+ */
+typedef struct gword_t
+{
+  char* word;
+  int   start; // Either x or y
+  int   stop;  // Same   x or y
+} gword_t;
+
 typedef enum square_type_t
 {
   SQUARE_LETTER,
@@ -41,10 +59,14 @@ typedef struct grid_t
 } grid_t;
 
 
+extern int horizontal_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);
+
+extern int vertical_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);
+
+extern void gwords_free(gword_t** gwords, size_t count);
+
+
 extern int grid_prep(grid_t* grid);
-
-
-extern void grid_words_search(char*** words, size_t* count, wbase_t* wbase, const char* pattern, grid_t* grid, int start_x, int start_y, int max_length, bool vertical);
 
 
 extern bool pattern_is_allowed_crowd(grid_t* grid, int stop_x, int stop_y);
@@ -66,6 +88,11 @@ extern square_t* grid_xy_square_get(grid_t* grid, int x, int y);
 
 extern int       grid_xy_index_get(grid_t* grid, int x, int y);
 
+
+extern bool block_square_is_allowed(grid_t* grid, int block_x, int block_y);
+
+
+extern bool xy_square_is_blocking(grid_t* grid, int x, int y);
 
 extern bool xy_square_is_letter(grid_t* grid, int x, int y);
 

@@ -6,6 +6,11 @@
 #include "k-grid-intern.h"
 
 /*
+ * The x and y is not accounting for border
+ *
+ * real_x = fake_x + 1
+ * real_y = fake_y + 1
+ *
  * This function checks if the pattern is crowded with block squares
  *
  * PARAMS:
@@ -33,6 +38,11 @@ bool pattern_is_allowed_crowd(grid_t* grid, int block_x, int block_y)
 }
 
 /*
+ * The x and y is not accounting for border
+ *
+ * real_x = fake_x + 1
+ * real_y = fake_y + 1
+ *
  * This function checks if a letter square is being trapped
  *
  * # . .
@@ -45,18 +55,36 @@ bool pattern_is_allowed_crowd(grid_t* grid, int block_x, int block_y)
  */
 bool pattern_is_allowed_trap(grid_t* grid, int block_x, int block_y)
 {
-  if(xy_real_square_is_block(grid, block_x - 1, block_y - 1))
+  if(xy_real_square_is_block(grid, block_x, block_y))
   {
-    if(xy_real_square_is_block(grid, block_x + 1, block_y - 1))
+    if(xy_real_square_is_block(grid, block_x + 2, block_y))
     {
       return false;
     }
 
-    if(xy_real_square_is_block(grid, block_x - 1, block_y + 1))
+    if(xy_real_square_is_block(grid, block_x, block_y + 2))
     {
       return false;
     }
   }
+
+  return true;
+}
+
+/*
+ * The x and y is not accounting for border
+ *
+ * PARAMS
+ * - int block_x | Not real x
+ * - int block_y | Not real y
+ */
+bool block_square_is_allowed(grid_t* grid, int block_x, int block_y)
+{
+  if(xy_square_is_letter(grid, block_x, block_y)) return false;
+
+  if(!pattern_is_allowed_trap(grid, block_x, block_y)) return false;
+
+  if(!pattern_is_allowed_crowd(grid, block_x, block_y)) return false;
 
   return true;
 }

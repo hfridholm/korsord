@@ -166,6 +166,9 @@ static void grid_prep_blocks(grid_t* grid)
     int start_x = square_index % (grid->width + 2);
     int start_y = square_index / (grid->width + 2);
 
+    // Important: At least one open square next to top left block
+    // Implement this as soon as possible
+
     /*
      * X X X X
      * X # + .

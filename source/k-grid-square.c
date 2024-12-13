@@ -131,3 +131,14 @@ void grid_xy_real_square_set_block(grid_t* grid, int x, int y)
 
   if(square) square->type = SQUARE_BLOCK;
 }
+
+/*
+ * Both SQUARE_BORDER and SQUARE_BLOCK is blocking
+ */
+bool xy_square_is_blocking(grid_t* grid, int x, int y)
+{
+  square_t* square = grid_xy_square_get(grid, x, y);
+
+  return (!square || square->type == SQUARE_BLOCK
+                  || square->type == SQUARE_BORDER);
+}

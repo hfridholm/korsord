@@ -43,9 +43,9 @@ void words_free(char*** words, size_t count)
  */
 void words_shuffle(char** words, size_t count)
 {
-  for(int index = 0; index < count; index++)
+  for(size_t index = 0; index < count; index++)
   {
-    int rand_index = (rand() % count);
+    size_t rand_index = (rand() % count);
 
     char* temp_word = words[index];
 
