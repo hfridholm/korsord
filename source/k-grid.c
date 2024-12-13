@@ -121,8 +121,7 @@ grid_t* grid_create(int width, int height)
 
   grid->square_count = (width * height);
 
-  // int real_count = (width + 2) * (height + 2);
-  int real_count = grid->square_count;
+  int real_count = (width + 2) * (height + 2);
 
   grid->squares = malloc(sizeof(square_t) * real_count);
 
@@ -164,8 +163,7 @@ grid_t* grid_copy(grid_t* copy, grid_t* grid)
     return NULL;
   }
 
-  // int real_count = (grid->width + 2) * (grid->height + 2);
-  int real_count = grid->square_count;
+  int real_count = (grid->width + 2) * (grid->height + 2);
 
   for(int index = 0; index < real_count; index++)
   {
@@ -195,8 +193,7 @@ grid_t* grid_dup(grid_t* grid)
 
   dup->square_count = grid->square_count;
 
-  // int real_count = (grid->width + 2) * (grid->height + 2);
-  int real_count = grid->square_count;
+  int real_count = (grid->width + 2) * (grid->height + 2);
 
   dup->squares = malloc(sizeof(square_t) * real_count);
 

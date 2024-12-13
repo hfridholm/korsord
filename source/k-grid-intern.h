@@ -12,6 +12,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#define INSERT_DONE    1
+#define INSERT_PERFECT 2
+
 typedef enum square_type_t
 {
   SQUARE_LETTER,

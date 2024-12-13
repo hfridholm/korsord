@@ -8,71 +8,56 @@
 #include "k-grid-intern.h"
 
 /*
- *
+ * When inserting, the function:
+ * - pastes the letters from the word
+ * - pastes a block square at the end
  */
 int grid_vertical_word_insert(grid_t* grid, const char* word, int start_x, int start_y)
 {
   bool is_perfect = true;
 
-  int index, y, square_index;
+  int index, y;
 
   for(index = 0; word[index] != '\0'; index++)
   {
     y = start_y + index;
 
-    square_index = (y * grid->width) + start_x;
+    // 1. Get the old square
+    square_t* old_square = grid_xy_square_get(grid, start_x, y);
 
-    if(square_index >= grid->square_count) break;
+    if(!old_square) break;
 
-
-    square_t old_square = grid->squares[square_index];
-
-    square_t square =
+    // 2. Create the new square
+    square_t new_square =
     {
       .type = SQUARE_LETTER,
       .letter = word[index]
     };
 
-    if(old_square.type == SQUARE_LETTER)
+    if(old_square->type == SQUARE_LETTER)
     {
       grid->cross_count++;
-      square.is_crossed = true;
+
+      new_square.is_crossed = true;
     }
     else is_perfect = false;
 
-    grid->squares[square_index] = square;
+    // 3. Assign the new square
+    *old_square = new_square;
   }
 
-
-  if(is_perfect) return 1;
+  if(is_perfect) return INSERT_PERFECT;
 
   
   // Insert block square at end of word
   y = start_y + index;
 
-  square_index = (y * grid->width) + start_x;
+  square_t* square = grid_xy_square_get(grid, start_x, y);
 
-  if(y < grid->height && square_index < grid->square_count)
-  {
-    grid->squares[square_index].type = SQUARE_BLOCK;
-  }
+  if(square) square->type = SQUARE_BLOCK;
 
-  // Insert neibouring block squares at start of word
-  if(start_y == 0)
-  {
-    if((start_x + 1) < grid->width)
-    {
-      square_index = (start_y * grid->width) + (start_x + 1);
 
-      grid->squares[square_index].type = SQUARE_BLOCK;
-    }
-
-    square_index = (start_y * grid->width) + (start_x - 1);
-
-    grid->squares[square_index].type = SQUARE_BLOCK;
-  }
-
-  return 0;
+  return INSERT_DONE;
 }
 
 /*
@@ -82,65 +67,48 @@ int grid_horizontal_word_insert(grid_t* grid, const char* word, int start_x, int
 {
   bool is_perfect = true;
 
-  int index, x, square_index;
+  int index, x;
 
   for(index = 0; word[index] != '\0'; index++)
   {
     x = start_x + index;
 
-    square_index = (start_y * grid->width) + x;
+    // 1. Get the old square
+    square_t* old_square = grid_xy_square_get(grid, x, start_y);
+    
+    if(!old_square) break;
 
-    if(square_index >= grid->square_count) break;
-
-
-    square_t old_square = grid->squares[square_index];
-
-    square_t square =
+    // 2. Create the new square
+    square_t new_square =
     {
       .type = SQUARE_LETTER,
       .letter = word[index]
     };
 
-    if(old_square.type == SQUARE_LETTER)
+    if(old_square->type == SQUARE_LETTER)
     {
       grid->cross_count++;
-      square.is_crossed = true;
+    
+      new_square.is_crossed = true;
     }
     else is_perfect = false;
 
-    grid->squares[square_index] = square;
+    // 3. Assign the new square
+    *old_square = new_square;
   }
 
-
-  if(is_perfect) return 1;
+  if(is_perfect) return INSERT_PERFECT;
 
   
   // Insert block square at end of word
   x = start_x + index;
 
-  square_index = (start_y * grid->width) + x;
+  square_t* square = grid_xy_square_get(grid, x, start_y);
 
-  if(x < grid->width && square_index < grid->square_count)
-  {
-    grid->squares[square_index].type = SQUARE_BLOCK;
-  }
+  if(square) square->type = SQUARE_BLOCK;
 
-  // Insert neibouring block squares at start of word
-  if(start_x == 0)
-  {
-    if((start_y + 1) < grid->height)
-    {
-      square_index = ((start_y + 1) * grid->width) + start_x;
 
-      grid->squares[square_index].type = SQUARE_BLOCK;
-    }
-
-    square_index = ((start_y - 1) * grid->width) + start_x;
-
-    grid->squares[square_index].type = SQUARE_BLOCK;
-  }
-
-  return 0;
+  return INSERT_DONE;
 }
 
 /*
@@ -149,34 +117,34 @@ int grid_horizontal_word_insert(grid_t* grid, const char* word, int start_x, int
 void grid_horizontal_word_reset(grid_t* original, grid_t* grid, const char* word, int start_x, int start_y)
 {
   // Reset word letters
-  int index, x, square_index;
+  int index, x;
+  square_t *original_square, *square;
 
   for(index = 0; word[index] != '\0'; index++)
   {
     x = start_x + index;
 
-    square_index = (start_y * grid->width) + x;
+    original_square = grid_xy_square_get(original, x, start_y);
 
-    if(square_index >= grid->square_count) break;
+    square = grid_xy_square_get(grid, x, start_y);
+
+    if(!original_square || !square) break;
 
 
-    if(grid->squares[square_index].is_crossed)
-    {
-      grid->cross_count--;
-    }
+    if(square->is_crossed) grid->cross_count--;
 
-    grid->squares[square_index] = original->squares[square_index];
+    *square = *original_square;
   }
 
   // Reset the block at the end of the word
   x = start_x + index;
 
-  square_index = (start_y * grid->width) + x;
+  square = grid_xy_square_get(grid, x, start_y);
 
-  if(x < grid->width && square_index < grid->square_count)
-  {
-    grid->squares[square_index] = original->squares[square_index];
-  }
+  original_square = grid_xy_square_get(original, x, start_y);
+
+
+  if(square && original_square) *square = *original_square;
 }
 
 /*
@@ -185,32 +153,32 @@ void grid_horizontal_word_reset(grid_t* original, grid_t* grid, const char* word
 void grid_vertical_word_reset(grid_t* original, grid_t* grid, const char* word, int start_x, int start_y)
 {
   // Reset word letters
-  int index, y, square_index;
+  int index, y;
+  square_t *original_square, *square;
 
   for(index = 0; word[index] != '\0'; index++)
   {
     y = start_y + index;
 
-    square_index = (y * grid->width) + start_x;
+    original_square = grid_xy_square_get(original, start_x, y);
 
-    if(square_index >= grid->square_count) break;
+    square = grid_xy_square_get(grid, start_x, y);
+
+    if(!original_square || !square) break;
 
 
-    if(grid->squares[square_index].is_crossed)
-    {
-      grid->cross_count--;
-    }
+    if(square->is_crossed) grid->cross_count--;
 
-    grid->squares[square_index] = original->squares[square_index];
+    *square = *original_square;
   }
 
   // Reset the block at the end of the word
   y = start_y + index;
 
-  square_index = (y * grid->width) + start_x;
+  square = grid_xy_square_get(grid, start_x, y);
 
-  if(y < grid->height && square_index < grid->square_count)
-  {
-    grid->squares[square_index] = original->squares[square_index];
-  }
+  original_square = grid_xy_square_get(original, start_x, y);
+
+
+  if(square && original_square) *square = *original_square;
 }

@@ -147,7 +147,7 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
     char* word = words[word_index];
 
     // 1. Insert the word in the grid
-    if(grid_horizontal_word_insert(new_grid, word, start_x, cross_y) == 1)
+    if(grid_horizontal_word_insert(new_grid, word, start_x, cross_y) == INSERT_PERFECT)
     {
       // If the word fits perfect, the crossword is solved?
       break;
@@ -223,7 +223,9 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
 
 
   pthread_mutex_lock(&lock);
+
   curr_grid = grid;
+
   pthread_mutex_unlock(&lock);
 
 
@@ -322,7 +324,7 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
     char* word = words[word_index];
 
     // 1. Insert the word in the grid
-    if(grid_vertical_word_insert(new_grid, word, cross_x, start_y) == 1)
+    if(grid_vertical_word_insert(new_grid, word, cross_x, start_y) == INSERT_PERFECT)
     {
       // If the word fits perfect, the crossword is solved?
       break;

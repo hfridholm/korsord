@@ -25,7 +25,6 @@ grid_t* curr_grid = NULL;
  */
 static void* print_routine(void* arg)
 {
-  /*
   printf("Start printing grid\n");
 
   while(running)
@@ -40,7 +39,6 @@ static void* print_routine(void* arg)
   }
 
   printf("Stop printing grid\n");
-  */
 
   return NULL;
 }
@@ -96,7 +94,7 @@ int main(int argc, char* argv[])
   }
 
   // 2. Generate crossword grid with word bases
-  grid_t* grid = grid_gen(wbase, 10, 5);
+  grid_t* grid = grid_gen(wbase, 5, 5);
 
   printf("Generated grid\n");
 

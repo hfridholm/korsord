@@ -4,6 +4,8 @@
 - add indexes for å ä ö
 - add random "ligtning", by changing the word when it goes "segt"
   (let the algorithm try another word and see if it breakes through)
+- something is wrong: when I run the program multiple times, I get different best grids
+  if the algorithm really checks every combination, I would get the same best every time.
 
 ```
 # j # . # v # . . # 
