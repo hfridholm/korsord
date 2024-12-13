@@ -72,6 +72,50 @@ bool pattern_is_allowed_trap(grid_t* grid, int block_x, int block_y)
 }
 
 /*
+ *
+ */
+bool pattern_is_allowed_edge(grid_t* grid, int block_x, int block_y)
+{
+  /*
+   * . . .
+   * # + #
+   * . X .
+   */
+  if(grid_xy_real_square_is_border(grid, block_x + 1, block_y + 2))
+  {
+    if(xy_real_square_is_block(grid, block_x, block_y + 1))
+    {
+      return false;
+    }
+
+    if(xy_real_square_is_block(grid, block_x + 2, block_y + 1))
+    {
+      return false;
+    }
+  }
+
+  /*
+   * . # .
+   * . + X
+   * . # .
+   */
+  if(grid_xy_real_square_is_border(grid, block_x + 2, block_y + 1))
+  {
+    if(xy_real_square_is_block(grid, block_x + 1, block_y))
+    {
+      return false;
+    }
+
+    if(xy_real_square_is_block(grid, block_x + 1, block_y + 2))
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/*
  * The x and y is not accounting for border
  *
  * PARAMS
@@ -85,6 +129,8 @@ bool block_square_is_allowed(grid_t* grid, int block_x, int block_y)
   if(!pattern_is_allowed_trap(grid, block_x, block_y)) return false;
 
   if(!pattern_is_allowed_crowd(grid, block_x, block_y)) return false;
+
+  if(!pattern_is_allowed_edge(grid, block_x, block_y)) return false;
 
   return true;
 }

@@ -57,3 +57,6 @@ There are not just a block at end of word, but before word as well.
   #_HELLO_ -> ##HELLO#
 
 - implement argp argument parsing and add argument --print
+- add block_count to grid_t
+  (when block_count is large based on square_count,
+   that is an indicator that something must change)

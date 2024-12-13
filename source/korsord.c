@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 
 
   // 1. Load the word bases
-  wbase_t* wbase = wbase_create("words.txt", NULL);
+  wbase_t* wbase = wbase_create("words.txt", "../assets/backup.words");
 
   if(!wbase)
   {
