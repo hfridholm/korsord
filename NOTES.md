@@ -49,3 +49,11 @@ and checking which length is valid:
 Get a list of valid start_x and stop_x
 
 There are not just a block at end of word, but before word as well.
+
+
+- Prevent words from stacking SQUARE_BLOCk after each other
+  The following horizontal word would stack block squares:
+
+  #_HELLO_ -> ##HELLO#
+
+- implement argp argument parsing and add argument --print

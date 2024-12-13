@@ -46,14 +46,27 @@ int grid_vertical_word_insert(grid_t* grid, const char* word, int start_x, int s
     *old_square = new_square;
   }
   
+
   // Insert block square at end of word
-  y = start_y + index;
-
-  square_t* square = grid_xy_square_get(grid, start_x, y);
-
-  if(square && square->type != SQUARE_BORDER)
+  if(start_y + index < grid->height)
   {
-    square->type = SQUARE_BLOCK;
+    square_t* square = grid_xy_square_get(grid, start_x, start_y + index);
+
+    if(square && square->type != SQUARE_BORDER) 
+    {
+      square->type = SQUARE_BLOCK;
+    }
+  }
+
+  // Insert block square at beginning of word
+  if(start_y > 0)
+  {
+    square_t* square = grid_xy_square_get(grid, start_x, start_y - 1);
+
+    if(square && square->type != SQUARE_BORDER) 
+    {
+      square->type = SQUARE_BLOCK;
+    }
   }
 
 
@@ -98,13 +111,25 @@ int grid_horizontal_word_insert(grid_t* grid, const char* word, int start_x, int
   }
 
   // Insert block square at end of word
-  x = start_x + index;
-
-  square_t* square = grid_xy_square_get(grid, x, start_y);
-
-  if(square && square->type != SQUARE_BORDER) 
+  if(start_x + index < grid->width)
   {
-    square->type = SQUARE_BLOCK;
+    square_t* square = grid_xy_square_get(grid, start_x + index, start_y);
+
+    if(square && square->type != SQUARE_BORDER) 
+    {
+      square->type = SQUARE_BLOCK;
+    }
+  }
+
+  // Insert block square at beginning of word
+  if(start_x > 0)
+  {
+    square_t* square = grid_xy_square_get(grid, start_x - 1, start_y);
+
+    if(square && square->type != SQUARE_BORDER) 
+    {
+      square->type = SQUARE_BLOCK;
+    }
   }
 
   return is_perfect ? INSERT_PERFECT : INSERT_DONE;
@@ -136,14 +161,20 @@ void grid_horizontal_word_reset(grid_t* original, grid_t* grid, const char* word
   }
 
   // Reset the block at the end of the word
-  x = start_x + index;
+  if(start_x + index < grid->width)
+  {
+    int square_index = grid_xy_index_get(grid, start_x + index, start_y);
 
-  square = grid_xy_square_get(grid, x, start_y);
+    grid->squares[square_index] = original->squares[square_index];
+  }
 
-  original_square = grid_xy_square_get(original, x, start_y);
+  // Reset the block at the beginning of word
+  if(start_x > 0)
+  {
+    int square_index = grid_xy_index_get(grid, start_x - 1, start_y);
 
-
-  if(square && original_square) *square = *original_square;
+    grid->squares[square_index] = original->squares[square_index];
+  }
 }
 
 /*
@@ -172,12 +203,18 @@ void grid_vertical_word_reset(grid_t* original, grid_t* grid, const char* word, 
   }
 
   // Reset the block at the end of the word
-  y = start_y + index;
+  if(start_y + index < grid->height)
+  {
+    int square_index = grid_xy_index_get(grid, start_x, start_y + index);
 
-  square = grid_xy_square_get(grid, start_x, y);
+    grid->squares[square_index] = original->squares[square_index];
+  }
 
-  original_square = grid_xy_square_get(original, start_x, y);
+  // Reset the block at the beginning of word
+  if(start_y > 0)
+  {
+    int square_index = grid_xy_index_get(grid, start_x, start_y - 1);
 
-
-  if(square && original_square) *square = *original_square;
+    grid->squares[square_index] = original->squares[square_index];
+  }
 }

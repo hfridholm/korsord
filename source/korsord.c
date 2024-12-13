@@ -15,7 +15,7 @@
 #include "k-grid.h"
 #include "k-wbase.h"
 
-bool args_print = false;
+bool args_print = true;
 
 bool running = false;
 

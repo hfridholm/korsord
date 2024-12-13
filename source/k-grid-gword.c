@@ -92,6 +92,10 @@ static int gwords_search(gword_t** gwords, size_t* count, trie_t* trie, const ch
 
   *count += word_count;
 
+  // Only free the pointer to the array of words,
+  // because the string pointers are being reused by gword_t
+  free(words);
+
   return 0;
 }
 
@@ -117,11 +121,16 @@ static int horizontal_full_pattern_get(char* pattern, grid_t* grid, int y)
 /*
  *
  */
-static void horizontal_start_xs_get(int* start_xs, int* count, grid_t* grid, int cross_x, int cross_y)
+static bool horizontal_start_xs_get(int* start_xs, int* count, grid_t* grid, int cross_x, int cross_y)
 {
+  bool is_blocked = true;
+
   for(int start_x = (cross_x + 1); start_x-- > 0;)
   {
     if(xy_square_is_blocking(grid, start_x, cross_y)) break;
+
+    if(start_x < cross_x) is_blocked = false;
+
 
     if(start_x > 0)
     {
@@ -130,16 +139,23 @@ static void horizontal_start_xs_get(int* start_xs, int* count, grid_t* grid, int
 
     start_xs[(*count)++] = start_x;
   }
+
+  return is_blocked;
 }
 
 /*
  *
  */
-static void horizontal_stop_xs_get(int* stop_xs, int* count, grid_t* grid, int cross_x, int cross_y)
+static bool horizontal_stop_xs_get(int* stop_xs, int* count, grid_t* grid, int cross_x, int cross_y)
 {
+  bool is_blocked = true;
+
   for(int stop_x = cross_x; stop_x < grid->width; stop_x++)
   {
     if(xy_square_is_blocking(grid, stop_x, cross_y)) break;
+
+    if(stop_x > cross_x) is_blocked = false;
+
 
     if(stop_x < (grid->width - 1))
     {
@@ -148,6 +164,8 @@ static void horizontal_stop_xs_get(int* stop_xs, int* count, grid_t* grid, int c
 
     stop_xs[(*count)++] = stop_x;
   }
+
+  return is_blocked;
 }
 
 /*
@@ -166,20 +184,22 @@ int horizontal_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_
   int start_xs[cross_x + 1];
   int start_count = 0;
 
-  horizontal_start_xs_get(start_xs, &start_count, grid, cross_x, cross_y);
+  bool start_is_blocked = horizontal_start_xs_get(start_xs, &start_count, grid, cross_x, cross_y);
 
   int stop_xs[grid->width - cross_x];
   int stop_count = 0;
 
-  horizontal_stop_xs_get(stop_xs, &stop_count, grid, cross_x, cross_y);
+  bool stop_is_blocked = horizontal_stop_xs_get(stop_xs, &stop_count, grid, cross_x, cross_y);
 
 
+  /*
   printf("horizontal:\n");
   printf("cross x:%d cross y:%d\n", cross_x, cross_y);
   printf("start_count: %d\n", start_count);
   printf("stop_count: %d\n", stop_count);
+  */
 
-  if(start_count == 1 && stop_count == 1)
+  if(start_is_blocked && stop_is_blocked)
   {
     // Here: Both start and stop is cross_x (1 letter)
     return GWORDS_SINGLE;
@@ -209,7 +229,7 @@ int horizontal_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_
       // Create current pattern
       sprintf(pattern, "%.*s", length, full_pattern + start_x);
 
-      printf("pattern: (%s)\n", pattern);
+      // printf("pattern: (%s)\n", pattern);
 
       gwords_search(&primary_gwords, &primary_count, wbase->primary, pattern, start_x, stop_x);
 
@@ -217,8 +237,10 @@ int horizontal_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_
     }
   }
 
+  /*
   printf("primary_count: %ld\n", primary_count);
   printf("backup_count: %ld\n", backup_count);
+  */
 
   if(primary_count == 0 && backup_count == 0)
   {
@@ -241,6 +263,8 @@ int horizontal_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_
 
   memcpy(*gwords + primary_count, backup_gwords, sizeof(gword_t) * backup_count);
 
+  // Only free the pointer to the arrays,
+  // because the conntent pointers is being reused by gwords
   free(primary_gwords);
 
   free(backup_gwords);
@@ -270,11 +294,16 @@ static int vertical_full_pattern_get(char* pattern, grid_t* grid, int x)
 /*
  *
  */
-static void vertical_start_ys_get(int* start_ys, int* count, grid_t* grid, int cross_x, int cross_y)
+static bool vertical_start_ys_get(int* start_ys, int* count, grid_t* grid, int cross_x, int cross_y)
 {
+  bool is_blocked = true;
+
   for(int start_y = (cross_y + 1); start_y-- > 0;)
   {
     if(xy_square_is_blocking(grid, cross_x, start_y)) break;
+
+    if(start_y < cross_y) is_blocked = false;
+
 
     if(start_y > 0)
     {
@@ -283,16 +312,24 @@ static void vertical_start_ys_get(int* start_ys, int* count, grid_t* grid, int c
 
     start_ys[(*count)++] = start_y;
   }
+
+  return is_blocked;
 }
 
 /*
- *
+ * RETURN (bool is_blocked)
+ * - true | It is blocked downwards
  */
-static void vertical_stop_ys_get(int* stop_ys, int* count, grid_t* grid, int cross_x, int cross_y)
+static bool vertical_stop_ys_get(int* stop_ys, int* count, grid_t* grid, int cross_x, int cross_y)
 {
+  bool is_blocked = true;
+
   for(int stop_y = cross_y; stop_y < grid->height; stop_y++)
   {
     if(xy_square_is_blocking(grid, cross_x, stop_y)) break;
+
+    if(stop_y > cross_y) is_blocked = false;
+
 
     if(stop_y < (grid->height - 1))
     {
@@ -301,6 +338,8 @@ static void vertical_stop_ys_get(int* stop_ys, int* count, grid_t* grid, int cro
 
     stop_ys[(*count)++] = stop_y;
   }
+
+  return is_blocked;
 }
 
 /*
@@ -319,20 +358,30 @@ int vertical_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t*
   int start_ys[cross_y + 1];
   int start_count = 0;
 
-  vertical_start_ys_get(start_ys, &start_count, grid, cross_x, cross_y);
+  bool start_is_blocked = vertical_start_ys_get(start_ys, &start_count, grid, cross_x, cross_y);
 
   int stop_ys[grid->width - cross_y];
   int stop_count = 0;
 
-  vertical_stop_ys_get(stop_ys, &stop_count, grid, cross_x, cross_y);
+  /*
+   * Problem:
+   * letters is detected as single, when they just dont can build words
+   * not because they are limited in space to 1 letter
+   *
+   * Solution:
+   * Distinguish between those cases
+   */
 
+  bool stop_is_blocked = vertical_stop_ys_get(stop_ys, &stop_count, grid, cross_x, cross_y);
 
+  /*
   printf("vertical:\n");
   printf("cross x:%d cross y:%d\n", cross_x, cross_y);
   printf("start_count: %d\n", start_count);
   printf("stop_count: %d\n", stop_count);
+  */
 
-  if(start_count == 1 && stop_count == 1)
+  if(start_is_blocked && stop_is_blocked)
   {
     // Here: Both start and stop is cross_y (1 letter)
     return GWORDS_SINGLE;
@@ -362,6 +411,7 @@ int vertical_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t*
       // Create current pattern
       sprintf(pattern, "%.*s", length, full_pattern + start_y);
 
+      // printf("pattern: (%s)\n", pattern);
 
       gwords_search(&primary_gwords, &primary_count, wbase->primary, pattern, start_y, stop_y);
 
@@ -369,8 +419,10 @@ int vertical_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t*
     }
   }
 
+  /*
   printf("primary_count: %ld\n", primary_count);
   printf("backup_count: %ld\n", backup_count);
+  */
 
   if(primary_count == 0 && backup_count == 0)
   {

@@ -46,7 +46,7 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
   if(!running) return GEN_STOP;
 
 
-  grid_print(grid); usleep(1000000);
+  // grid_print(grid); usleep(1000000);
 
 
   square_t* square = grid_xy_square_get(grid, cross_x, cross_y);
@@ -73,7 +73,7 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
 
   int status = horizontal_gwords_get(&gwords, &word_count, wbase, grid, cross_x, cross_y);
 
-  printf("word_count: %ld\n", word_count);
+  // printf("word_count: %ld\n", word_count);
 
   // If the length is 1, it should be marked as crossed
   if(status == GWORDS_SINGLE)
@@ -201,7 +201,7 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
   if(!running) return GEN_STOP;
 
 
-  grid_print(grid); usleep(1000000);
+  // grid_print(grid); usleep(1000000);
 
 
   square_t* square = grid_xy_square_get(grid, cross_x, cross_y);
@@ -228,7 +228,7 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
 
   int status = vertical_gwords_get(&gwords, &word_count, wbase, grid, cross_x, cross_y);
 
-  printf("word_count: %ld\n", word_count);
+  // printf("word_count: %ld\n", word_count);
 
   // If the length is 1, it should be marked as crossed
   if(status == GWORDS_SINGLE)
