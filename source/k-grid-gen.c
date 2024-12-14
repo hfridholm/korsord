@@ -17,10 +17,9 @@ extern pthread_mutex_t lock;
 
 extern struct args args;
 
-#define GEN_DONE     0
-#define GEN_NO_WORDS 1
-#define GEN_FAIL     2
-#define GEN_STOP     3
+#define GEN_DONE 0
+#define GEN_FAIL 1
+#define GEN_STOP 2
 
 /*
  * If either grid_vertical_word_gen or
@@ -55,12 +54,12 @@ static bool horizontal_word_fits(wbase_t* wbase, grid_t* grid, const char* word,
   return true;
 }
 
-int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross_x, int cross_y);
+static int grid_vertical_word_gen(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, int cross_x, int cross_y);
 
 /*
  * Recursive function
  */
-int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross_x, int cross_y)
+static int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross_x, int cross_y)
 {
   if(!running) return GEN_STOP;
 
@@ -108,7 +107,7 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
   if(word_count == 0)
   {
     // Here: no words fit pattern
-    return GEN_NO_WORDS;
+    return GEN_FAIL;
   }
 
 
@@ -154,7 +153,7 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
       // Recursivly call the vertical gen function
       int status = grid_vertical_word_gen(wbase, best, new_grid, next_x, cross_y);
 
-      if(status == GEN_NO_WORDS || status == GEN_FAIL)
+      if(status == GEN_FAIL)
       {
         // Here: The word couldn't solve the crossword
         word_is_done = false;
@@ -239,9 +238,111 @@ static bool vertical_word_fits(wbase_t* wbase, grid_t* grid, const char* word, i
 }
 
 /*
- * Recursive function
+ * When embeding a werd, new words perpendicular to it is generated
  */
-int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross_x, int cross_y)
+static int vertical_word_embed(wbase_t* wbase, grid_t* best_grid, grid_t* new_grid, const char* word, int cross_x, int start_y)
+{
+  for(int index = 0; word[index] != '\0'; index++)
+  {
+    int next_y = start_y + index;
+
+    // A square that is already crossed is done
+    if(xy_square_is_crossed(new_grid, cross_x, next_y)) continue;
+
+    // Recursivly call the vertical gen function
+    int status = grid_horizontal_word_gen(wbase, best_grid, new_grid, cross_x, next_y);
+
+    if(status == GEN_FAIL)
+    {
+      return GEN_FAIL;
+    }
+
+    if(status == GEN_STOP)
+    {
+      return GEN_STOP;
+    }
+  }
+
+  return GEN_DONE;
+}
+
+/*
+ *
+ */
+static int vertical_word_test(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, grid_t* new_grid, const char* word, int x, int y)
+{
+  // 1. Insert the word in the grid
+  if(grid_vertical_word_insert(wbase, new_grid, word, x, y) == INSERT_PERFECT)
+  {
+    // If the word fits perfect, the crossword is solved?
+    return GEN_DONE;
+  }
+
+
+  // 2. If the word doesn't have a chance of fitting
+  if(!vertical_word_fits(wbase, new_grid, word, x, y))
+  {
+    // 3. Remove the tested word from the grid
+    grid_vertical_word_reset(wbase, old_grid, new_grid, word, x, y);
+
+    return GEN_FAIL;
+  }
+
+
+  // 3. 
+  int embed_status = vertical_word_embed(wbase, best_grid, new_grid, word, x, y);
+
+  if(embed_status == GEN_STOP)
+  {
+    return GEN_STOP;
+  }
+
+  if(embed_status == GEN_DONE)
+  {
+    return GEN_DONE;
+  }
+
+
+  // 4. Remove the tested word from the grid
+  grid_vertical_word_reset(wbase, old_grid, new_grid, word, x, y);
+
+  return GEN_FAIL;
+}
+
+/*
+ *
+ */
+static int vertical_words_test(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, grid_t* new_grid, gword_t* gwords, size_t word_count, int x)
+{
+  for(size_t index = 0; index < word_count; index++)
+  {
+    gword_t gword = gwords[index];
+
+    char* word  = gword.word;
+    int start_y = gword.start;
+
+    int test_status = vertical_word_test(wbase, best_grid, old_grid, new_grid, word, x, start_y);
+
+    if(test_status == GEN_DONE)
+    {
+      return GEN_DONE;
+    }
+
+    if(test_status == GEN_STOP)
+    {
+      return GEN_STOP;
+    }
+  }
+
+  return GEN_FAIL;
+}
+
+/*
+ * Recursive function
+ *
+ * Rename to: vertical_word_gen
+ */
+static int grid_vertical_word_gen(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, int cross_x, int cross_y)
 {
   if(!running) return GEN_STOP;
 
@@ -250,156 +351,73 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
   // usleep(1000000);
 
 
-  square_t* square = grid_xy_square_get(grid, cross_x, cross_y);
+  square_t* square = grid_xy_square_get(old_grid, cross_x, cross_y);
 
   if(!square || square->type == SQUARE_BLOCK) return GEN_FAIL;
 
 
-  pthread_mutex_lock(&lock);
-
-  curr_grid = grid;
-
-  pthread_mutex_unlock(&lock);
-
-
-  if(grid->cross_count > best->cross_count)
+  if(old_grid->cross_count > best_grid->cross_count)
   {
     // printf("new best grid: %d\n", grid->cross_count);
-    grid_copy(best, grid);
+    grid_copy(best_grid, old_grid);
   }
 
-
+  // 1. Generate all possible words
   gword_t* gwords = NULL;
   size_t word_count = 0;
 
-  int status = vertical_gwords_get(&gwords, &word_count, wbase, grid, cross_x, cross_y);
-
-  // printf("word_count: %ld\n", word_count);
+  int gwords_status = vertical_gwords_get(&gwords, &word_count, wbase, old_grid, cross_x, cross_y);
 
   // If the length is 1, it should be marked as crossed
-  if(status == GWORDS_SINGLE)
+  if(gwords_status == GWORDS_SINGLE)
   {
-    grid_xy_square_set_crossed(grid, cross_x, cross_y);
+    grid_xy_square_set_crossed(old_grid, cross_x, cross_y);
 
-    grid->cross_count++;
+    old_grid->cross_count++;
 
     return GEN_DONE;
   }
 
-  if(word_count == 0)
+  if(gwords_status == GWORDS_FAIL || word_count == 0)
   {
     // Here: no words fit pattern
-    return GEN_NO_WORDS;
-  }
-
-
-  grid_t* new_grid = grid_dup(grid);
-
-  // Maybe: Change this to a default false statement
-  // so, it has to be sat to true to be triggered
-  // (rename has_failed to something like: has_not_failed)
-  bool has_failed = true;
-
-  for(size_t word_index = 0; word_index < word_count; word_index++)
-  {
-    gword_t gword = gwords[word_index];
-
-    char* word  = gword.word;
-    int start_y = gword.start;
-
-    // 1. Insert the word in the grid
-    if(grid_vertical_word_insert(wbase, new_grid, word, cross_x, start_y) == INSERT_PERFECT)
-    {
-      // If the word fits perfect, the crossword is solved?
-      has_failed = false;
-      break;
-    }
-
-
-    // If the word doesn't have a chance of fitting
-    if(!vertical_word_fits(wbase, new_grid, word, cross_x, start_y))
-    {
-      // 3. Remove the tested word from the grid
-      grid_vertical_word_reset(wbase, grid, new_grid, word, cross_x, start_y);
-
-      continue;
-    }
-
-
-    bool word_is_done = true;
-
-    for(int index = 0; word[index] != '\0'; index++)
-    {
-      int next_y = start_y + index;
-
-      // A square that is already crossed is done
-      if(xy_square_is_crossed(new_grid, cross_x, next_y)) continue;
-
-      // Recursivly call the vertical gen function
-      int status = grid_horizontal_word_gen(wbase, best, new_grid, cross_x, next_y);
-
-      if(status == GEN_NO_WORDS || status == GEN_FAIL)
-      {
-        // Here: The word couldn't solve the crossword
-        word_is_done = false;
-
-        break;
-      }
-
-      if(status == GEN_STOP)
-      {
-        gwords_free(&gwords, word_count);
-
-
-        pthread_mutex_lock(&lock);
-
-        curr_grid = NULL;
-        grid_free(&new_grid);
-
-        pthread_mutex_unlock(&lock);
-
-        return GEN_STOP;
-      }
-    }
-
-    if(word_is_done)
-    {
-      // Here: Every letter of word has been crossed
-      has_failed = false;
-      break;
-    }
-
-    // 3. Remove the tested word from the grid
-    grid_vertical_word_reset(wbase, grid, new_grid, word, cross_x, start_y);
-  }
-
-  gwords_free(&gwords, word_count);
-
-  if(has_failed)
-  {
-    pthread_mutex_lock(&lock);
-
-    curr_grid = NULL;
-
-    grid_free(&new_grid);
-
-    pthread_mutex_unlock(&lock);
-
     return GEN_FAIL;
   }
 
 
+  // 2. Test all words in the new grid
+  grid_t* new_grid = grid_dup(old_grid);
+
+
+  // Make current grid point to the new grid
   pthread_mutex_lock(&lock);
 
-  grid_copy(grid, new_grid);
-
-  curr_grid = grid;
-
-  grid_free(&new_grid);
+  curr_grid = new_grid;
 
   pthread_mutex_unlock(&lock);
 
-  return GEN_DONE;
+
+  int test_status = vertical_words_test(wbase, best_grid, old_grid, new_grid, gwords, word_count, cross_x);
+
+  gwords_free(&gwords, word_count);
+
+
+  // Make current grid point to the old grid again
+  pthread_mutex_lock(&lock);
+
+  curr_grid = old_grid;
+
+  pthread_mutex_unlock(&lock);
+
+
+  if(test_status == GEN_DONE)
+  {
+    grid_copy(old_grid, new_grid);
+  }
+
+  grid_free(&new_grid);
+
+  return test_status;
 }
 
 /*
@@ -416,7 +434,7 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
 
   grid_prep(grid);
 
-  grid_t* best = grid_dup(grid);
+  grid_t* best_grid = grid_dup(grid);
 
   for(int y = 0; y < grid->height; y++)
   {
@@ -424,10 +442,10 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
     {
       square_t* square = grid_xy_square_get(grid, x, y);
 
-      if(square->type == SQUARE_EMPTY)
-      //(square->type == SQUARE_LETTER && !square->is_crossed))
+      if(square->type == SQUARE_EMPTY ||
+        (square->type == SQUARE_LETTER && !square->is_crossed))
       {
-        grid_vertical_word_gen(wbase, best, grid, x, y);
+        grid_vertical_word_gen(wbase, best_grid, grid, x, y);
       }
     }
   }
@@ -436,10 +454,10 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
   grid_print(grid);
 
   printf("best:\n");
-  grid_print(best);
+  grid_print(best_grid);
 
 
-  grid_free(&best);
+  grid_free(&best_grid);
 
   return grid;
 }
