@@ -360,9 +360,6 @@ int vertical_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t*
 
   bool start_is_blocked = vertical_start_ys_get(start_ys, &start_count, grid, cross_x, cross_y);
 
-  int stop_ys[grid->width - cross_y];
-  int stop_count = 0;
-
   /*
    * Problem:
    * letters is detected as single, when they just dont can build words
@@ -371,6 +368,9 @@ int vertical_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t*
    * Solution:
    * Distinguish between those cases
    */
+
+  int stop_ys[grid->height - cross_y];
+  int stop_count = 0;
 
   bool stop_is_blocked = vertical_stop_ys_get(stop_ys, &stop_count, grid, cross_x, cross_y);
 

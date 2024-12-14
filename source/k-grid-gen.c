@@ -48,7 +48,8 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
   if(!running) return GEN_STOP;
 
 
-  // grid_print(grid); usleep(1000000);
+  grid_print(grid);
+  // usleep(1000000);
 
 
   square_t* square = grid_xy_square_get(grid, cross_x, cross_y);
@@ -203,7 +204,8 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
   if(!running) return GEN_STOP;
 
 
-  // grid_print(grid); usleep(1000000);
+  grid_print(grid);
+  // usleep(1000000);
 
 
   square_t* square = grid_xy_square_get(grid, cross_x, cross_y);
@@ -367,8 +369,6 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
   }
 
   grid_prep(grid);
-
-  return grid;
 
   grid_t* best = grid_dup(grid);
 

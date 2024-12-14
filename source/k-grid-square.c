@@ -95,6 +95,16 @@ bool xy_real_square_is_block(grid_t* grid, int x, int y)
 /*
  *
  */
+bool grid_xy_square_is_block(grid_t* grid, int x, int y)
+{
+  square_t* square = grid_xy_square_get(grid, x, y);
+
+  return (square && square->type == SQUARE_BLOCK);
+}
+
+/*
+ *
+ */
 bool xy_square_is_letter(grid_t* grid, int x, int y)
 {
   square_t* square = grid_xy_square_get(grid, x, y);
@@ -118,6 +128,16 @@ bool xy_square_is_crossed(grid_t* grid, int x, int y)
 bool grid_xy_real_square_is_border(grid_t* grid, int x, int y)
 {
   square_t* square = grid_xy_real_square_get(grid, x, y);
+
+  return (square && square->type == SQUARE_BORDER);
+}
+
+/*
+ *
+ */
+bool grid_xy_square_is_border(grid_t* grid, int x, int y)
+{
+  square_t* square = grid_xy_square_get(grid, x, y);
 
   return (square && square->type == SQUARE_BORDER);
 }

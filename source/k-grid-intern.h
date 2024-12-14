@@ -96,11 +96,15 @@ extern bool xy_square_is_blocking(grid_t* grid, int x, int y);
 
 extern bool xy_square_is_letter(grid_t* grid, int x, int y);
 
+extern bool grid_xy_square_is_block(grid_t* grid, int x, int y);
+
 extern bool xy_real_square_is_block(grid_t* grid, int x, int y);
 
 extern bool xy_square_is_crossed(grid_t* grid, int x, int y);
 
 extern bool grid_xy_real_square_is_border(grid_t* grid, int x, int y);
+
+extern bool grid_xy_square_is_border(grid_t* grid, int x, int y);
 
 
 extern int  grid_vertical_word_insert(grid_t* grid, const char* word, int start_x, int start_y);

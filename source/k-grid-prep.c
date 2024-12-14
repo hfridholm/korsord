@@ -187,10 +187,6 @@ static void grid_prep_blocks(grid_t* grid)
     grid_xy_real_square_set_block(grid, x, y);
   }
 
-  free(indexes);
-
-  return;
-
   // 3. Randomly assign SQUARE_BLOCK to squares at edges
   for(int index = 0; index < count; index++)
   {

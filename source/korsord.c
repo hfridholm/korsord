@@ -194,7 +194,7 @@ int main(int argc, char* argv[])
 
   signal(SIGINT, stop_handler);
 
-  srand(time(NULL));
+  // srand(time(NULL));
 
   // Only enter ncurses mode if not in debug mode
   if(!args.debug && curses_init() != 0)

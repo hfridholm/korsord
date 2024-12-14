@@ -137,3 +137,7 @@ going through the word's all letters
 This is doing more computational work, but prevents obvious bad words from 
 being traversed from the first "good" letter
 (when the second letter is obviously "bad")
+
+
+- problem: When generating: words start generating from other side of grid
+- If SQUARE_BLOCK should be placed on SQUARE_BORDER, it is legal

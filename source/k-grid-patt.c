@@ -14,6 +14,10 @@
  * 0 1 2
  * 1 . .
  * 2 . .
+ *
+ * When converting fake x and y to real x and y,
+ * 0 - 1 = -1, which is not a valid real x or y,
+ * therefor, no subraction is allowed
  */
 
 /*
@@ -34,9 +38,9 @@ bool pattern_is_allowed_crowd(grid_t* grid, int block_x, int block_y)
       if(xy_real_square_is_block(grid, x, y))
       {
         block_amount++;
-      }
 
-      if(block_amount > 1) return false;
+        if(block_amount > 2) return false;
+      }
     }
   }
 
@@ -143,21 +147,25 @@ bool pattern_is_allowed_edge(grid_t* grid, int block_x, int block_y)
   }
 
   /*
+   * This is legal if it has been done in the prep stage
    * . X .
    * . + .
    * . . .
    */
-  if(grid_xy_real_square_is_border(grid, block_x + 1, block_y))
+  if(!grid_xy_square_is_block(grid, block_x, block_y) && 
+      grid_xy_real_square_is_border(grid, block_x + 1, block_y))
   {
     return false;
   }
 
   /*
+   * This is legal if it has been done in the prep stage
    * . . .
    * X + .
    * . . .
    */
-  if(grid_xy_real_square_is_border(grid, block_x, block_y + 1))
+  if(!grid_xy_square_is_block(grid, block_x, block_y) && 
+      grid_xy_real_square_is_border(grid, block_x, block_y + 1))
   {
     return false;
   }
@@ -195,6 +203,11 @@ static bool pattern_is_allowed_corner(grid_t* grid, int block_x, int block_y)
  */
 bool block_square_is_allowed(grid_t* grid, int block_x, int block_y)
 {
+  // A SQUARE_BORDER is a natural block
+  // It is very important to let SQUARE_BORDER be a valid block
+  if(grid_xy_square_is_border(grid, block_x, block_y)) return true;
+
+
   if(xy_square_is_letter(grid, block_x, block_y)) return false;
 
   if(!pattern_is_allowed_trap(grid, block_x, block_y)) return false;
