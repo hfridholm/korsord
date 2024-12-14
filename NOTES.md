@@ -60,3 +60,17 @@ There are not just a block at end of word, but before word as well.
 - add block_count to grid_t
   (when block_count is large based on square_count,
    that is an indicator that something must change)
+
+new best grid: 868
+new best grid: 872
+new best grid: 874
+new best grid: 878
+new best grid: 880
+new best grid: 883
+new best grid: 887
+
+Something real weird is happening...
+
+- Fix problem with "new best grid" skyrocketing
+- Add "output" or "result" argument
+  (store the result grid to a file)
