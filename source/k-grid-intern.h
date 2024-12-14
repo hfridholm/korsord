@@ -74,11 +74,6 @@ extern void gwords_free(gword_t** gwords, size_t count);
 extern int grid_prep(grid_t* grid);
 
 
-extern bool pattern_is_allowed_crowd(grid_t* grid, int stop_x, int stop_y);
-
-extern bool pattern_is_allowed_trap(grid_t* grid, int stop_x, int stop_y);
-
-
 extern void grid_xy_square_set_crossed(grid_t* grid, int x, int y);
 
 extern void grid_xy_real_square_set_block(grid_t* grid, int x, int y);

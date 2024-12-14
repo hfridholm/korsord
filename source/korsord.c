@@ -29,11 +29,12 @@ static char args_doc[] = "[MODEL]";
 
 static struct argp_option options[] =
 {
-  { "primary", 'p', "FILE", 0, "Primary words file" },
-  { "backup",  'b', "FILE", 0, "Backup words file" },
-  { "visual",  'v', 0,      0, "Visualize generation" },
-  { "debug",   'd', 0,      0, "Print debug messages" },
-  { "single",  's', 0,      0, "Only try generate once" },
+  { "primary", 'p', "FILE",   0, "Primary words file" },
+  { "backup",  'b', "FILE",   0, "Backup words file" },
+  { "visual",  'v', 0,        0, "Visualize generation" },
+  { "debug",   'd', 0,        0, "Print debug messages" },
+  { "single",  's', 0,        0, "Only try generate once" },
+  { "fps",     'f', "NUMBER", 0, "Frames per second" },
   { 0 }
 };
 
@@ -45,6 +46,7 @@ struct args
   bool  visual;
   bool  debug;
   bool  single;
+  int   fps;
 };
 
 struct args args =
@@ -54,7 +56,8 @@ struct args args =
   .backup  = "../assets/backup.words",
   .visual  = false,
   .debug   = false,
-  .single  = false
+  .single  = false,
+  .fps     = 1
 };
 
 /*
@@ -66,6 +69,19 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
 
   switch(key)
   {
+    case 'f':
+      if(!arg) argp_usage(state);
+
+      int number = atoi(arg);
+
+      if(number >= 1 && number <= 100)
+      {
+        args->fps = number;
+      }
+      else argp_usage(state);
+
+      break;
+
     case 'v':
       args->visual = true;
       break;
@@ -112,6 +128,8 @@ static void* print_routine(void* arg)
 
   printf("Start printing grid\n");
 
+  int delay = 1000000 / args.fps;
+
   while(running)
   {
     pthread_mutex_lock(&lock);
@@ -120,7 +138,7 @@ static void* print_routine(void* arg)
 
     pthread_mutex_unlock(&lock);
 
-    usleep(100000);
+    usleep(delay);
 
     refresh();
   }

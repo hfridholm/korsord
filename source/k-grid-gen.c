@@ -12,6 +12,7 @@
 extern bool running;
 
 #include <pthread.h>
+#include <unistd.h>
 
 extern grid_t* curr_grid;
 extern pthread_mutex_t lock;
@@ -34,8 +35,6 @@ extern struct args args;
  *
  * The new_grid should be saved to upsteam grid.
  */
-
-#include <unistd.h>
 
 int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross_x, int cross_y);
 
@@ -65,7 +64,7 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
 
   if(grid->cross_count > best->cross_count)
   {
-    printf("new best grid: %d\n", grid->cross_count);
+    // printf("new best grid: %d\n", grid->cross_count);
     grid_copy(best, grid);
   }
 
@@ -252,7 +251,7 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
 
   if(grid->cross_count > best->cross_count)
   {
-    printf("new best grid: %d\n", grid->cross_count);
+    // printf("new best grid: %d\n", grid->cross_count);
     grid_copy(best, grid);
   }
 
