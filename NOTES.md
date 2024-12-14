@@ -11,14 +11,6 @@ I don't know if this is true anymore:
 - something is wrong: when I run the program multiple times, I get different best grids
   if the algorithm really checks every combination, I would get the same best every time.
 
-```
-# j # . # v # . . # 
-g u l # g a n s k a 
-# n e g . p . . . .
-```
-
-- prevent empty squares from being boxed in like this
-
 
 Memory allocations
 
@@ -115,10 +107,5 @@ being traversed from the first "good" letter
 (when the second letter is obviously "bad")
 
 
-- problem: When generating: words start generating from other side of grid
-- If SQUARE_BLOCK should be placed on SQUARE_BORDER, it is legal
-
 - fix problem with skyrocketing block_count
 I have a fealing that the problem is that singles (1 letter words) don't get restored
-
-- maybe: add _use to _insert and _unuse to _reset

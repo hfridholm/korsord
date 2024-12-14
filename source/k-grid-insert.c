@@ -7,12 +7,14 @@
 #include "k-grid.h"
 #include "k-grid-intern.h"
 
+#include "k-wbase.h"
+
 /*
  * When inserting, the function:
  * - pastes the letters from the word
  * - pastes a block square at the end
  */
-int grid_vertical_word_insert(grid_t* grid, const char* word, int start_x, int start_y)
+int grid_vertical_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_x, int start_y)
 {
   bool is_perfect = true;
 
@@ -69,6 +71,8 @@ int grid_vertical_word_insert(grid_t* grid, const char* word, int start_x, int s
     }
   }
 
+  // Mark the word as used
+  wbase_word_use(wbase, word);
 
   return is_perfect ? INSERT_PERFECT : INSERT_DONE;
 }
@@ -76,7 +80,7 @@ int grid_vertical_word_insert(grid_t* grid, const char* word, int start_x, int s
 /*
  *
  */
-int grid_horizontal_word_insert(grid_t* grid, const char* word, int start_x, int start_y)
+int grid_horizontal_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_x, int start_y)
 {
   bool is_perfect = true;
 
@@ -132,13 +136,16 @@ int grid_horizontal_word_insert(grid_t* grid, const char* word, int start_x, int
     }
   }
 
+  // Mark the word as used
+  wbase_word_use(wbase, word);
+
   return is_perfect ? INSERT_PERFECT : INSERT_DONE;
 }
 
 /*
  *
  */
-void grid_horizontal_word_reset(grid_t* original, grid_t* grid, const char* word, int start_x, int start_y)
+void grid_horizontal_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char* word, int start_x, int start_y)
 {
   // Reset word letters
   int index, x;
@@ -175,12 +182,15 @@ void grid_horizontal_word_reset(grid_t* original, grid_t* grid, const char* word
 
     grid->squares[square_index] = original->squares[square_index];
   }
+
+  // Unmark the word as used, so it can be used somewhere else
+  wbase_word_unuse(wbase, word);
 }
 
 /*
  *
  */
-void grid_vertical_word_reset(grid_t* original, grid_t* grid, const char* word, int start_x, int start_y)
+void grid_vertical_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char* word, int start_x, int start_y)
 {
   // Reset word letters
   int index, y;
@@ -217,4 +227,7 @@ void grid_vertical_word_reset(grid_t* original, grid_t* grid, const char* word, 
 
     grid->squares[square_index] = original->squares[square_index];
   }
+
+  // Unmark the word as used, so it can be used somewhere else
+  wbase_word_unuse(wbase, word);
 }
