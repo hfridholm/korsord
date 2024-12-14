@@ -16,6 +16,8 @@ extern bool running;
 extern grid_t* curr_grid;
 extern pthread_mutex_t lock;
 
+extern struct args args;
+
 #define GEN_DONE     0
 #define GEN_NO_WORDS 1
 #define GEN_FAIL     2
@@ -366,6 +368,8 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
 
   grid_prep(grid);
 
+  return grid;
+
   grid_t* best = grid_dup(grid);
 
   for(int y = 0; y < grid->height; y++)
@@ -382,7 +386,37 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
     }
   }
 
+  printf("grid:\n");
+  grid_print(grid);
+
+  printf("best:\n");
+  grid_print(best);
+
+
   grid_free(&grid);
 
   return best;
+}
+
+/*
+ * Check if grid is done and complete
+ *
+ * RETURN (bool is_done)
+ * - false | Grid is not done or allocated
+ */
+bool grid_is_done(grid_t* grid)
+{
+  if(!grid) return false;
+
+  for(int index = 0; index < grid->square_count; index++)
+  {
+    int x = (index % grid->width);
+    int y = (index / grid->width);
+
+    square_t* square = grid_xy_square_get(grid, x, y);
+
+    if(square->type == SQUARE_EMPTY) return false;
+  }
+
+  return true;
 }

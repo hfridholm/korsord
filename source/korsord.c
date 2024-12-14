@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <argp.h>
+#include <ncurses.h>
 
 #include "k-grid.h"
 #include "k-wbase.h"
@@ -31,6 +32,8 @@ static struct argp_option options[] =
   { "primary", 'p', "FILE", 0, "Primary words file" },
   { "backup",  'b', "FILE", 0, "Backup words file" },
   { "visual",  'v', 0,      0, "Visualize generation" },
+  { "debug",   'd', 0,      0, "Print debug messages" },
+  { "single",  's', 0,      0, "Only try generate once" },
   { 0 }
 };
 
@@ -40,6 +43,8 @@ struct args
   char* primary;
   char* backup;
   bool  visual;
+  bool  debug;
+  bool  single;
 };
 
 struct args args =
@@ -47,7 +52,9 @@ struct args args =
   .model   = NULL,
   .primary = NULL,
   .backup  = "../assets/backup.words",
-  .visual  = false
+  .visual  = false,
+  .debug   = false,
+  .single  = false
 };
 
 /*
@@ -61,6 +68,14 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
   {
     case 'v':
       args->visual = true;
+      break;
+
+    case 'd':
+      args->debug = true;
+      break;
+
+    case 's':
+      args->single = true;
       break;
 
     case 'p':
@@ -106,6 +121,8 @@ static void* print_routine(void* arg)
     pthread_mutex_unlock(&lock);
 
     usleep(100000);
+
+    refresh();
   }
 
   printf("Stop printing grid\n");
@@ -126,6 +143,44 @@ static void stop_handler(int signum)
   running = false;
 }
 
+/*
+ * Init the ncurses library and screen
+ */
+static int curses_init(void)
+{
+  initscr();
+
+  noecho();
+  curs_set(0);
+
+  if(start_color() == ERR || !has_colors())
+  {
+    endwin();
+
+    perror("ncurses colors");
+
+    return 1;
+  }
+
+  use_default_colors();
+
+  clear();
+  refresh();
+
+  return 0;
+}
+
+/*
+ * Close the ncurses library and restore the terminal
+ */
+static void curses_free(void)
+{
+  clear();
+
+  refresh();
+
+  endwin();
+}
 
 static struct argp argp = { options, opt_parse, args_doc, doc };
 
@@ -141,6 +196,14 @@ int main(int argc, char* argv[])
 
   srand(time(NULL));
 
+  // Only enter ncurses mode if not in debug mode
+  if(!args.debug && curses_init() != 0)
+  {
+    perror("curses_init");
+
+    return 1;
+  }
+
 
   running = true;
 
@@ -153,6 +216,8 @@ int main(int argc, char* argv[])
   {
     perror("Failed to create thread");
 
+    curses_free();
+
     return 1;
   }
 
@@ -164,17 +229,37 @@ int main(int argc, char* argv[])
   {
     perror("Failed to create wbase");
 
+    curses_free();
+    
     return 2;
   }
 
   // 2. Generate crossword grid with word bases
-  grid_t* grid = grid_gen(wbase, args.model);
+  grid_t* grid = NULL;
+
+  while(running && !grid_is_done(grid))
+  {
+    printf("Generating grid...\n");
+
+    grid_free(&grid);
+
+    grid = grid_gen(wbase, args.model);
+
+    // If the user only wants 1 run, break
+    if(args.single) break;
+  }
 
   if(grid)
   {
     printf("Generated grid\n");
 
+    clear();
+
     grid_print(grid);
+
+    refresh();
+
+    getch();
   }
 
   running = false;
@@ -190,6 +275,9 @@ int main(int argc, char* argv[])
   grid_free(&grid);
 
   wbase_free(&wbase);
+
+
+  curses_free();
 
   return 0;
 }

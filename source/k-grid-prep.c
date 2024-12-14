@@ -65,6 +65,11 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
    * X A . .
    * . .\. .
    * . . \ .
+   *
+   * X . . . 
+   * . A . .
+   * . .\. .
+   * . . \ .
    */
   for(int x = (grid->width + 1); x-- > 1;)
   {
@@ -75,8 +80,12 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
         continue;
       }
 
-      if(grid_xy_real_square_is_border(grid, x, y - 1) &&
-         grid_xy_real_square_is_border(grid, x - 1, y))
+      if((grid_xy_real_square_is_border(grid, x, y - 1) &&
+          grid_xy_real_square_is_border(grid, x - 1, y)) ||
+
+         (grid_xy_real_square_is_border(grid, x - 1, y - 1) &&
+         !grid_xy_real_square_is_border(grid, x, y - 1) &&
+         !grid_xy_real_square_is_border(grid, x - 1, y)))
       {
         int index = (y * (grid->width + 2) + x);
 
@@ -90,6 +99,13 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
    * . ./. .
    * X V . .
    * . X . . 
+   *
+   * The pattern below is at the next to left edge
+   *
+   * . . / .
+   * - ./. .
+   * X V . .
+   * . . . . 
    */
   for(int x = (grid->width + 1); x-- > 1;)
   {
@@ -100,8 +116,11 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
         continue;
       }
 
-      if(grid_xy_real_square_is_border(grid, x - 1, y) &&
-         grid_xy_real_square_is_border(grid, x, y + 1))
+      if((grid_xy_real_square_is_border(grid, x - 1, y) &&
+          grid_xy_real_square_is_border(grid, x, y + 1)) ||
+
+         (grid_xy_real_square_is_border(grid, x - 1, y) &&
+         !grid_xy_real_square_is_border(grid, x - 1, y - 1)))
       {
         int index = (y * (grid->width + 2) + x);
 
@@ -115,6 +134,13 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
    * . . A X
    * . ./. .
    * . / . .
+   *
+   * The pattern below is at the under edge of right block
+   *
+   * . - X .
+   * . . A .
+   * . ./. .
+   * . / . .
    */
   for(int x = 1; x < (grid->width + 1); x++)
   {
@@ -125,8 +151,11 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
         continue;
       }
 
-      if(grid_xy_real_square_is_border(grid, x, y - 1) &&
-         grid_xy_real_square_is_border(grid, x + 1, y))
+      if((grid_xy_real_square_is_border(grid, x, y - 1) &&
+          grid_xy_real_square_is_border(grid, x + 1, y)) ||
+
+         (grid_xy_real_square_is_border(grid, x, y - 1) &&
+         !grid_xy_real_square_is_border(grid, x - 1, y - 1)))
       {
         int index = (y * (grid->width + 2) + x);
 
@@ -157,6 +186,10 @@ static void grid_prep_blocks(grid_t* grid)
 
     grid_xy_real_square_set_block(grid, x, y);
   }
+
+  free(indexes);
+
+  return;
 
   // 3. Randomly assign SQUARE_BLOCK to squares at edges
   for(int index = 0; index < count; index++)

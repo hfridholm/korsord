@@ -11,6 +11,12 @@
  * real_x = fake_x + 1
  * real_y = fake_y + 1
  *
+ * 0 1 2
+ * 1 . .
+ * 2 . .
+ */
+
+/*
  * This function checks if the pattern is crowded with block squares
  *
  * PARAMS:
@@ -45,17 +51,41 @@ bool pattern_is_allowed_crowd(grid_t* grid, int block_x, int block_y)
  *
  * This function checks if a letter square is being trapped
  *
- * # . .
- * . + .
- * # . .
- *
- * # . #
- * . + .
- * . . .
  */
 bool pattern_is_allowed_trap(grid_t* grid, int block_x, int block_y)
 {
+  /*
+   * # . .
+   * . + .
+   * # . .
+   *
+   * # . #
+   * . + .
+   * . . .
+   */
   if(xy_real_square_is_block(grid, block_x, block_y))
+  {
+    if(xy_real_square_is_block(grid, block_x + 2, block_y))
+    {
+      return false;
+    }
+
+    if(xy_real_square_is_block(grid, block_x, block_y + 2))
+    {
+      return false;
+    }
+  }
+
+  /*
+   * . . #
+   * . + .
+   * . . #
+   *
+   * . . .
+   * . + .
+   * # . #
+   */
+  if(xy_real_square_is_block(grid, block_x + 2, block_y + 2))
   {
     if(xy_real_square_is_block(grid, block_x + 2, block_y))
     {
@@ -112,6 +142,47 @@ bool pattern_is_allowed_edge(grid_t* grid, int block_x, int block_y)
     }
   }
 
+  /*
+   * . X .
+   * . + .
+   * . . .
+   */
+  if(grid_xy_real_square_is_border(grid, block_x + 1, block_y))
+  {
+    return false;
+  }
+
+  /*
+   * . . .
+   * X + .
+   * . . .
+   */
+  if(grid_xy_real_square_is_border(grid, block_x, block_y + 1))
+  {
+    return false;
+  }
+
+  return true;
+}
+
+/*
+ *
+ */
+static bool pattern_is_allowed_corner(grid_t* grid, int block_x, int block_y)
+{
+  /*
+   * . . .
+   * . + X
+   * . X .
+   */
+  if(grid_xy_real_square_is_border(grid, block_x + 2, block_y + 1))
+  {
+    if(grid_xy_real_square_is_border(grid, block_x + 1, block_y + 2))
+    {
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -131,6 +202,8 @@ bool block_square_is_allowed(grid_t* grid, int block_x, int block_y)
   if(!pattern_is_allowed_crowd(grid, block_x, block_y)) return false;
 
   if(!pattern_is_allowed_edge(grid, block_x, block_y)) return false;
+
+  if(!pattern_is_allowed_corner(grid, block_x, block_y)) return false;
 
   return true;
 }

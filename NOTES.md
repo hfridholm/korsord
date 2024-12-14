@@ -74,3 +74,66 @@ Something real weird is happening...
 - Fix problem with "new best grid" skyrocketing
 - Add "output" or "result" argument
   (store the result grid to a file)
+- remove outer border from model.txt
+  (don't show the border to the user)
+  (it is an internal thing that shold not be public)
+- create input thread routine, for:
+  - refreshing grid
+  - aborting search
+- write comments explaining things in more detail
+- maybe: write if statements:
+
+if something_is_true()
+{
+
+}
+
+or
+
+if (something_is_true())
+{
+
+}
+
+New concept idea:
+
+start n (ex 2) threads of vertical_grid_word_gen / horizontal in grid_gen
+
+Both threads will work on the same grid (shared somehow) and triverse
+different parts of the grid.
+
+The upside is that problems in the beginning of one thread can be detected by another thread.
+
+If square_t has fields for which thread and which number of word it belongs to,
+the thread that created the word can imidiatly go back and try another word.
+
+in square_t
+{
+  int thread_id;
+  int word_id;
+}
+
+If another thread detects a problem with a word, it can try to fix it,
+perserving the is_crossed squares by including just them in the pattern.
+
+igelkott:
+
+_gELko_T
+
+__EL___T
+
+Then the thread that created the word don't have to be alerted and backtrace.
+
+
+
+Another simpler idea:
+
+Instead of recusivly calling next word_gen function on one letter at a time,
+without checking the other letter of the current word:
+
+First, check that at least one word is possible for every letter, before
+going through the word's all letters
+
+This is doing more computational work, but prevents obvious bad words from 
+being traversed from the first "good" letter
+(when the second letter is obviously "bad")
