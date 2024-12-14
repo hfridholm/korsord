@@ -8,6 +8,7 @@
 #define K_WBASE_H
 
 #include <stddef.h>
+#include <stdbool.h>
 
 typedef struct node_t trie_t;
 
@@ -38,5 +39,8 @@ extern void words_free(char*** words, size_t count);
 extern void wbase_word_use(wbase_t* wbase, const char* word);
 
 extern void wbase_word_unuse(wbase_t* wbase, const char* word);
+
+
+extern bool word_exists_for_pattern(trie_t* trie, const char* pattern);
 
 #endif // K_WBASE_H

@@ -112,3 +112,52 @@ int words_search(char*** words, size_t* count, trie_t* trie, const char* pattern
   return 0;
 }
 
+/*
+ *
+ */
+static bool _word_exists_for_pattern(node_t* node, const char* pattern, int index, char* word)
+{
+  // Base case - the end of the word
+  if(pattern[index] == '\0')
+  {
+    return (node->is_end_of_word && !node->is_used);
+  }
+
+  // Search words with next letter
+  int letter_index = letter_index_get(pattern[index]);
+
+  for(int child_index = 0; child_index < ALPHABET_SIZE; child_index++)
+  {
+    node_t* child = node->children[child_index];
+
+    // Only go through the allocated letters
+    if(!child) continue;
+
+    // Possibly, only search letter in pattern
+    if(letter_index != -1 && letter_index != child_index) continue; 
+
+
+    char new_word[index + 1];
+
+    char letter = index_letter_get(child_index);
+
+    snprintf(new_word, index + 2, "%.*s%c", index, word, letter);
+
+    if(_word_exists_for_pattern(child, pattern, index + 1, new_word))
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/*
+ *
+ */
+bool word_exists_for_pattern(trie_t* trie, const char* pattern)
+{
+  if(!trie || !pattern) return false;
+
+  return _word_exists_for_pattern((node_t*) trie, pattern, 0, "");
+}

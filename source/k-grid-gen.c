@@ -37,7 +37,6 @@ extern struct args args;
 
 #include <unistd.h>
 
-
 int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross_x, int cross_y);
 
 /*
@@ -48,7 +47,7 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
   if(!running) return GEN_STOP;
 
 
-  grid_print(grid);
+  // grid_print(grid);
   // usleep(1000000);
 
 
@@ -116,6 +115,37 @@ int grid_horizontal_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cro
 
     // 1.1 Mark the word as used
     wbase_word_use(wbase, word);
+
+    
+    // Before traversing all letters, check if they
+    // över huvud taget is valid
+    bool word_fits = true;
+
+    for(int index = 0; word[index] != '\0'; index++)
+    {
+      int next_x = start_x + index;
+
+      // A square that is already crossed is done
+      if(xy_square_is_crossed(new_grid, next_x, cross_y)) continue;
+
+      if(!vertical_word_exists(wbase, grid, next_x, cross_y))
+      {
+        word_fits = false;
+        break;
+      }
+    }
+
+    // If the word doesn't have a chance of fitting
+    if(!word_fits)
+    {
+      // 3. Remove the tested word from the grid
+      grid_horizontal_word_reset(grid, new_grid, word, start_x, cross_y);
+
+      // 3.1 Unmark the word as used, so it can be used somewhere else
+      wbase_word_unuse(wbase, word);
+
+      continue;
+    }
 
 
     bool word_is_done = true;
@@ -204,7 +234,7 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
   if(!running) return GEN_STOP;
 
 
-  grid_print(grid);
+  // grid_print(grid);
   // usleep(1000000);
 
 
@@ -275,6 +305,37 @@ int grid_vertical_word_gen(wbase_t* wbase, grid_t* best, grid_t* grid, int cross
 
     // 1.1 Mark the word as used
     wbase_word_use(wbase, word);
+
+
+    // Before traversing all letters, check if they
+    // över huvud taget is valid
+    bool word_fits = true;
+
+    for(int index = 0; word[index] != '\0'; index++)
+    {
+      int next_y = start_y + index;
+
+      // A square that is already crossed is done
+      if(xy_square_is_crossed(new_grid, next_y, cross_y)) continue;
+
+      if(!horizontal_word_exists(wbase, grid, next_y, cross_y))
+      {
+        word_fits = false;
+        break;
+      }
+    }
+
+    // If the word doesn't have a chance of fitting
+    if(!word_fits)
+    {
+      // 3. Remove the tested word from the grid
+      grid_vertical_word_reset(grid, new_grid, word, cross_x, start_y);
+
+      // 3.1 Unmark the word as used, so it can be used somewhere else
+      wbase_word_unuse(wbase, word);
+
+      continue;
+    }
 
 
     bool word_is_done = true;
@@ -393,9 +454,9 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
   grid_print(best);
 
 
-  grid_free(&grid);
+  grid_free(&best);
 
-  return best;
+  return grid;
 }
 
 /*

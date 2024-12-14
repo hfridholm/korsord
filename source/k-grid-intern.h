@@ -59,6 +59,11 @@ typedef struct grid_t
 } grid_t;
 
 
+extern bool horizontal_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);
+
+extern bool vertical_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);
+
+
 extern int horizontal_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);
 
 extern int vertical_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);

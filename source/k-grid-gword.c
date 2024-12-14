@@ -453,3 +453,146 @@ int vertical_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t*
 
   return GWORDS_DONE;
 }
+
+/*
+ * This function has the same base structure as
+ * vertical_gwords_get
+ */
+bool vertical_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
+{
+  // 1. Create full pattern
+  char full_pattern[grid->width + 1];
+
+  if(vertical_full_pattern_get(full_pattern, grid, cross_x) != 0)
+  {
+    return false;
+  }
+
+  int start_ys[cross_y + 1];
+  int start_count = 0;
+
+  bool start_is_blocked = vertical_start_ys_get(start_ys, &start_count, grid, cross_x, cross_y);
+
+  /*
+   * Problem:
+   * letters is detected as single, when they just dont can build words
+   * not because they are limited in space to 1 letter
+   *
+   * Solution:
+   * Distinguish between those cases
+   */
+
+  int stop_ys[grid->height - cross_y];
+  int stop_count = 0;
+
+  bool stop_is_blocked = vertical_stop_ys_get(stop_ys, &stop_count, grid, cross_x, cross_y);
+
+  /*
+  printf("vertical:\n");
+  printf("cross x:%d cross y:%d\n", cross_x, cross_y);
+  printf("start_count: %d\n", start_count);
+  printf("stop_count: %d\n", stop_count);
+  */
+
+  if(start_is_blocked && stop_is_blocked)
+  {
+    // Here: Both start and stop is cross_y (1 letter)
+    return true;
+  }
+
+  char pattern[grid->width + 1];
+
+  for(int start_index = 0; start_index < start_count; start_index++)
+  {
+    for(int stop_index = 0; stop_index < stop_count; stop_index++)
+    {
+      int start_y = start_ys[start_index];
+      int stop_y  = stop_ys[stop_index];
+
+      // Don't bother the case where start and stop is cross_y
+      if(start_y == stop_y) continue;
+
+      int length = (1 + stop_y - start_y);
+
+      // Create current pattern
+      sprintf(pattern, "%.*s", length, full_pattern + start_y);
+
+      // printf("pattern: (%s)\n", pattern);
+
+      if(!word_exists_for_pattern(wbase->primary, pattern) &&
+         !word_exists_for_pattern(wbase->backup, pattern))
+      {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+/*
+ *
+ */
+bool horizontal_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
+{
+  // 1. Create full pattern
+  char full_pattern[grid->width + 1];
+
+  if(horizontal_full_pattern_get(full_pattern, grid, cross_y) != 0)
+  {
+    return false;
+  }
+
+  int start_xs[cross_x + 1];
+  int start_count = 0;
+
+  bool start_is_blocked = horizontal_start_xs_get(start_xs, &start_count, grid, cross_x, cross_y);
+
+  int stop_xs[grid->width - cross_x];
+  int stop_count = 0;
+
+  bool stop_is_blocked = horizontal_stop_xs_get(stop_xs, &stop_count, grid, cross_x, cross_y);
+
+
+  /*
+  printf("horizontal:\n");
+  printf("cross x:%d cross y:%d\n", cross_x, cross_y);
+  printf("start_count: %d\n", start_count);
+  printf("stop_count: %d\n", stop_count);
+  */
+
+  if(start_is_blocked && stop_is_blocked)
+  {
+    // Here: Both start and stop is cross_x (1 letter)
+    return true;
+  }
+
+  char pattern[grid->width + 1];
+
+  for(int start_index = 0; start_index < start_count; start_index++)
+  {
+    for(int stop_index = 0; stop_index < stop_count; stop_index++)
+    {
+      int start_x = start_xs[start_index];
+      int stop_x  = stop_xs[stop_index];
+
+      // Don't bother the case where start and stop is cross_x
+      if(start_x == stop_x) continue;
+
+      int length = (1 + stop_x - start_x);
+
+      // Create current pattern
+      sprintf(pattern, "%.*s", length, full_pattern + start_x);
+
+      // printf("pattern: (%s)\n", pattern);
+
+      if(!word_exists_for_pattern(wbase->primary, pattern) &&
+         !word_exists_for_pattern(wbase->backup, pattern))
+      {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
