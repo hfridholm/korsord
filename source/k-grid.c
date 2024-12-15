@@ -68,10 +68,14 @@ grid_t* grid_copy(grid_t* copy, grid_t* grid)
 
   int real_count = (grid->width + 2) * (grid->height + 2);
 
+  memcpy(copy->squares, grid->squares, sizeof(square_t) * real_count);
+
+  /*
   for(int index = 0; index < real_count; index++)
   {
     copy->squares[index] = grid->squares[index];
   }
+  */
 
   copy->cross_count = grid->cross_count;
   copy->word_count = grid->word_count;
@@ -107,10 +111,14 @@ grid_t* grid_dup(grid_t* grid)
     return NULL;
   }
 
+  memcpy(dup->squares, grid->squares, sizeof(square_t) * real_count);
+
+  /*
   for(int index = 0; index < real_count; index++)
   {
     dup->squares[index] = grid->squares[index];
   }
+  */
 
   dup->cross_count = grid->cross_count;
   dup->word_count = grid->word_count;

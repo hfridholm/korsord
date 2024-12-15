@@ -24,6 +24,7 @@ typedef struct stats_patt_t
 typedef struct stats_t
 {
   stats_patt_t patt;
+  size_t test_count;
 } stats_t;
 
 typedef struct grid_t grid_t;

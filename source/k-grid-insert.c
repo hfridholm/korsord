@@ -9,6 +9,8 @@
 
 #include "k-wbase.h"
 
+extern stats_t stats;
+
 /*
  * When inserting, the function:
  * - pastes the letters from the word
@@ -33,7 +35,8 @@ int vert_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int x, int 
     square_t new_square =
     {
       .type = SQUARE_LETTER,
-      .letter = word[index]
+      .letter = word[index],
+      .is_crossed = false
     };
 
     if(old_square->type == SQUARE_LETTER)
@@ -99,7 +102,8 @@ int horiz_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_
     square_t new_square =
     {
       .type = SQUARE_LETTER,
-      .letter = word[index]
+      .letter = word[index],
+      .is_crossed = false
     };
 
     if(old_square->type == SQUARE_LETTER)

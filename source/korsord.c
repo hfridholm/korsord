@@ -124,6 +124,20 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
 /*
  *
  */
+grid_t* curr_grid_get(void)
+{
+  pthread_mutex_lock(&lock);
+
+  grid_t* grid = curr_grid;
+
+  pthread_mutex_unlock(&lock);
+
+  return grid;
+}
+
+/*
+ *
+ */
 static void stats_print(void)
 {
   printf("letter: %ld\n", stats.patt.letter_count);
@@ -133,6 +147,7 @@ static void stats_print(void)
   printf("corner: %ld\n", stats.patt.corner_count);
   printf("block : %ld\n", stats.patt.block_count);
   printf("none  : %ld\n", stats.patt.none_count);
+  printf("test  : %ld\n", stats.test_count);
 }
 
 /*
@@ -148,16 +163,14 @@ static void* print_routine(void* arg)
 
   while(running)
   {
-    pthread_mutex_lock(&lock);
+    grid_t* grid = curr_grid_get();
 
-    if(curr_grid)
+    if(grid)
     {
-      grid_print(curr_grid);
+      grid_print(grid);
 
       stats_print();
     }
-
-    pthread_mutex_unlock(&lock);
 
     usleep(delay);
 
