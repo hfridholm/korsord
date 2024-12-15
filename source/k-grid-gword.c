@@ -10,6 +10,19 @@
 #include "k-wbase.h"
 
 /*
+ * When checking if words exists in 
+ * horiz_word_exists
+ * vert_word_exists
+ *
+ * If at least one word exists, don't have to check
+ * words larger than MAX_EXIST_LENGTH
+ *
+ * Though: check so words upto MAX_EXIST_LENGTH also exists
+ * Checking more than just one word exits is better for the algorithm
+ */
+#define MAX_EXIST_LENGTH 40
+
+/*
  * Shuffle grid words
  */
 static void gwords_shuffle(gword_t* gwords, size_t count)
@@ -198,13 +211,6 @@ int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gr
   bool stop_is_blocked = horiz_stop_xs_get(stop_xs, &stop_count, grid, cross_x, cross_y);
 
 
-  /*
-  printf("horizontal:\n");
-  printf("cross x:%d cross y:%d\n", cross_x, cross_y);
-  printf("start_count: %d\n", start_count);
-  printf("stop_count: %d\n", stop_count);
-  */
-
   if(start_is_blocked && stop_is_blocked)
   {
     // Here: Both start and stop is cross_x (1 letter)
@@ -242,11 +248,6 @@ int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gr
       gwords_search(&backup_gwords, &backup_count, wbase->backup, pattern, start_x, stop_x);
     }
   }
-
-  /*
-  printf("primary_count: %ld\n", primary_count);
-  printf("backup_count: %ld\n", backup_count);
-  */
 
   if(primary_count == 0 && backup_count == 0)
   {
@@ -366,26 +367,11 @@ int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gri
 
   bool start_is_blocked = vert_start_ys_get(start_ys, &start_count, grid, cross_x, cross_y);
 
-  /*
-   * Problem:
-   * letters is detected as single, when they just dont can build words
-   * not because they are limited in space to 1 letter
-   *
-   * Solution:
-   * Distinguish between those cases
-   */
-
   int stop_ys[grid->height - cross_y];
   int stop_count = 0;
 
   bool stop_is_blocked = vert_stop_ys_get(stop_ys, &stop_count, grid, cross_x, cross_y);
 
-  /*
-  printf("vertical:\n");
-  printf("cross x:%d cross y:%d\n", cross_x, cross_y);
-  printf("start_count: %d\n", start_count);
-  printf("stop_count: %d\n", stop_count);
-  */
 
   if(start_is_blocked && stop_is_blocked)
   {
@@ -425,11 +411,6 @@ int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gri
     }
   }
 
-  /*
-  printf("primary_count: %ld\n", primary_count);
-  printf("backup_count: %ld\n", backup_count);
-  */
-
   if(primary_count == 0 && backup_count == 0)
   {
     // No words was found
@@ -461,6 +442,85 @@ int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gri
 }
 
 /*
+ * I have had problems with the differences with these codes:
+ *
+ * if(!word_exists_for_pattern(wbase->primary, pattern) &&
+ *    !word_exists_for_pattern(wbase->backup, pattern))
+ * {
+ *   return false;
+ * }
+ *
+ * if(word_exists_for_pattern(wbase->primary, pattern) ||
+ *    word_exists_for_pattern(wbase->backup, pattern))
+ * {
+ *   return true;
+ * }
+ *
+ * I got the answer!
+ *
+ * The first example, returns true, only if all patterns have words
+ *
+ * The second example, returns true, if just 1 pattern have a word.
+ *
+ * The problem is, the second example can just "nöja sig" med 2 letter words,
+ * not accounting for that they block or not include the rest of the full_pattern letters.
+ *
+ * Example:
+ *        |
+ * ____H_GO_I____T_____
+ *
+ * It is really unneccessary to check more than:
+ *    |
+ * H_GO_I____T
+ *    |
+ * H_GO_I
+ *    |
+ *   GO_I
+ *    |
+ *   GO
+ *
+ * Det övre visar när man går ytterst inåt
+ *
+ * Det undre visar när man utgår ifrån cross x/y och går utåt
+ *    |
+ *   GO
+ *    |
+ *   GO_I
+ *    |
+ * H_GO_I
+ *    |
+ * H_GO_I____T
+ *
+ * This way, only words with a chosen max_length (ex 6) have to be checked:
+ *    |
+ *   GO
+ *    |
+ *   GO_I
+ *    |
+ * H_GO_I
+ *
+ * The solution, is to strip full_pattern of '_' (optional letters)
+ * This is done, by continue the loop when '_' occour in pattern, starting from cross x/y
+ *
+ * for(int start_index = 0; start_index < start_count; start_index++)
+ *
+ * Start and stop indexes are stored from cross x/y and outwards
+ *
+ * This way, all the necessary letters nearest to cross x/y are accounted for, 
+ * but the optional letters further away can be skipped.
+ *
+ * 
+ * Further skipping can be done by checking for a max_length of words.
+ *
+ * Either, continue when length > max_length (recommended)
+ * or
+ * "nöja sig med" just 1 max_length valid word and return true (not recommended for now)
+ *
+ *
+ * Conclution: The second code example is just wrong and should never be used.
+ */
+
+/*
  * This function has the same base structure as
  * vert_gwords_get
  */
@@ -479,26 +539,11 @@ bool vert_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 
   bool start_is_blocked = vert_start_ys_get(start_ys, &start_count, grid, cross_x, cross_y);
 
-  /*
-   * Problem:
-   * letters is detected as single, when they just dont can build words
-   * not because they are limited in space to 1 letter
-   *
-   * Solution:
-   * Distinguish between those cases
-   */
-
   int stop_ys[grid->height - cross_y];
   int stop_count = 0;
 
   bool stop_is_blocked = vert_stop_ys_get(stop_ys, &stop_count, grid, cross_x, cross_y);
 
-  /*
-  printf("vertical:\n");
-  printf("cross x:%d cross y:%d\n", cross_x, cross_y);
-  printf("start_count: %d\n", start_count);
-  printf("stop_count: %d\n", stop_count);
-  */
 
   if(start_is_blocked && stop_is_blocked)
   {
@@ -508,17 +553,31 @@ bool vert_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 
   char pattern[grid->height + 1];
 
+  bool word_exists = false;
+
   for(int start_index = 0; start_index < start_count; start_index++)
   {
+    int start_y = start_ys[start_index];
+
+    // Disregard patterns (therefor words) with optional letters
+    if(full_pattern[start_y] == '_') continue;
+
     for(int stop_index = 0; stop_index < stop_count; stop_index++)
     {
-      int start_y = start_ys[start_index];
       int stop_y  = stop_ys[stop_index];
+
+      // Disregard patterns (therefor words) with optional letters
+      if(full_pattern[stop_y] == '_') continue;
 
       // Don't bother the case where start and stop is cross_y
       if(start_y == stop_y) continue;
 
       int length = (1 + stop_y - start_y);
+
+      
+      // This is done for performance
+      if(word_exists && length > MAX_EXIST_LENGTH) continue;
+
 
       // Create current pattern
       sprintf(pattern, "%.*s", length, full_pattern + start_y);
@@ -530,6 +589,7 @@ bool vert_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
       {
         return false;
       }
+      else word_exists = true;
     }
   }
 
@@ -560,13 +620,6 @@ bool horiz_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
   bool stop_is_blocked = horiz_stop_xs_get(stop_xs, &stop_count, grid, cross_x, cross_y);
 
 
-  /*
-  printf("horizontal:\n");
-  printf("cross x:%d cross y:%d\n", cross_x, cross_y);
-  printf("start_count: %d\n", start_count);
-  printf("stop_count: %d\n", stop_count);
-  */
-
   if(start_is_blocked && stop_is_blocked)
   {
     // Here: Both start and stop is cross_x (1 letter)
@@ -575,17 +628,31 @@ bool horiz_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 
   char pattern[grid->width + 1];
 
+  bool word_exists = false;
+
   for(int start_index = 0; start_index < start_count; start_index++)
   {
+    int start_x = start_xs[start_index];
+
+    // Disregard patterns (therefor words) with optional letters
+    if(full_pattern[start_x] == '_') continue;
+
     for(int stop_index = 0; stop_index < stop_count; stop_index++)
     {
-      int start_x = start_xs[start_index];
       int stop_x  = stop_xs[stop_index];
+
+      // Disregard patterns (therefor words) with optional letters
+      if(full_pattern[stop_x] == '_') continue;
 
       // Don't bother the case where start and stop is cross_x
       if(start_x == stop_x) continue;
 
       int length = (1 + stop_x - start_x);
+
+
+      // This is done for performance
+      if(word_exists && length > MAX_EXIST_LENGTH) continue;
+
 
       // Create current pattern
       sprintf(pattern, "%.*s", length, full_pattern + start_x);
@@ -597,6 +664,7 @@ bool horiz_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
       {
         return false;
       }
+      else word_exists = true;
     }
   }
 

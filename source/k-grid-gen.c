@@ -134,6 +134,8 @@ static int horiz_words_test(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid,
 {
   for(size_t index = 0; index < word_count; index++)
   {
+    if(!running) return GEN_STOP;
+
     gword_t gword = gwords[index];
 
     char* word  = gword.word;
@@ -336,6 +338,8 @@ static int vert_words_test(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, 
 {
   for(size_t index = 0; index < word_count; index++)
   {
+    if(!running) return GEN_STOP;
+
     gword_t gword = gwords[index];
 
     char* word  = gword.word;
@@ -463,9 +467,17 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
       
     int gen_status = vert_word_gen(wbase, best_grid, grid, x, y);
 
-    if(gen_status == GEN_STOP) break;
+    if(gen_status == GEN_STOP)
+    {
+      printf("Generation stopped\n");
+      break;
+    }
 
-    if(gen_status == GEN_FAIL) break;
+    if(gen_status == GEN_FAIL)
+    {
+      printf("Generation failed\n");
+      break;
+    }
   }
 
   printf("grid:\n");

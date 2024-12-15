@@ -1,5 +1,12 @@
 # Notes
 - add indexes for å ä ö
+- maybe: Change start and stop in gword_t to
+union
+{
+  int start_x;
+  int start_y;
+};
+
 
 An future idea:
 

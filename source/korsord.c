@@ -279,6 +279,12 @@ int main(int argc, char* argv[])
   {
     printf("Generating grid...\n");
 
+    pthread_mutex_lock(&lock);
+
+    curr_grid = NULL;
+
+    pthread_mutex_unlock(&lock);
+
     grid_free(&grid);
 
     stats = (stats_t) { 0 };

@@ -12,6 +12,8 @@
  */
 void grid_print(grid_t* grid)
 {
+  if(!grid || !grid->squares) return;
+
   for(int y = 0; y < (grid->height + 2); y++)
   {
     for(int x = 0; x < (grid->width + 2); x++)
