@@ -9,8 +9,6 @@
 
 #include "k-wbase.h"
 
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
-
 extern size_t file_read(void* pointer, size_t size, const char* filepath);
 
 extern size_t file_size_get(const char* filepath);

@@ -13,6 +13,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+
 #define INSERT_DONE    1
 #define INSERT_PERFECT 2
 

@@ -39,16 +39,22 @@ static void grid_prep_border(grid_t* grid)
   }
 }
 
+// __builtin_clz counts the leading zeros, so the bit length is:
+#define CAPACITY(n) (1 << (sizeof(n) * 8 - __builtin_clz(n)))
+
 /*
- * Note: Add smart realloc chunks of powers of 2
+ *
  */
 static int index_append(int** indexes, int* count, int index)
 {
-  int* new_indexes = realloc(*indexes, sizeof(int) * (*count + 1));
+  if(*count == 0 || ((*count) + 1) >= CAPACITY(*count))
+  {
+    int* new_indexes = realloc(*indexes, sizeof(int) * CAPACITY((*count) + 1));
 
-  if(!new_indexes) return 1;
+    if(!new_indexes) return 1;
 
-  *indexes = new_indexes;
+    *indexes = new_indexes;
+  }
 
   (*indexes)[(*count)++] = index;
 

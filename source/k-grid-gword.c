@@ -43,6 +43,9 @@ void gwords_free(gword_t** gwords, size_t count)
   *gwords = NULL;
 }
 
+// __builtin_clz counts the leading zeros, so the bit length is:
+#define CAPACITY(n) (1 << (sizeof(n) * 8 - __builtin_clz(n)))
+
 /*
  * This function searches for words fitting the pattern,
  * and labels them as gword_t with start and stop
@@ -67,18 +70,21 @@ static int gwords_search(gword_t** gwords, size_t* count, trie_t* trie, const ch
     return 0;
   }
 
-  gword_t* temp_gwords = realloc(*gwords, sizeof(gword_t) * ((*count) + word_count));
-
-  if(!temp_gwords)
+  if(*count == 0 || ((*count) + word_count) >= CAPACITY(*count))
   {
-    words_free(&words, word_count);
+    gword_t* new_gwords = realloc(*gwords, sizeof(gword_t) * CAPACITY((*count) + word_count));
 
-    perror("realloc gwords");
+    if(!new_gwords)
+    {
+      words_free(&words, word_count);
 
-    return 1;
+      perror("realloc gwords");
+
+      return 1;
+    }
+
+    *gwords = new_gwords;
   }
-
-  *gwords = temp_gwords;
 
   for(size_t index = 0; index < word_count; index++)
   {

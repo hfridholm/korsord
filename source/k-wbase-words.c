@@ -5,16 +5,22 @@
 #include "k-wbase.h"
 #include "k-wbase-intern.h"
 
+// __builtin_clz counts the leading zeros, so the bit length is:
+#define CAPACITY(n) (1 << (sizeof(n) * 8 - __builtin_clz(n)))
+
 /*
- * Note: Add smart realloc chunks of powers of 2
+ *
  */
 static int word_append(char*** words, size_t* count, char* word)
 {
-  char** new_words = realloc(*words, sizeof(char*) * (*count + 1));
+  if(*count == 0 || ((*count) + 1) >= CAPACITY(*count))
+  {
+    char** new_words = realloc(*words, sizeof(char*) * CAPACITY((*count) + 1));
 
-  if(!new_words) return 1;
+    if(!new_words) return 1;
 
-  *words = new_words;
+    *words = new_words;
+  }
 
   (*words)[(*count)++] = strdup(word);
 

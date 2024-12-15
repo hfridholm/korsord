@@ -110,3 +110,7 @@ being traversed from the first "good" letter
 - fix problem with skyrocketing block_count
 I have a fealing that the problem is that singles (1 letter words) don't get restored
 - maybe: remove best_grid
+
+New bug:
+
+- sprintf in k-wbase-words.c (uninitialized values) _words_search
