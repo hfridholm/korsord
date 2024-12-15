@@ -22,6 +22,8 @@ bool running = false;
 pthread_mutex_t lock;
 grid_t* curr_grid = NULL;
 
+stats_t stats = { 0 };
+
 
 static char doc[] = "korsord - swedish crossword generator";
 
@@ -122,6 +124,20 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
 /*
  *
  */
+static void stats_print(void)
+{
+  printf("letter: %ld\n", stats.patt.letter_count);
+  printf("trap  : %ld\n", stats.patt.trap_count);
+  printf("crowd : %ld\n", stats.patt.crowd_count);
+  printf("edge  : %ld\n", stats.patt.edge_count);
+  printf("corner: %ld\n", stats.patt.corner_count);
+  printf("block : %ld\n", stats.patt.block_count);
+  printf("none  : %ld\n", stats.patt.none_count);
+}
+
+/*
+ *
+ */
 static void* print_routine(void* arg)
 {
   if(!args.visual) return NULL;
@@ -134,7 +150,12 @@ static void* print_routine(void* arg)
   {
     pthread_mutex_lock(&lock);
 
-    if(curr_grid) grid_print(curr_grid);
+    if(curr_grid)
+    {
+      grid_print(curr_grid);
+
+      stats_print();
+    }
 
     pthread_mutex_unlock(&lock);
 
@@ -225,7 +246,6 @@ int main(int argc, char* argv[])
 
   running = true;
 
-
   pthread_mutex_init(&lock, NULL);
 
   pthread_t thread;
@@ -261,6 +281,8 @@ int main(int argc, char* argv[])
 
     grid_free(&grid);
 
+    stats = (stats_t) { 0 };
+
     grid = grid_gen(wbase, args.model);
 
     // If the user only wants 1 run, break
@@ -274,6 +296,8 @@ int main(int argc, char* argv[])
     clear();
 
     grid_print(grid);
+
+    stats_print();
 
     refresh();
 

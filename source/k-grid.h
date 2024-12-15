@@ -8,6 +8,23 @@
 #define K_GRID_H
 
 #include <stdbool.h>
+#include <stddef.h>
+
+typedef struct stats_patt_t
+{
+  size_t letter_count;
+  size_t trap_count;
+  size_t crowd_count;
+  size_t edge_count;
+  size_t corner_count;
+  size_t block_count;
+  size_t none_count;
+} stats_patt_t;
+
+typedef struct stats_t
+{
+  stats_patt_t patt;
+} stats_t;
 
 typedef struct grid_t grid_t;
 

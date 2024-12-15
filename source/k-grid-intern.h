@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #define INSERT_DONE    1
 #define INSERT_PERFECT 2
@@ -87,7 +88,7 @@ extern square_t* xy_square_get(grid_t* grid, int x, int y);
 extern int       xy_index_get(grid_t* grid, int x, int y);
 
 
-extern bool block_square_is_allowed(grid_t* grid, int block_x, int block_y);
+extern bool block_is_allowed(grid_t* grid, int block_x, int block_y);
 
 
 extern bool xy_square_is_blocking(grid_t* grid, int x, int y);

@@ -134,7 +134,7 @@ static bool horiz_start_xs_get(int* start_xs, int* count, grid_t* grid, int cros
 
     if(start_x > 0)
     {
-      if(!block_square_is_allowed(grid, start_x - 1, cross_y)) continue;
+      if(!block_is_allowed(grid, start_x - 1, cross_y)) continue;
     }
 
     start_xs[(*count)++] = start_x;
@@ -159,7 +159,7 @@ static bool horiz_stop_xs_get(int* stop_xs, int* count, grid_t* grid, int cross_
 
     if(stop_x < (grid->width - 1))
     {
-      if(!block_square_is_allowed(grid, stop_x + 1, cross_y)) continue;
+      if(!block_is_allowed(grid, stop_x + 1, cross_y)) continue;
     }
 
     stop_xs[(*count)++] = stop_x;
@@ -307,7 +307,7 @@ static bool vert_start_ys_get(int* start_ys, int* count, grid_t* grid, int cross
 
     if(start_y > 0)
     {
-      if(!block_square_is_allowed(grid, cross_x, start_y - 1)) continue;
+      if(!block_is_allowed(grid, cross_x, start_y - 1)) continue;
     }
 
     start_ys[(*count)++] = start_y;
@@ -333,7 +333,7 @@ static bool vert_stop_ys_get(int* stop_ys, int* count, grid_t* grid, int cross_x
 
     if(stop_y < (grid->height - 1))
     {
-      if(!block_square_is_allowed(grid, cross_x, stop_y + 1)) continue;
+      if(!block_is_allowed(grid, cross_x, stop_y + 1)) continue;
     }
 
     stop_ys[(*count)++] = stop_y;

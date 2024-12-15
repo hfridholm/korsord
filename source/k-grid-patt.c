@@ -5,7 +5,9 @@
 #include "k-grid.h"
 #include "k-grid-intern.h"
 
-#define MAX_CROWD_AMOUNT 2
+extern stats_t stats;
+
+#define MAX_CROWD_AMOUNT 3
 
 /*
  * The x and y is not accounting for border
@@ -22,8 +24,6 @@
  * therefor, no subraction is allowed
  */
 
-#include <unistd.h>
-
 /*
  * This function checks if the pattern is crowded with block squares
  *
@@ -31,7 +31,7 @@
  * - int block_x | Not real x
  * - int block_y | Not real y
  */
-static bool pattern_is_allowed_crowd(grid_t* grid, int block_x, int block_y)
+static bool patt_crowd_is_allowed(grid_t* grid, int block_x, int block_y)
 {
   int block_amount = 0;
 
@@ -60,7 +60,7 @@ static bool pattern_is_allowed_crowd(grid_t* grid, int block_x, int block_y)
  * This function checks if a letter square is being trapped
  *
  */
-static bool pattern_is_allowed_trap(grid_t* grid, int block_x, int block_y)
+static bool patt_trap_is_allowed(grid_t* grid, int block_x, int block_y)
 {
   /*
    * # . .
@@ -112,7 +112,7 @@ static bool pattern_is_allowed_trap(grid_t* grid, int block_x, int block_y)
 /*
  *
  */
-static bool pattern_is_allowed_edge(grid_t* grid, int block_x, int block_y)
+static bool patt_edge_is_allowed(grid_t* grid, int block_x, int block_y)
 {
   /*
    * . . .
@@ -180,7 +180,7 @@ static bool pattern_is_allowed_edge(grid_t* grid, int block_x, int block_y)
 /*
  *
  */
-static bool pattern_is_allowed_corner(grid_t* grid, int block_x, int block_y)
+static bool patt_corner_is_allowed(grid_t* grid, int block_x, int block_y)
 {
   /*
    * . . .
@@ -201,30 +201,59 @@ static bool pattern_is_allowed_corner(grid_t* grid, int block_x, int block_y)
 /*
  * The x and y is not accounting for border
  *
+ * EXPECTS:
+ * - block_x and block_y are inside grid
+ *
  * PARAMS
  * - int block_x | Not real x
  * - int block_y | Not real y
  */
-bool block_square_is_allowed(grid_t* grid, int block_x, int block_y)
+bool block_is_allowed(grid_t* grid, int block_x, int block_y)
 {
-  // A SQUARE_BORDER is a natural block
-  // It is very important to let SQUARE_BORDER be a valid block
-  if(xy_square_is_border(grid, block_x, block_y) ||
-     xy_square_is_block(grid, block_x, block_y))
+  // An already blocking square is of course allowed
+  if(xy_square_is_blocking(grid, block_x, block_y))
   {
+    stats.patt.block_count++;
+
     return true;
   }
 
+  if(xy_square_is_letter(grid, block_x, block_y))
+  {
+    stats.patt.letter_count++;
 
-  if(xy_square_is_letter(grid, block_x, block_y)) return false;
+    return false;
+  }
 
-  if(!pattern_is_allowed_trap(grid, block_x, block_y)) return false;
+  if(!patt_trap_is_allowed(grid, block_x, block_y))
+  {
+    stats.patt.trap_count++;
 
-  if(!pattern_is_allowed_crowd(grid, block_x, block_y)) return false;
+    return false;
+  }
 
-  if(!pattern_is_allowed_edge(grid, block_x, block_y)) return false;
+  if(!patt_crowd_is_allowed(grid, block_x, block_y))
+  {
+    stats.patt.crowd_count++;
 
-  if(!pattern_is_allowed_corner(grid, block_x, block_y)) return false;
+    return false;
+  }
+
+  if(!patt_edge_is_allowed(grid, block_x, block_y))
+  {
+    stats.patt.edge_count++;
+
+    return false;
+  }
+
+  if(!patt_corner_is_allowed(grid, block_x, block_y))
+  {
+    stats.patt.corner_count++;
+
+    return false;
+  }
+
+  stats.patt.none_count++;
 
   return true;
 }
