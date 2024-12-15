@@ -111,14 +111,14 @@ extern bool xy_real_square_is_border(grid_t* grid, int x, int y);
 extern bool xy_square_is_border(grid_t* grid, int x, int y);
 
 
-extern int  vert_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_x, int start_y);
+extern int  vert_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int x, int start_y);
 
-extern int  horiz_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_x, int start_y);
+extern void vert_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char* word, int x, int start_y);
 
 
-extern void horiz_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char* word, int start_x, int start_y);
+extern int  horiz_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_x, int y);
 
-extern void vert_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char* word, int start_x, int start_y);
+extern void horiz_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char* word, int start_x, int y);
 
 
 extern grid_t* grid_create(int width, int height);

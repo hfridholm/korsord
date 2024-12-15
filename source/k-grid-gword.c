@@ -354,7 +354,7 @@ static bool vert_stop_ys_get(int* stop_ys, int* count, grid_t* grid, int cross_x
 int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 {
   // 1. Create full pattern
-  char full_pattern[grid->width + 1];
+  char full_pattern[grid->height + 1];
 
   if(vert_full_pattern_get(full_pattern, grid, cross_x) != 0)
   {
@@ -400,7 +400,7 @@ int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gri
   gword_t* backup_gwords = NULL;
   size_t backup_count = 0;
 
-  char pattern[grid->width + 1];
+  char pattern[grid->height + 1];
 
   for(int start_index = 0; start_index < start_count; start_index++)
   {
@@ -467,7 +467,7 @@ int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gri
 bool vert_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 {
   // 1. Create full pattern
-  char full_pattern[grid->width + 1];
+  char full_pattern[grid->height + 1];
 
   if(vert_full_pattern_get(full_pattern, grid, cross_x) != 0)
   {
@@ -506,7 +506,7 @@ bool vert_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
     return true;
   }
 
-  char pattern[grid->width + 1];
+  char pattern[grid->height + 1];
 
   for(int start_index = 0; start_index < start_count; start_index++)
   {

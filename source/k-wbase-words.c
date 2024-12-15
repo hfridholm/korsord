@@ -96,7 +96,7 @@ static void _words_search(char*** words, size_t* count, node_t* node, const char
     if(letter_index != -1 && letter_index != child_index) continue; 
 
 
-    char new_word[index + 1];
+    char new_word[index + 2];
 
     char letter = index_letter_get(child_index);
 
@@ -143,7 +143,7 @@ static bool _word_exists_for_pattern(node_t* node, const char* pattern, int inde
     if(letter_index != -1 && letter_index != child_index) continue; 
 
 
-    char new_word[index + 1];
+    char new_word[index + 2];
 
     char letter = index_letter_get(child_index);
 
