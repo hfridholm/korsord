@@ -59,34 +59,32 @@ typedef struct grid_t
 } grid_t;
 
 
-extern bool horizontal_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);
+extern bool horiz_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);
 
-extern bool vertical_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);
+extern bool vert_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);
 
 
-extern int horizontal_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);
+extern int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);
 
-extern int vertical_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);
+extern int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);
 
 extern void gwords_free(gword_t** gwords, size_t count);
 
 
-extern int grid_prep(grid_t* grid);
+
+extern void xy_square_set_crossed(grid_t* grid, int x, int y);
+
+extern void xy_real_square_set_block(grid_t* grid, int x, int y);
 
 
-extern void grid_xy_square_set_crossed(grid_t* grid, int x, int y);
+extern square_t* xy_real_square_get(grid_t* grid, int x, int y);
 
-extern void grid_xy_real_square_set_block(grid_t* grid, int x, int y);
-
-
-extern square_t* grid_xy_real_square_get(grid_t* grid, int x, int y);
-
-extern int       grid_xy_real_index_get(grid_t* grid, int x, int y);
+extern int       xy_real_index_get(grid_t* grid, int x, int y);
 
 
-extern square_t* grid_xy_square_get(grid_t* grid, int x, int y);
+extern square_t* xy_square_get(grid_t* grid, int x, int y);
 
-extern int       grid_xy_index_get(grid_t* grid, int x, int y);
+extern int       xy_index_get(grid_t* grid, int x, int y);
 
 
 extern bool block_square_is_allowed(grid_t* grid, int block_x, int block_y);
@@ -96,25 +94,27 @@ extern bool xy_square_is_blocking(grid_t* grid, int x, int y);
 
 extern bool xy_square_is_letter(grid_t* grid, int x, int y);
 
-extern bool grid_xy_square_is_block(grid_t* grid, int x, int y);
+extern bool xy_square_is_done(grid_t* grid, int x, int y);
+
+extern bool xy_square_is_block(grid_t* grid, int x, int y);
 
 extern bool xy_real_square_is_block(grid_t* grid, int x, int y);
 
 extern bool xy_square_is_crossed(grid_t* grid, int x, int y);
 
-extern bool grid_xy_real_square_is_border(grid_t* grid, int x, int y);
+extern bool xy_real_square_is_border(grid_t* grid, int x, int y);
 
-extern bool grid_xy_square_is_border(grid_t* grid, int x, int y);
-
-
-extern int  grid_vertical_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_x, int start_y);
-
-extern int  grid_horizontal_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_x, int start_y);
+extern bool xy_square_is_border(grid_t* grid, int x, int y);
 
 
-extern void grid_horizontal_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char* word, int start_x, int start_y);
+extern int  vert_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_x, int start_y);
 
-extern void grid_vertical_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char* word, int start_x, int start_y);
+extern int  horiz_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_x, int start_y);
+
+
+extern void horiz_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char* word, int start_x, int start_y);
+
+extern void vert_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char* word, int start_x, int start_y);
 
 
 extern grid_t* grid_create(int width, int height);
@@ -124,5 +124,7 @@ extern grid_t* grid_copy(grid_t* copy, grid_t* grid);
 extern grid_t* grid_dup(grid_t* grid);
 
 extern grid_t* grid_model_load(const char* filepath);
+
+extern int     grid_prep(grid_t* grid);
 
 #endif // K_GRID_INTERN_H

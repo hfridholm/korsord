@@ -18,22 +18,22 @@ static void grid_prep_border(grid_t* grid)
 
   for(int x = 0; x < (grid->width + 2); x++)
   {
-    square = grid_xy_real_square_get(grid, x, 0);
+    square = xy_real_square_get(grid, x, 0);
     
     if(square) square->type = SQUARE_BORDER;
 
-    square = grid_xy_real_square_get(grid, x, grid->height + 1);
+    square = xy_real_square_get(grid, x, grid->height + 1);
     
     if(square) square->type = SQUARE_BORDER;
   }
 
   for(int y = 0; y < (grid->height + 2); y++)
   {
-    square = grid_xy_real_square_get(grid, 0, y);
+    square = xy_real_square_get(grid, 0, y);
     
     if(square) square->type = SQUARE_BORDER;
 
-    square = grid_xy_real_square_get(grid, grid->width + 1, y);
+    square = xy_real_square_get(grid, grid->width + 1, y);
     
     if(square) square->type = SQUARE_BORDER;
   }
@@ -75,17 +75,17 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
   {
     for(int y = (grid->height + 1); y-- > 1;)
     {
-      if(grid_xy_real_square_is_border(grid, x, y))
+      if(xy_real_square_is_border(grid, x, y))
       {
         continue;
       }
 
-      if((grid_xy_real_square_is_border(grid, x, y - 1) &&
-          grid_xy_real_square_is_border(grid, x - 1, y)) ||
+      if((xy_real_square_is_border(grid, x, y - 1) &&
+          xy_real_square_is_border(grid, x - 1, y)) ||
 
-         (grid_xy_real_square_is_border(grid, x - 1, y - 1) &&
-         !grid_xy_real_square_is_border(grid, x, y - 1) &&
-         !grid_xy_real_square_is_border(grid, x - 1, y)))
+         (xy_real_square_is_border(grid, x - 1, y - 1) &&
+         !xy_real_square_is_border(grid, x, y - 1) &&
+         !xy_real_square_is_border(grid, x - 1, y)))
       {
         int index = (y * (grid->width + 2) + x);
 
@@ -111,16 +111,16 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
   {
     for(int y = 1; y < (grid->height + 1); y++)
     {
-      if(grid_xy_real_square_is_border(grid, x, y))
+      if(xy_real_square_is_border(grid, x, y))
       {
         continue;
       }
 
-      if((grid_xy_real_square_is_border(grid, x - 1, y) &&
-          grid_xy_real_square_is_border(grid, x, y + 1)) ||
+      if((xy_real_square_is_border(grid, x - 1, y) &&
+          xy_real_square_is_border(grid, x, y + 1)) ||
 
-         (grid_xy_real_square_is_border(grid, x - 1, y) &&
-         !grid_xy_real_square_is_border(grid, x - 1, y - 1)))
+         (xy_real_square_is_border(grid, x - 1, y) &&
+         !xy_real_square_is_border(grid, x - 1, y - 1)))
       {
         int index = (y * (grid->width + 2) + x);
 
@@ -146,16 +146,16 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
   {
     for(int y = (grid->height + 1); y-- > 1;)
     {
-      if(grid_xy_real_square_is_border(grid, x, y))
+      if(xy_real_square_is_border(grid, x, y))
       {
         continue;
       }
 
-      if((grid_xy_real_square_is_border(grid, x, y - 1) &&
-          grid_xy_real_square_is_border(grid, x + 1, y)) ||
+      if((xy_real_square_is_border(grid, x, y - 1) &&
+          xy_real_square_is_border(grid, x + 1, y)) ||
 
-         (grid_xy_real_square_is_border(grid, x, y - 1) &&
-         !grid_xy_real_square_is_border(grid, x - 1, y - 1)))
+         (xy_real_square_is_border(grid, x, y - 1) &&
+         !xy_real_square_is_border(grid, x - 1, y - 1)))
       {
         int index = (y * (grid->width + 2) + x);
 
@@ -184,7 +184,7 @@ static void grid_prep_blocks(grid_t* grid)
     int x = square_index % (grid->width + 2);
     int y = square_index / (grid->width + 2);
 
-    grid_xy_real_square_set_block(grid, x, y);
+    xy_real_square_set_block(grid, x, y);
   }
 
   // 3. Randomly assign SQUARE_BLOCK to squares at edges
@@ -207,13 +207,13 @@ static void grid_prep_blocks(grid_t* grid)
     for(int x = (start_x + 1); x < (grid->width + 0); x++)
     {
       // This ensures that the egde is being followed
-      if(!grid_xy_real_square_is_border(grid, x, start_y - 1) ||
-          grid_xy_real_square_is_border(grid, x, start_y))
+      if(!xy_real_square_is_border(grid, x, start_y - 1) ||
+          xy_real_square_is_border(grid, x, start_y))
       {
         break;
       }
 
-      square_t* square = grid_xy_real_square_get(grid, x, start_y);
+      square_t* square = xy_real_square_get(grid, x, start_y);
 
       if(square->type == SQUARE_BLOCK)
       {
@@ -253,13 +253,13 @@ static void grid_prep_blocks(grid_t* grid)
     for(int y = start_y; y < (grid->height + 2); y++)
     {
       // This ensures that the egde is being followed
-      if(!grid_xy_real_square_is_border(grid, start_x - 1, y) ||
-          grid_xy_real_square_is_border(grid, start_x, y))
+      if(!xy_real_square_is_border(grid, start_x - 1, y) ||
+          xy_real_square_is_border(grid, start_x, y))
       {
         break;
       }
 
-      square_t* square = grid_xy_real_square_get(grid, start_x, y);
+      square_t* square = xy_real_square_get(grid, start_x, y);
 
       if(square->type == SQUARE_BLOCK)
       {

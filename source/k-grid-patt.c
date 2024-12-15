@@ -119,7 +119,7 @@ static bool pattern_is_allowed_edge(grid_t* grid, int block_x, int block_y)
    * # + #
    * . X .
    */
-  if(grid_xy_real_square_is_border(grid, block_x + 1, block_y + 2))
+  if(xy_real_square_is_border(grid, block_x + 1, block_y + 2))
   {
     if(xy_real_square_is_block(grid, block_x, block_y + 1))
     {
@@ -137,7 +137,7 @@ static bool pattern_is_allowed_edge(grid_t* grid, int block_x, int block_y)
    * . + X
    * . # .
    */
-  if(grid_xy_real_square_is_border(grid, block_x + 2, block_y + 1))
+  if(xy_real_square_is_border(grid, block_x + 2, block_y + 1))
   {
     if(xy_real_square_is_block(grid, block_x + 1, block_y))
     {
@@ -156,8 +156,8 @@ static bool pattern_is_allowed_edge(grid_t* grid, int block_x, int block_y)
    * . + .
    * . . .
    */
-  if(!grid_xy_square_is_block(grid, block_x, block_y) && 
-      grid_xy_real_square_is_border(grid, block_x + 1, block_y))
+  if(!xy_square_is_block(grid, block_x, block_y) && 
+      xy_real_square_is_border(grid, block_x + 1, block_y))
   {
     return false;
   }
@@ -168,8 +168,8 @@ static bool pattern_is_allowed_edge(grid_t* grid, int block_x, int block_y)
    * X + .
    * . . .
    */
-  if(!grid_xy_square_is_block(grid, block_x, block_y) && 
-      grid_xy_real_square_is_border(grid, block_x, block_y + 1))
+  if(!xy_square_is_block(grid, block_x, block_y) && 
+      xy_real_square_is_border(grid, block_x, block_y + 1))
   {
     return false;
   }
@@ -187,9 +187,9 @@ static bool pattern_is_allowed_corner(grid_t* grid, int block_x, int block_y)
    * . + X
    * . X .
    */
-  if(grid_xy_real_square_is_border(grid, block_x + 2, block_y + 1))
+  if(xy_real_square_is_border(grid, block_x + 2, block_y + 1))
   {
-    if(grid_xy_real_square_is_border(grid, block_x + 1, block_y + 2))
+    if(xy_real_square_is_border(grid, block_x + 1, block_y + 2))
     {
       return false;
     }
@@ -209,8 +209,8 @@ bool block_square_is_allowed(grid_t* grid, int block_x, int block_y)
 {
   // A SQUARE_BORDER is a natural block
   // It is very important to let SQUARE_BORDER be a valid block
-  if(grid_xy_square_is_border(grid, block_x, block_y) ||
-     grid_xy_square_is_block(grid, block_x, block_y))
+  if(xy_square_is_border(grid, block_x, block_y) ||
+     xy_square_is_block(grid, block_x, block_y))
   {
     return true;
   }

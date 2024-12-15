@@ -16,7 +16,7 @@ void grid_print(grid_t* grid)
   {
     for(int x = 0; x < (grid->width + 2); x++)
     {
-      square_t* square = grid_xy_real_square_get(grid, x, y);
+      square_t* square = xy_real_square_get(grid, x, y);
 
       if(!square) continue;
 

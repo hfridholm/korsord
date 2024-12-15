@@ -102,11 +102,11 @@ static int gwords_search(gword_t** gwords, size_t* count, trie_t* trie, const ch
 /*
  *
  */
-static int horizontal_full_pattern_get(char* pattern, grid_t* grid, int y)
+static int horiz_full_pattern_get(char* pattern, grid_t* grid, int y)
 {
   for(int x = 0; x < grid->width; x++)
   {
-    square_t* square = grid_xy_square_get(grid, x, y);
+    square_t* square = xy_square_get(grid, x, y);
 
     if(!square) return 1;
 
@@ -121,7 +121,7 @@ static int horizontal_full_pattern_get(char* pattern, grid_t* grid, int y)
 /*
  *
  */
-static bool horizontal_start_xs_get(int* start_xs, int* count, grid_t* grid, int cross_x, int cross_y)
+static bool horiz_start_xs_get(int* start_xs, int* count, grid_t* grid, int cross_x, int cross_y)
 {
   bool is_blocked = true;
 
@@ -146,7 +146,7 @@ static bool horizontal_start_xs_get(int* start_xs, int* count, grid_t* grid, int
 /*
  *
  */
-static bool horizontal_stop_xs_get(int* stop_xs, int* count, grid_t* grid, int cross_x, int cross_y)
+static bool horiz_stop_xs_get(int* stop_xs, int* count, grid_t* grid, int cross_x, int cross_y)
 {
   bool is_blocked = true;
 
@@ -171,12 +171,12 @@ static bool horizontal_stop_xs_get(int* stop_xs, int* count, grid_t* grid, int c
 /*
  *
  */
-int horizontal_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
+int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 {
   // 1. Create full pattern
   char full_pattern[grid->width + 1];
 
-  if(horizontal_full_pattern_get(full_pattern, grid, cross_y) != 0)
+  if(horiz_full_pattern_get(full_pattern, grid, cross_y) != 0)
   {
     return GWORDS_FAIL;
   }
@@ -184,12 +184,12 @@ int horizontal_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_
   int start_xs[cross_x + 1];
   int start_count = 0;
 
-  bool start_is_blocked = horizontal_start_xs_get(start_xs, &start_count, grid, cross_x, cross_y);
+  bool start_is_blocked = horiz_start_xs_get(start_xs, &start_count, grid, cross_x, cross_y);
 
   int stop_xs[grid->width - cross_x];
   int stop_count = 0;
 
-  bool stop_is_blocked = horizontal_stop_xs_get(stop_xs, &stop_count, grid, cross_x, cross_y);
+  bool stop_is_blocked = horiz_stop_xs_get(stop_xs, &stop_count, grid, cross_x, cross_y);
 
 
   /*
@@ -275,11 +275,11 @@ int horizontal_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_
 /*
  *
  */
-static int vertical_full_pattern_get(char* pattern, grid_t* grid, int x)
+static int vert_full_pattern_get(char* pattern, grid_t* grid, int x)
 {
   for(int y = 0; y < grid->height; y++)
   {
-    square_t* square = grid_xy_square_get(grid, x, y);
+    square_t* square = xy_square_get(grid, x, y);
 
     if(!square) return 1;
 
@@ -294,7 +294,7 @@ static int vertical_full_pattern_get(char* pattern, grid_t* grid, int x)
 /*
  *
  */
-static bool vertical_start_ys_get(int* start_ys, int* count, grid_t* grid, int cross_x, int cross_y)
+static bool vert_start_ys_get(int* start_ys, int* count, grid_t* grid, int cross_x, int cross_y)
 {
   bool is_blocked = true;
 
@@ -320,7 +320,7 @@ static bool vertical_start_ys_get(int* start_ys, int* count, grid_t* grid, int c
  * RETURN (bool is_blocked)
  * - true | It is blocked downwards
  */
-static bool vertical_stop_ys_get(int* stop_ys, int* count, grid_t* grid, int cross_x, int cross_y)
+static bool vert_stop_ys_get(int* stop_ys, int* count, grid_t* grid, int cross_x, int cross_y)
 {
   bool is_blocked = true;
 
@@ -345,12 +345,12 @@ static bool vertical_stop_ys_get(int* stop_ys, int* count, grid_t* grid, int cro
 /*
  *
  */
-int vertical_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
+int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 {
   // 1. Create full pattern
   char full_pattern[grid->width + 1];
 
-  if(vertical_full_pattern_get(full_pattern, grid, cross_x) != 0)
+  if(vert_full_pattern_get(full_pattern, grid, cross_x) != 0)
   {
     return GWORDS_FAIL;
   }
@@ -358,7 +358,7 @@ int vertical_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t*
   int start_ys[cross_y + 1];
   int start_count = 0;
 
-  bool start_is_blocked = vertical_start_ys_get(start_ys, &start_count, grid, cross_x, cross_y);
+  bool start_is_blocked = vert_start_ys_get(start_ys, &start_count, grid, cross_x, cross_y);
 
   /*
    * Problem:
@@ -372,7 +372,7 @@ int vertical_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t*
   int stop_ys[grid->height - cross_y];
   int stop_count = 0;
 
-  bool stop_is_blocked = vertical_stop_ys_get(stop_ys, &stop_count, grid, cross_x, cross_y);
+  bool stop_is_blocked = vert_stop_ys_get(stop_ys, &stop_count, grid, cross_x, cross_y);
 
   /*
   printf("vertical:\n");
@@ -456,14 +456,14 @@ int vertical_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t*
 
 /*
  * This function has the same base structure as
- * vertical_gwords_get
+ * vert_gwords_get
  */
-bool vertical_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
+bool vert_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 {
   // 1. Create full pattern
   char full_pattern[grid->width + 1];
 
-  if(vertical_full_pattern_get(full_pattern, grid, cross_x) != 0)
+  if(vert_full_pattern_get(full_pattern, grid, cross_x) != 0)
   {
     return false;
   }
@@ -471,7 +471,7 @@ bool vertical_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y
   int start_ys[cross_y + 1];
   int start_count = 0;
 
-  bool start_is_blocked = vertical_start_ys_get(start_ys, &start_count, grid, cross_x, cross_y);
+  bool start_is_blocked = vert_start_ys_get(start_ys, &start_count, grid, cross_x, cross_y);
 
   /*
    * Problem:
@@ -485,7 +485,7 @@ bool vertical_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y
   int stop_ys[grid->height - cross_y];
   int stop_count = 0;
 
-  bool stop_is_blocked = vertical_stop_ys_get(stop_ys, &stop_count, grid, cross_x, cross_y);
+  bool stop_is_blocked = vert_stop_ys_get(stop_ys, &stop_count, grid, cross_x, cross_y);
 
   /*
   printf("vertical:\n");
@@ -533,12 +533,12 @@ bool vertical_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y
 /*
  *
  */
-bool horizontal_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
+bool horiz_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 {
   // 1. Create full pattern
   char full_pattern[grid->width + 1];
 
-  if(horizontal_full_pattern_get(full_pattern, grid, cross_y) != 0)
+  if(horiz_full_pattern_get(full_pattern, grid, cross_y) != 0)
   {
     return false;
   }
@@ -546,12 +546,12 @@ bool horizontal_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross
   int start_xs[cross_x + 1];
   int start_count = 0;
 
-  bool start_is_blocked = horizontal_start_xs_get(start_xs, &start_count, grid, cross_x, cross_y);
+  bool start_is_blocked = horiz_start_xs_get(start_xs, &start_count, grid, cross_x, cross_y);
 
   int stop_xs[grid->width - cross_x];
   int stop_count = 0;
 
-  bool stop_is_blocked = horizontal_stop_xs_get(stop_xs, &stop_count, grid, cross_x, cross_y);
+  bool stop_is_blocked = horiz_stop_xs_get(stop_xs, &stop_count, grid, cross_x, cross_y);
 
 
   /*
