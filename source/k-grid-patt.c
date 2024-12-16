@@ -5,7 +5,7 @@
 #include "k-grid.h"
 #include "k-grid-intern.h"
 
-extern stats_t stats;
+#include "k-stats.h"
 
 #define MAX_CROWD_AMOUNT 3
 
@@ -213,47 +213,47 @@ bool block_is_allowed(grid_t* grid, int block_x, int block_y)
   // An already blocking square is of course allowed
   if(xy_square_is_blocking(grid, block_x, block_y))
   {
-    stats.patt.block_count++;
+    stats_patt_block_incr();
 
     return true;
   }
 
   if(xy_square_is_letter(grid, block_x, block_y))
   {
-    stats.patt.letter_count++;
+    stats_patt_letter_incr();
 
     return false;
   }
 
   if(!patt_trap_is_allowed(grid, block_x, block_y))
   {
-    stats.patt.trap_count++;
+    stats_patt_trap_incr();
 
     return false;
   }
 
   if(!patt_crowd_is_allowed(grid, block_x, block_y))
   {
-    stats.patt.crowd_count++;
+    stats_patt_crowd_incr();
 
     return false;
   }
 
   if(!patt_edge_is_allowed(grid, block_x, block_y))
   {
-    stats.patt.edge_count++;
+    stats_patt_edge_incr();
 
     return false;
   }
 
   if(!patt_corner_is_allowed(grid, block_x, block_y))
   {
-    stats.patt.corner_count++;
+    stats_patt_corner_incr();
 
     return false;
   }
 
-  stats.patt.none_count++;
+  stats_patt_none_incr();
 
   return true;
 }

@@ -9,8 +9,6 @@
 
 #include "k-wbase.h"
 
-extern stats_t stats;
-
 /*
  * When inserting, the function:
  * - pastes the letters from the word

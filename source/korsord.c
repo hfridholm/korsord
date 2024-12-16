@@ -4,25 +4,24 @@
  * Written by Hampus Fridholm
  */
 
+#define _GNU_SOURCE
+#include <sched.h>
+#include <pthread.h>
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <time.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <argp.h>
 #include <ncurses.h>
 
 #include "k-grid.h"
 #include "k-wbase.h"
+#include "k-stats.h"
 
 bool running = false;
-
-pthread_mutex_t lock;
-grid_t* curr_grid = NULL;
-
-stats_t stats = { 0 };
 
 
 static char doc[] = "korsord - swedish crossword generator";
@@ -122,32 +121,26 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
 }
 
 /*
+ * core_id = 0, 1, ... n-1, where n is the system's number of cores
  *
- */
-grid_t* curr_grid_get(void)
-{
-  pthread_mutex_lock(&lock);
-
-  grid_t* grid = curr_grid;
-
-  pthread_mutex_unlock(&lock);
-
-  return grid;
-}
-
-/*
+ * https://stackoverflow.com/questions/1407786/how-to-set-cpu-affinity-of-a-particular-pthread
  *
+ * Maybe use this function in the future
  */
-static void stats_print(void)
+static int stick_this_thread_to_core(int core_id) 
 {
-  printf("letter: %ld\n", stats.patt.letter_count);
-  printf("trap  : %ld\n", stats.patt.trap_count);
-  printf("crowd : %ld\n", stats.patt.crowd_count);
-  printf("edge  : %ld\n", stats.patt.edge_count);
-  printf("corner: %ld\n", stats.patt.corner_count);
-  printf("block : %ld\n", stats.patt.block_count);
-  printf("none  : %ld\n", stats.patt.none_count);
-  printf("test  : %ld\n", stats.test_count);
+  int num_cores = sysconf(_SC_NPROCESSORS_ONLN);
+
+  if (core_id < 0 || core_id >= num_cores)
+  {
+    return EINVAL;
+  }
+
+  cpu_set_t cpuset;
+  CPU_ZERO(&cpuset);
+  CPU_SET(core_id, &cpuset);
+
+  return pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
 }
 
 /*
@@ -163,14 +156,9 @@ static void* print_routine(void* arg)
 
   while(running)
   {
-    grid_t* grid = curr_grid_get();
+    curr_grid_print();
 
-    if(grid)
-    {
-      grid_print(grid);
-
-      stats_print();
-    }
+    stats_print();
 
     usleep(delay);
 
@@ -257,9 +245,11 @@ int main(int argc, char* argv[])
   }
 
 
-  running = true;
+  curr_grid_init();
+  stats_init();
 
-  pthread_mutex_init(&lock, NULL);
+
+  running = true;
 
   pthread_t thread;
 
@@ -292,15 +282,11 @@ int main(int argc, char* argv[])
   {
     printf("Generating grid...\n");
 
-    pthread_mutex_lock(&lock);
-
-    curr_grid = NULL;
-
-    pthread_mutex_unlock(&lock);
+    curr_grid_set(NULL);
 
     grid_free(&grid);
 
-    stats = (stats_t) { 0 };
+    stats_clear();
 
     grid = grid_gen(wbase, args.model);
 
@@ -312,9 +298,12 @@ int main(int argc, char* argv[])
   {
     printf("Generated grid\n");
 
+    curr_grid_set(grid);
+
+
     clear();
 
-    grid_print(grid);
+    curr_grid_print();
 
     stats_print();
 
@@ -330,12 +319,14 @@ int main(int argc, char* argv[])
 
   pthread_join(thread, NULL);
 
-  pthread_mutex_destroy(&lock);
-
 
   grid_free(&grid);
 
   wbase_free(&wbase);
+
+
+  curr_grid_free();
+  stats_free();
 
 
   curses_free();

@@ -6,9 +6,22 @@ HELP_TARGET  := help
 DELETE_CMD := rm
 
 COMPILER := gcc
-COMPILE_FLAGS := -Wall -g -O0 -std=gnu99 -oFast
+COMPILE_FLAGS := -Wall -Wno-unused-variable -g -pg -O0 -oFast -pthread -funroll-loops -ftree-vectorize -floop-strip-mine -march=native
 
-LINKER_FLAGS := -lncurses
+# AddressSanitizer
+# -fsanitize=address
+
+
+# DEBUG_COMPILE_FLAGS := -O0
+# SPEED_COMPILE_FLAGS := -O3
+
+LINKER_FLAGS := -lncurses -lpthread -pg -g -O0
+
+# AddressSanitizer
+# -lasan -static-libgcc -static-libstdc++ -fsanitize=address
+
+# DEBUG_LINKER_FLAGS :=
+# SPEED_LINKER_FLAGS :=
 
 SOURCE_DIR := ../source
 OBJECT_DIR := ../object

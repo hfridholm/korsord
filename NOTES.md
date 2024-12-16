@@ -1,5 +1,8 @@
 # Notes
 - add indexes for å ä ö
+- rewrite vert/horiz_word_exists
+- create different targets in makefile (for speed and debug)
+- maybe: move lock inside stats struct and lock inside grid struct
 - maybe: Change start and stop in gword_t to
 union
 {
@@ -198,42 +201,3 @@ new_grid can have been changed (and have in experiments),
 that way, when resetting the grid later downwards here,
 The old grids (probaly empty) squares will overwrite new grid
 (This is what causes the empty lines from forming)
-
-
-Memory problem:
-
-Invalid read of size 1
-==28906==    at 0x10EDD7: grid_print (k-grid-print.c:32)
-==28906==    by 0x10F5C2: print_routine (korsord.c:170)
-==28906==  Address 0x11374a1c is 1,020 bytes inside a block of size 3,808 free'd
-==28906==    at 0x484B27F: free (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
-==28906==    by 0x10AA37: grid_free (k-grid.c:138)
-==28906==    by 0x10ABEF: horiz_word_embed (k-grid-gen.c:106)
-==28906==  Block was alloc'd at
-==28906==    at 0x4848899: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
-==28906==    by 0x10A991: grid_dup (k-grid.c:105)
-==28906==    by 0x10AB60: horiz_word_embed (k-grid-gen.c:84)
-
-The problem has to do with where curr_grid is pointing.
-It looks like the memory where curr_grid is pointing has been freed.
-The problem is, that the code looks like it handles everything ok.
-I don't understand what the problem is.
-
-
-ChatGPT says that if you don't want to use mutexes,
-you can use atomic operations:
-
-// Atomic pointer
-atomic_pointer_t pointer = NULL;
-
-// Function to safely set the pointer (using atomic store)
-void set_pointer(object_t* new_object) {
-    atomic_store(&pointer, new_object);
-}
-
-// Function to safely get the pointer (using atomic load)
-object_t* get_pointer() {
-    return atomic_load(&pointer);
-}
-
-Maybe give that a try?

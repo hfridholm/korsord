@@ -7,29 +7,10 @@
 #include "k-grid.h"
 #include "k-grid-intern.h"
 
-extern bool running;
-
-#include <pthread.h>
 #include <unistd.h>
 
-extern grid_t* curr_grid;
-extern pthread_mutex_t lock;
-
+extern bool running;
 extern struct args args;
-
-/*
- * The most current grid should be sat:
- * - to "new_grid" when it is allocated
- * - to "old_grid" when "new_grid" is freed
- */
-void curr_grid_set(grid_t* grid)
-{
-  pthread_mutex_lock(&lock);
-
-  curr_grid = grid;
-
-  pthread_mutex_unlock(&lock);
-}
 
 #define GEN_DONE 0
 #define GEN_FAIL 1
@@ -70,7 +51,7 @@ static bool horiz_word_fits(wbase_t* wbase, grid_t* grid, const char* word, int 
 static int vert_word_gen(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, int cross_x, int cross_y);
 
 /*
- * When embeding a werd, new words perpendicular to it is generated
+ * When embeding a word, new words perpendicular to it is generated
  *
  * The newly generated words are stored in a copy of the grid,
  * this way, if not all words succeed, the old grid is perserved
@@ -82,9 +63,6 @@ static int horiz_word_embed(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid,
 {
   // 1. Duplicating the old grid, to work on seperate temp grid
   grid_t* new_grid = grid_dup(old_grid);
-
-  // Make current grid point to the new grid
-  curr_grid_set(new_grid);
 
 
   for(int index = 0; word[index] != '\0'; index++)
@@ -99,8 +77,6 @@ static int horiz_word_embed(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid,
 
     if(gen_status == GEN_FAIL)
     {
-      curr_grid_set(old_grid);
-
       grid_free(&new_grid);
 
       return GEN_FAIL;
@@ -108,8 +84,6 @@ static int horiz_word_embed(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid,
 
     if(gen_status == GEN_STOP)
     {
-      curr_grid_set(old_grid);
-
       grid_free(&new_grid);
 
       return GEN_STOP;
@@ -117,8 +91,6 @@ static int horiz_word_embed(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid,
   }
 
   grid_copy(old_grid, new_grid);
-
-  curr_grid_set(old_grid);
 
   grid_free(&new_grid);
 
@@ -206,6 +178,7 @@ static int horiz_word_gen(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, i
   if(!running) return GEN_STOP;
 
 
+  curr_grid_set(old_grid);
   // grid_print(grid);
   // usleep(1000000);
 
@@ -247,17 +220,10 @@ static int horiz_word_gen(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, i
   // 2. Test all words in the new grid
   grid_t* new_grid = grid_dup(old_grid);
 
-  // Make current grid point to the new grid
-  curr_grid_set(new_grid);
-
 
   int test_status = horiz_words_test(wbase, best_grid, old_grid, new_grid, gwords, word_count, cross_y);
 
   gwords_free(&gwords, word_count);
-
-
-  // Make current grid point to the old grid
-  curr_grid_set(old_grid);
 
 
   if(test_status == GEN_DONE)
@@ -292,15 +258,12 @@ static bool vert_word_fits(wbase_t* wbase, grid_t* grid, const char* word, int x
 }
 
 /*
- * When embeding a werd, new words perpendicular to it is generated
+ * When embeding a word, new words perpendicular to it is generated
  */
 static int vert_word_embed(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, const char* word, int x, int start_y)
 {
   // 1. Duplicating the old grid, to work on seperate temp grid
   grid_t* new_grid = grid_dup(old_grid);
-
-  // Make current grid point to the new grid
-  curr_grid_set(new_grid);
 
 
   for(int index = 0; word[index] != '\0'; index++)
@@ -315,8 +278,6 @@ static int vert_word_embed(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, 
 
     if(gen_status == GEN_FAIL)
     {
-      curr_grid_set(old_grid);
-
       grid_free(&new_grid);
 
       return GEN_FAIL;
@@ -324,8 +285,6 @@ static int vert_word_embed(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, 
 
     if(gen_status == GEN_STOP)
     {
-      curr_grid_set(old_grid);
-
       grid_free(&new_grid);
 
       return GEN_STOP;
@@ -333,8 +292,6 @@ static int vert_word_embed(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, 
   }
 
   grid_copy(old_grid, new_grid);
-
-  curr_grid_set(old_grid);
 
   grid_free(&new_grid);
 
@@ -422,6 +379,7 @@ static int vert_word_gen(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, in
   if(!running) return GEN_STOP;
 
 
+  curr_grid_set(old_grid);
   // grid_print(grid);
   // usleep(1000000);
 
@@ -463,17 +421,10 @@ static int vert_word_gen(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, in
   // 2. Test all words in the new grid
   grid_t* new_grid = grid_dup(old_grid);
 
-  // Make current grid point to the new grid
-  curr_grid_set(new_grid);
-
 
   int test_status = vert_words_test(wbase, best_grid, old_grid, new_grid, gwords, word_count, cross_x);
 
   gwords_free(&gwords, word_count);
-
-
-  // Make current grid point to the old grid
-  curr_grid_set(old_grid);
 
 
   if(test_status == GEN_DONE)
@@ -523,6 +474,8 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
       break;
     }
   }
+
+  curr_grid_set(grid);
 
   printf("grid:\n");
   grid_print(grid);
