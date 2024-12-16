@@ -1,3 +1,6 @@
 *
 !.gitignore
 !makefile
+!models
+!words
+!debug.sh

@@ -201,3 +201,43 @@ new_grid can have been changed (and have in experiments),
 that way, when resetting the grid later downwards here,
 The old grids (probaly empty) squares will overwrite new grid
 (This is what causes the empty lines from forming)
+
+
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 51.03      1.73     1.73    27400     0.00     0.00  _words_search
+ 25.96      2.61     0.88   789450     0.00     0.00  _word_exists_for_pattern
+  4.57      2.77     0.15 36499347     0.00     0.00  xy_index_get
+  2.06      2.83     0.07 30600044     0.00     0.00  xy_real_square_get
+  1.92      2.90     0.07 35781044     0.00     0.00  xy_square_get
+  1.77      2.96     0.06 21578090     0.00     0.00  xy_real_square_is_block
+  1.47      3.01     0.05  1819387     0.00     0.00  patt_crowd_is_allowed
+  1.33      3.06     0.04 30600412     0.00     0.00  xy_real_index_get
+  0.88      3.08     0.03  4244408     0.00     0.00  block_is_allowed
+  0.74      3.11     0.03        2     0.01     0.01  node_free
+  0.59      3.13     0.02 25962471     0.00     0.00  index_letter_get
+  0.59      3.15     0.02  9689914     0.00     0.00  xy_square_is_blocking
+  0.59      3.17     0.02   586947     0.00     0.00  node_create
+  0.59      3.19     0.02   542574     0.00     0.00  horiz_word_exists
+  0.59      3.21     0.02   504747     0.00     0.00  trie_word_use
+  0.59      3.23     0.02   148947     0.00     0.00  string_lower
+  0.59      3.25     0.02                             _init
+  0.44      3.27     0.01  9019521     0.00     0.00  xy_real_square_is_border
+  0.29      3.27     0.01 29716159     0.00     0.00  letter_index_get
+  0.29      3.29     0.01  3643006     0.00     0.00  xy_square_is_letter
+  0.29      3.29     0.01  1578902     0.00     0.00  word_exists_for_pattern
+  0.29      3.31     0.01   543049     0.00     0.00  horiz_start_xs_get
+  0.29      3.31     0.01   504663     0.00     0.00  trie_word_unuse
+  0.29      3.33     0.01   489033     0.00     0.00  vert_word_insert
+  0.29      3.33     0.01   489027     0.00     0.00  vert_word_fits
+  0.29      3.35     0.01   488987     0.00     0.00  vert_word_reset
+  0.29      3.35     0.01   148947     0.00     0.00  trie_word_insert
+  0.29      3.37     0.01    57501     0.00     0.00  vert_stop_ys_get
+  0.29      3.38     0.01        9     0.00     0.00  grid_print
+  0.15      3.38     0.01    12950     0.00     0.00  xy_square_set_crossed
+  0.15      3.38     0.01        2     0.00     0.01  trie_free
+  0.15      3.39     0.01                             xy_square_is_border
+  0.00      3.39     0.00  3460085     0.00     0.00  xy_square_is_block
+

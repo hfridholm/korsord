@@ -56,7 +56,7 @@ struct args args =
   .primary = NULL,
   .backup  = "../assets/backup.words",
   .visual  = false,
-  .debug   = false,
+  .debug   = true,  // Properly fix ncurses mode
   .single  = false,
   .fps     = 1
 };
