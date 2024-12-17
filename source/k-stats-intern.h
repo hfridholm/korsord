@@ -10,6 +10,9 @@
 #include <stddef.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <ncurses.h>
+
+#include "debug.h"
 
 typedef struct stats_patt_t
 {

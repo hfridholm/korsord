@@ -11,9 +11,8 @@ extern void stats_init(void);
 
 extern void stats_free(void);
 
-extern void stats_print(void);
-
 extern void stats_clear(void);
+
 
 extern void stats_patt_letter_incr(void);
 
@@ -30,5 +29,10 @@ extern void stats_patt_block_incr(void);
 extern void stats_patt_none_incr(void);
 
 extern void stats_patt_test_incr(void);
+
+
+extern void stats_ncurses_print(void);
+
+extern void stats_print(void);
 
 #endif // K_STATS_H

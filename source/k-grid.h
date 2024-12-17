@@ -19,17 +19,23 @@ extern grid_t* grid_gen(wbase_t* wbase, const char* filepath);
 
 extern void grid_free(grid_t** grid);
 
-extern void grid_print(grid_t* grid);
-
 extern bool grid_is_done(grid_t* grid);
 
 
 extern void curr_grid_init(void);
 
-extern void curr_grid_print(void);
-
 extern void curr_grid_free(void);
 
 extern void curr_grid_set(grid_t* grid);
+
+
+extern void curr_grid_print(void);
+
+extern void curr_grid_ncurses_print(void);
+
+
+extern void grid_print(grid_t* grid);
+
+extern void grid_ncurses_print(grid_t* grid);
 
 #endif // K_GRID_H

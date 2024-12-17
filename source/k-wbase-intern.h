@@ -13,6 +13,8 @@
 #include <ctype.h>
 #include <string.h>
 
+#include "debug.h"
+
 #define ALPHABET_SIZE 29
 
 typedef struct node_t node_t;

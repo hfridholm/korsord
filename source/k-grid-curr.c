@@ -64,3 +64,15 @@ void curr_grid_print(void)
 
   pthread_mutex_unlock(&grid_lock);
 }
+
+/*
+ *
+ */
+void curr_grid_ncurses_print(void)
+{
+  pthread_mutex_lock(&grid_lock);
+
+  grid_ncurses_print(curr_grid);
+
+  pthread_mutex_unlock(&grid_lock);
+}

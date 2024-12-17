@@ -8,6 +8,9 @@
 #include <sched.h>
 #include <pthread.h>
 
+#define DEBUG_IMPLEMENT
+#include "debug.h"
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,12 +33,14 @@ static char args_doc[] = "[MODEL]";
 
 static struct argp_option options[] =
 {
-  { "primary", 'p', "FILE",   0, "Primary words file" },
-  { "backup",  'b', "FILE",   0, "Backup words file" },
-  { "visual",  'v', 0,        0, "Visualize generation" },
-  { "debug",   'd', 0,        0, "Print debug messages" },
-  { "single",  's', 0,        0, "Only try generate once" },
-  { "fps",     'f', "NUMBER", 0, "Frames per second" },
+  { "primary",  'p', "FILE",   0, "Primary words file" },
+  { "backup",   'b', "FILE",   0, "Backup words file" },
+  { "visual",   'v', 0,        0, "Visualize generation" },
+  { "interact", 'i', 0,        0, "Enter interactive mode" },
+  { "debug",    'd', 0,        0, "Print debug messages" },
+  { "output",   'o', "FILE",   0, "Output debug to file" },
+  { "single",   's', 0,        0, "Only try generate once" },
+  { "fps",      'f', "NUMBER", 0, "Frames per second" },
   { 0 }
 };
 
@@ -45,9 +50,10 @@ struct args
   char* primary;
   char* backup;
   bool  visual;
-  bool  debug;
+  bool  ncurses;
   bool  single;
   int   fps;
+  char* output;
 };
 
 struct args args =
@@ -56,9 +62,10 @@ struct args args =
   .primary = NULL,
   .backup  = "../assets/backup.words",
   .visual  = false,
-  .debug   = true,  // Properly fix ncurses mode
+  .ncurses = false,
   .single  = false,
-  .fps     = 1
+  .fps     = 1,
+  .output  = NULL
 };
 
 /*
@@ -71,7 +78,7 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
   switch(key)
   {
     case 'f':
-      if(!arg) argp_usage(state);
+      if(!arg || *arg == '-') argp_usage(state);
 
       int number = atoi(arg);
 
@@ -88,7 +95,11 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
       break;
 
     case 'd':
-      args->debug = true;
+      args->ncurses = false;
+      break;
+
+    case 'i':
+      args->ncurses = true;
       break;
 
     case 's':
@@ -96,10 +107,20 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
       break;
 
     case 'p':
+      if(!arg || *arg == '-') argp_usage(state);
+
       args->primary = arg;
       break;
 
+    case 'o':
+      if(!arg || *arg == '-') argp_usage(state);
+
+      args->output = arg;
+      break;
+
     case 'b':
+      if(!arg || *arg == '-') argp_usage(state);
+
       args->backup = arg;
       break;
 
@@ -150,22 +171,33 @@ static void* print_routine(void* arg)
 {
   if(!args.visual) return NULL;
 
-  printf("Start printing grid\n");
+  info_print("Start print routine");
 
   int delay = 1000000 / args.fps;
 
   while(running)
   {
-    curr_grid_print();
+    if(args.ncurses)
+    {
+      clear();
 
-    stats_print();
+      curr_grid_ncurses_print();
+
+      stats_ncurses_print();
+
+      refresh();
+    }
+    else
+    {
+      curr_grid_print();
+
+      stats_print();
+    }
 
     usleep(delay);
-
-    refresh();
   }
 
-  printf("Stop printing grid\n");
+  info_print("Stop print routine");
 
   return NULL;
 }
@@ -178,7 +210,7 @@ static void* print_routine(void* arg)
  */
 static void stop_handler(int signum)
 {
-  printf("Stop program\n");
+  info_print("Stop program");
 
   running = false;
 }
@@ -188,6 +220,8 @@ static void stop_handler(int signum)
  */
 static int curses_init(void)
 {
+  info_print("Initializing ncurses");
+
   initscr();
 
   noecho();
@@ -207,6 +241,8 @@ static int curses_init(void)
   clear();
   refresh();
 
+  info_print("Initialized ncurses");
+
   return 0;
 }
 
@@ -215,11 +251,15 @@ static int curses_init(void)
  */
 static void curses_free(void)
 {
+  info_print("Freeing ncurses");
+
   clear();
 
   refresh();
 
   endwin();
+
+  info_print("Freed ncurses");
 }
 
 static struct argp argp = { options, opt_parse, args_doc, doc };
@@ -236,16 +276,33 @@ int main(int argc, char* argv[])
 
   // srand(time(NULL));
 
-  // Only enter ncurses mode if not in debug mode
-  if(!args.debug && curses_init() != 0)
-  {
-    perror("curses_init");
+  if(args.ncurses) args.output = "output.txt";
 
-    return 1;
+  if(args.output)
+  {
+    if(debug_file_open(args.output) != 0)
+    {
+      perror("debug_file_open");
+
+      return 1;
+    }
+  }
+
+  info_print("Start main");
+
+  if(args.ncurses)
+  {
+    if(curses_init() != 0)
+    {
+      perror("curses_init");
+
+      return 2;
+    }
   }
 
 
   curr_grid_init();
+
   stats_init();
 
 
@@ -262,54 +319,41 @@ int main(int argc, char* argv[])
     return 1;
   }
 
+  info_print("Creating word base");
 
   // 1. Load the word bases
   wbase_t* wbase = wbase_create(args.primary, args.backup);
 
   if(!wbase)
   {
-    perror("Failed to create wbase");
+    perror("Failed to create word base");
 
     curses_free();
     
     return 2;
   }
 
+  info_print("Created word base");
+
+
   // 2. Generate crossword grid with word bases
   grid_t* grid = NULL;
 
   while(running && !grid_is_done(grid))
   {
-    printf("Generating grid...\n");
+    info_print("Generating grid");
 
     curr_grid_set(NULL);
 
-    grid_free(&grid);
-
     stats_clear();
+
+
+    grid_free(&grid);
 
     grid = grid_gen(wbase, args.model);
 
     // If the user only wants 1 run, break
     if(args.single) break;
-  }
-
-  if(grid)
-  {
-    printf("Generated grid\n");
-
-    curr_grid_set(grid);
-
-
-    clear();
-
-    curr_grid_print();
-
-    stats_print();
-
-    refresh();
-
-    getch();
   }
 
   running = false;
@@ -320,16 +364,50 @@ int main(int argc, char* argv[])
   pthread_join(thread, NULL);
 
 
+  if(grid)
+  {
+    info_print("Generated grid");
+
+    curr_grid_set(grid);
+
+    if(args.ncurses)
+    {
+      clear();
+
+      curr_grid_ncurses_print();
+
+      stats_ncurses_print();
+
+      refresh();
+
+      getch();
+    }
+    else
+    {
+      curr_grid_print();
+
+      stats_print();
+    }
+  }
+
   grid_free(&grid);
 
   wbase_free(&wbase);
 
 
   curr_grid_free();
+  
   stats_free();
 
 
-  curses_free();
+  if(args.ncurses)
+  {
+    curses_free();
+  }
+
+  info_print("Stop main");
+
+  debug_file_close();
 
   return 0;
 }

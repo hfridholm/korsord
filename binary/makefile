@@ -45,7 +45,7 @@ $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.c
 
 .PRECIOUS: $(OBJECT_DIR)/%.o $(PROGRAM)
 
-DEBUG_FILES := vgcore* gmon.out profile.txt
+DEBUG_FILES := vgcore* gmon.out profile.txt output.txt debug.log
 
 BINARY_FILES := $(addprefix $(BINARY_DIR)/, $(DEBUG_FILES) $(PROGRAM)) 
 

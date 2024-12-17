@@ -140,6 +140,25 @@ void stats_patt_test_incr(void)
 /*
  *
  */
+void stats_ncurses_print(void)
+{
+  pthread_mutex_lock(&stats_lock);
+
+  mvprintw(1, 1, "letter: %ld", stats.patt.letter);
+  mvprintw(2, 1, "trap  : %ld", stats.patt.trap);
+  mvprintw(3, 1, "crowd : %ld", stats.patt.crowd);
+  mvprintw(4, 1, "edge  : %ld", stats.patt.edge);
+  mvprintw(5, 1, "corner: %ld", stats.patt.corner);
+  mvprintw(6, 1, "block : %ld", stats.patt.block);
+  mvprintw(7, 1, "none  : %ld", stats.patt.none);
+  mvprintw(8, 1, "test  : %ld", stats.test);
+
+  pthread_mutex_unlock(&stats_lock);
+}
+
+/*
+ *
+ */
 void stats_print(void)
 {
   pthread_mutex_lock(&stats_lock);

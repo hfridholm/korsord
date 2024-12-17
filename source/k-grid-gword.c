@@ -241,8 +241,6 @@ int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gr
       // Create current pattern
       sprintf(pattern, "%.*s", length, full_pattern + start_x);
 
-      // printf("pattern: (%s)\n", pattern);
-
       gwords_search(&primary_gwords, &primary_count, wbase->primary, pattern, start_x, stop_x);
 
       gwords_search(&backup_gwords, &backup_count, wbase->backup, pattern, start_x, stop_x);
@@ -402,8 +400,6 @@ int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gri
 
       // Create current pattern
       sprintf(pattern, "%.*s", length, full_pattern + start_y);
-
-      // printf("pattern: (%s)\n", pattern);
 
       gwords_search(&primary_gwords, &primary_count, wbase->primary, pattern, start_y, stop_y);
 
@@ -582,8 +578,6 @@ bool vert_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
       // Create current pattern
       sprintf(pattern, "%.*s", length, full_pattern + start_y);
 
-      // printf("pattern: (%s)\n", pattern);
-
       if(!word_exists_for_pattern(wbase->primary, pattern) &&
          !word_exists_for_pattern(wbase->backup, pattern))
       {
@@ -656,8 +650,6 @@ bool horiz_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 
       // Create current pattern
       sprintf(pattern, "%.*s", length, full_pattern + start_x);
-
-      // printf("pattern: (%s)\n", pattern);
 
       if(!word_exists_for_pattern(wbase->primary, pattern) &&
          !word_exists_for_pattern(wbase->backup, pattern))

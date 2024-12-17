@@ -190,7 +190,7 @@ static int horiz_word_gen(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, i
 
   if(old_grid->cross_count > best_grid->cross_count)
   {
-    // printf("new best grid: %d\n", grid->cross_count);
+    // info_print("new best grid: %d", grid->cross_count);
     grid_copy(best_grid, old_grid);
   }
 
@@ -391,7 +391,7 @@ static int vert_word_gen(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, in
 
   if(old_grid->cross_count > best_grid->cross_count)
   {
-    // printf("new best grid: %d\n", grid->cross_count);
+    // info_print("new best grid: %d", grid->cross_count);
     grid_copy(best_grid, old_grid);
   }
 
@@ -464,27 +464,20 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
 
     if(gen_status == GEN_STOP)
     {
-      printf("Generation stopped\n");
+      error_print("Generation stopped");
       break;
     }
 
     if(gen_status == GEN_FAIL)
     {
-      printf("Generation failed\n");
+      error_print("Generation failed");
       break;
     }
   }
 
-  curr_grid_set(grid);
-
-  printf("grid:\n");
-  grid_print(grid);
-
-  printf("best:\n");
-  grid_print(best_grid);
-
-
   grid_free(&best_grid);
+
+  curr_grid_set(grid);
 
   return grid;
 }

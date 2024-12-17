@@ -7,6 +7,57 @@
 #include "k-grid.h"
 #include "k-grid-intern.h"
 
+#include <ncurses.h>
+
+/*
+ * Print crossword grid in ncurses mode
+ */
+void grid_ncurses_print(grid_t* grid)
+{
+  if(!grid || !grid->squares) return;
+
+  int h = getmaxy(stdscr);
+  int w = getmaxx(stdscr);
+
+  int start_x = MAX(0, (w - (grid->width  + 2) * 2) / 2);
+  int start_y = MAX(0, (h - (grid->height + 2)) / 2);
+
+  for(int y = 0; y < (grid->height + 2); y++)
+  {
+    for(int x = 0; x < (grid->width + 2); x++)
+    {
+      square_t* square = xy_real_square_get(grid, x, y);
+
+      if(!square) continue;
+
+      int screen_x = start_x + (x * 2);
+      int screen_y = start_y + y;
+
+      switch(square->type)
+      {
+        case SQUARE_LETTER:
+          mvprintw(screen_y, screen_x, "%c", square->letter);
+          break;
+
+        case SQUARE_BLOCK:
+          mvprintw(screen_y, screen_x, "#");
+          break;
+
+        case SQUARE_EMPTY:
+          mvprintw(screen_y, screen_x, ".");
+          break;
+
+        case SQUARE_BORDER:
+          mvprintw(screen_y, screen_x, "X");
+          break;
+
+        default:
+          break;
+      }
+    }
+  }
+}
+
 /*
  * 
  */

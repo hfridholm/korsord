@@ -42,3 +42,17 @@ Allows core dumps
 ```bash
 ulimit -c unlimited
 ```
+
+## Debug
+
+See the debug messages of program
+
+```bash
+tail -f output.txt
+```
+
+Add this line of code to exit program
+
+```bash
+kill(0, SIGINT);
+```
