@@ -190,7 +190,12 @@ static void grid_prep_blocks(grid_t* grid)
     int x = square_index % (grid->width + 2);
     int y = square_index / (grid->width + 2);
 
-    xy_real_square_set_block(grid, x, y);
+    square_t* square = xy_real_square_get(grid, x, y);
+
+    // Don't overwrite model letters
+    if(square->type == SQUARE_LETTER) continue;
+
+    square->type = SQUARE_BLOCK;
   }
 
   // 3. Randomly assign SQUARE_BLOCK to squares at edges
@@ -220,6 +225,9 @@ static void grid_prep_blocks(grid_t* grid)
       }
 
       square_t* square = xy_real_square_get(grid, x, start_y);
+
+      // Don't overwrite model letters
+      if(square->type == SQUARE_LETTER) continue;
 
       if(square->type == SQUARE_BLOCK)
       {
@@ -266,6 +274,9 @@ static void grid_prep_blocks(grid_t* grid)
       }
 
       square_t* square = xy_real_square_get(grid, start_x, y);
+
+      // Don't overwrite model letters
+      if(square->type == SQUARE_LETTER) continue;
 
       if(square->type == SQUARE_BLOCK)
       {

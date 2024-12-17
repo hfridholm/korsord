@@ -32,7 +32,6 @@ grid_t* grid_model_load(const char* filepath)
   buffer[file_size] = '\0';
 
 
-
   char* buffer_copy = strdup(buffer);
 
   int width  = 0;
@@ -42,7 +41,7 @@ grid_t* grid_model_load(const char* filepath)
 
   for(height = 0; token; height++)
   {
-    width = MAX(width, strlen(token) / 2);
+    width = MAX(width, (strlen(token) + 1) / 2);
 
     token = strtok(NULL, "\n");
   }
@@ -55,6 +54,7 @@ grid_t* grid_model_load(const char* filepath)
     return NULL;
   }
 
+  // Initialize empty grid
   grid_t* grid = grid_create(width - 2, height - 2);
 
 
@@ -69,9 +69,9 @@ grid_t* grid_model_load(const char* filepath)
 
     for(int x = 0; x < width; x++)
     {
-      int index = (y * width) + x;
+      int square_index = (y * width) + x;
 
-      square_t* square = grid->squares + index; 
+      square_t* square = grid->squares + square_index;
 
       if(x >= curr_width)
       {
@@ -97,11 +97,13 @@ grid_t* grid_model_load(const char* filepath)
           break;
 
         default:
-          int index = letter_index_get(symbol);
+          int letter_index = letter_index_get(symbol);
 
-          if(index != -1)
+          if(letter_index != -1)
           {
+            square->type = SQUARE_LETTER;
             square->letter = symbol;
+            square->is_crossed = false;
           }
           break;
       }

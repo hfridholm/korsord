@@ -3,6 +3,7 @@
 - rewrite vert/horiz_word_exists
 - create different targets in makefile (for speed and debug)
 - duplicate k-grid-curr.c and use it for k-grid-best.c
+- maybe: remove best_grid
 - maybe add flags to makefile to silent output
 - maybe: move lock inside stats struct and lock inside grid struct
 - maybe: Change start and stop in gword_t to
@@ -11,10 +12,6 @@ union
   int start_x;
   int start_y;
 };
-
-Problem:
-- letters and blocks I have written in model doesn't make it to the result
-- make sure that the models content is perserved
 
 An future idea:
 
@@ -124,80 +121,6 @@ being traversed from the first "good" letter
 
 - fix problem with skyrocketing block_count
 I have a fealing that the problem is that singles (1 letter words) don't get restored
-- maybe: remove best_grid
-
-New bug:
-
-./korsord -d -s model.txt
-
-X X X X X X X X X X X X X X X X X 
-X X X X X X X # # # # b # # f # X 
-X X X X X X X # i s o l a t o r X 
-X X X X X X X # n y r a k a d # X 
-X X X X X X X v s # # d # k e k X 
-X X X X X X X # m p # r a # r o X 
-X X X X X X X k u # b i s # # m X 
-X X X X X X X # s n o k # u p p X 
-X X X X X X X # s # f e s t # a X 
-X # k # # m # # l # # d e l # # X 
-X # l a # i n h a k # o # e k e X 
-X b a # m l # v # p # m u t a # X 
-X # n j a # p i # m n # v a l t X 
-X s k o r e a # s # a h # n # a X 
-X # . . . . . . . . . . # d o g X 
-X e r a # # t b # a n # j e r g X 
-X # e l g # i # a l e # u # t a X 
-X X X X X X X X X X X X X X X X X
-
-I don't know why the empty space is there?
-
-This is a snapshot under other generation:
-
-X X X X X X X X X X X X X X X X X 
-X X X X X X X # # # # i # # . # X 
-X X X X X X X # g r a n # . . . X 
-X X X X X X X # a u # g . . . . X 
-X X X X X X X m p # . e . . . . X 
-X X X X X X X # a v p r o v a # X 
-X X X X X X X i n i # # . . . . X 
-X X X X X X X # d a t j a # . . X 
-X X X X X X X # e t t a # . . . X 
-X # . # # . # # # i # k h a t # X 
-X # . . . . . . . k . t . . . . X 
-X . . . . . . . . a . s l . . . X 
-X # . . . . . . . n . t d . . . X 
-X . . . . . . . . t . a u . . . X 
-X # . . . . . . . # . d l . . . X 
-X . . . . . . . . . . g m . . . X 
-X # . . . . . . . . . a a . . . X 
-X X X X X X X X X X X X X X X X X
-
-It seams like one word has been inserted uncomplete:
-
-h_ldulma
-
-After looking in backup.words, no word even is close to that.
-
-This is the result of that run:
-
-X X X X X X X X X X X X X X X X X 
-X X X X X X X # # # # i # # r # X 
-X X X X X X X # g r a n # d e j X 
-X X X X X X X # a u # g # s n # X 
-X X X X X X X m p # g e t # # . X 
-X X X X X X X # a v p r o v a # X 
-X X X X X X X i n i # # k y s s X 
-X X X X X X X # d a t j a # k p X 
-X X X X X X X # e t t a # b e y X 
-X # v # # p # # # i # o n # # # X 
-X # e . . . . . # k u r a # . . X 
-X s k o l l i v # a n d # e m u X 
-X # # v a k # a g n # # a k # l X 
-X k p i # a r # # t i # r o # # X 
-X # o s # # y l # # # k a r s k X 
-X s e c # k a f f e # o # # u r X 
-X # t h a i # v e d y x a # p i X 
-X X X X X X X X X X X X X X X X X
 
 
 Problem in horiz/vert_word_embed:
@@ -245,4 +168,3 @@ Each sample counts as 0.01 seconds.
   0.15      3.38     0.01        2     0.00     0.01  trie_free
   0.15      3.39     0.01                             xy_square_is_border
   0.00      3.39     0.00  3460085     0.00     0.00  xy_square_is_block
-
