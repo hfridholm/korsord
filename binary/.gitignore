@@ -4,3 +4,5 @@
 !models
 !words
 !debug.sh
+!valgrind.sh
+!interact.sh
