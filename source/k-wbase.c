@@ -71,6 +71,22 @@ void wbase_free(wbase_t** wbase)
 /*
  *
  */
+void wbase_reset(wbase_t* wbase)
+{
+  if(wbase->primary)
+  {
+    trie_reset(wbase->primary);
+  }
+
+  if(wbase->backup)
+  {
+    trie_reset(wbase->backup);
+  }
+}
+
+/*
+ *
+ */
 void wbase_word_use(wbase_t* wbase, const char* word)
 {
   if(wbase->primary)

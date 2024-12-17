@@ -186,7 +186,6 @@ static void* print_routine(void* arg)
       clear();
 
       curr_grid_ncurses_print();
-
       stats_ncurses_print();
 
       refresh();
@@ -194,7 +193,6 @@ static void* print_routine(void* arg)
     else
     {
       curr_grid_print();
-
       stats_print();
     }
 
@@ -287,6 +285,9 @@ static void* gen_routine(void* wbase)
 {
   info_print("Generating grid");
 
+  // 1. Un-using every word in word base
+  wbase_reset(wbase);
+
   grid_t* grid = grid_gen(wbase, args.model);
 
   curr_grid_set(grid);
@@ -305,8 +306,7 @@ static void interact_routine(wbase_t* wbase)
 {
   info_print("Start interact routine");
 
-  pthread_t thread;
-  int error;
+  pthread_t thread = 0;
 
   int key;
   while(is_running && (key = getch()) != ERR)
@@ -321,10 +321,8 @@ static void interact_routine(wbase_t* wbase)
         // This will stop the gen routine
         is_generating = false;
 
-        if((error = pthread_join(thread, NULL)) != 0)
-        {
-          error_print("pthread_join: %s", strerror(error));
-        }
+        pthread_join(thread, NULL);
+        thread = 0;
           
         curr_grid_set(NULL);
         stats_clear();
@@ -345,10 +343,8 @@ static void interact_routine(wbase_t* wbase)
         // Wait for the second thread to finish
         // pthread_cancel(thread);
 
-        if((error = pthread_join(thread, NULL)) != 0)
-        {
-          error_print("pthread_join: %s", strerror(error));
-        }
+        pthread_join(thread, NULL);
+        thread = 0;
 
         info_print("Stopped grid generation");
         break;
@@ -371,6 +367,7 @@ static void interact_routine(wbase_t* wbase)
   // pthread_cancel(thread);
 
   pthread_join(thread, NULL);
+  thread = 0;
 
   info_print("Stop interact routine");
 }
@@ -385,7 +382,7 @@ static void debug_routine(wbase_t* wbase)
   curr_grid_set(NULL);
   stats_clear();
 
-  pthread_t thread;
+  pthread_t thread = 0;
 
   if(pthread_create(&thread, NULL, gen_routine, wbase) != 0)
   {
@@ -396,6 +393,9 @@ static void debug_routine(wbase_t* wbase)
   // pthread_cancel(thread);
 
   pthread_join(thread, NULL);
+
+  curr_grid_print();
+  stats_print();
 
   curr_grid_set(NULL);
   stats_clear();
@@ -449,7 +449,7 @@ int main(int argc, char* argv[])
 
   is_running = true;
 
-  pthread_t thread;
+  pthread_t thread = 0;
 
   if(pthread_create(&thread, NULL, print_routine, NULL) != 0)
   {

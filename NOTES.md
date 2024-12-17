@@ -12,6 +12,9 @@ union
   int start_y;
 };
 
+Problem:
+- letters and blocks I have written in model doesn't make it to the result
+- make sure that the models content is perserved
 
 An future idea:
 

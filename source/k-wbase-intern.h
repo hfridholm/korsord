@@ -31,6 +31,8 @@ typedef struct node_t
 
 extern trie_t* trie_create(const char* filepath);
 
+extern void    trie_reset(trie_t* trie);
+
 extern void    trie_free(trie_t** trie);
 
 
