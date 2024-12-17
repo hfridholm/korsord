@@ -147,26 +147,26 @@ int horiz_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_
 /*
  *
  */
-void horiz_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char* word, int start_x, int y)
+void horiz_word_reset(wbase_t* wbase, grid_t* old_grid, grid_t* grid, const char* word, int start_x, int y)
 {
   // Reset word letters
   int index, x;
-  square_t *original_square, *square;
+  square_t *old_square, *square;
 
   for(index = 0; word[index] != '\0'; index++)
   {
     x = start_x + index;
 
-    original_square = xy_square_get(original, x, y);
+    old_square = xy_square_get(old_grid, x, y);
 
     square = xy_square_get(grid, x, y);
 
-    if(!original_square || !square) break;
+    if(!old_square || !square) break;
 
 
     if(square->is_crossed) grid->cross_count--;
 
-    *square = *original_square;
+    *square = *old_square;
   }
 
   // Reset the block at the end of the word
@@ -174,7 +174,7 @@ void horiz_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char
   {
     int square_index = xy_index_get(grid, start_x + index, y);
 
-    grid->squares[square_index] = original->squares[square_index];
+    grid->squares[square_index] = old_grid->squares[square_index];
   }
 
   // Reset the block at the beginning of word
@@ -182,7 +182,7 @@ void horiz_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char
   {
     int square_index = xy_index_get(grid, start_x - 1, y);
 
-    grid->squares[square_index] = original->squares[square_index];
+    grid->squares[square_index] = old_grid->squares[square_index];
   }
 
   // Unmark the word as used, so it can be used somewhere else
@@ -192,26 +192,26 @@ void horiz_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char
 /*
  *
  */
-void vert_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char* word, int x, int start_y)
+void vert_word_reset(wbase_t* wbase, grid_t* old_grid, grid_t* grid, const char* word, int x, int start_y)
 {
   // Reset word letters
   int index, y;
-  square_t *original_square, *square;
+  square_t *old_square, *square;
 
   for(index = 0; word[index] != '\0'; index++)
   {
     y = start_y + index;
 
-    original_square = xy_square_get(original, x, y);
+    old_square = xy_square_get(old_grid, x, y);
 
     square = xy_square_get(grid, x, y);
 
-    if(!original_square || !square) break;
+    if(!old_square || !square) break;
 
 
     if(square->is_crossed) grid->cross_count--;
 
-    *square = *original_square;
+    *square = *old_square;
   }
 
   // Reset the block at the end of the word
@@ -219,7 +219,7 @@ void vert_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char*
   {
     int square_index = xy_index_get(grid, x, start_y + index);
 
-    grid->squares[square_index] = original->squares[square_index];
+    grid->squares[square_index] = old_grid->squares[square_index];
   }
 
   // Reset the block at the beginning of word
@@ -227,7 +227,7 @@ void vert_word_reset(wbase_t* wbase, grid_t* original, grid_t* grid, const char*
   {
     int square_index = xy_index_get(grid, x, start_y - 1);
 
-    grid->squares[square_index] = original->squares[square_index];
+    grid->squares[square_index] = old_grid->squares[square_index];
   }
 
   // Unmark the word as used, so it can be used somewhere else
