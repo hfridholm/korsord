@@ -2,7 +2,8 @@
 - add indexes for å ä ö
 - rewrite vert/horiz_word_exists
 - create different targets in makefile (for speed and debug)
-- create bash scripts [valgrind.sh debug.sh interact.sh]
+- duplicate k-grid-curr.c and use it for k-grid-best.c
+- maybe add flags to makefile to silent output
 - maybe: move lock inside stats struct and lock inside grid struct
 - maybe: Change start and stop in gword_t to
 union

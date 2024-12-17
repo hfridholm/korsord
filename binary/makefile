@@ -45,11 +45,12 @@ $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.c
 
 .PRECIOUS: $(OBJECT_DIR)/%.o $(PROGRAM)
 
-DEBUG_FILES := vgcore* gmon.out profile.txt output.txt debug.log
+DEBUG_FILES := vgcore* gmon.out profile.txt debug.log
 
 BINARY_FILES := $(addprefix $(BINARY_DIR)/, $(DEBUG_FILES) $(PROGRAM)) 
 
 $(CLEAN_TARGET):
+	truncate -s 0 $(BINARY_DIR)/output.txt
 	$(DELETE_CMD) $(OBJECT_DIR)/*.o $(BINARY_FILES)
 
 $(HELP_TARGET):

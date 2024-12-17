@@ -36,19 +36,36 @@ void grid_ncurses_print(grid_t* grid)
       switch(square->type)
       {
         case SQUARE_LETTER:
-          mvprintw(screen_y, screen_x, "%c", square->letter);
-          break;
-
-        case SQUARE_BLOCK:
-          mvprintw(screen_y, screen_x, "#");
+          if(square->is_crossed)
+          {
+            attron(COLOR_PAIR(1));
+            mvprintw(screen_y, screen_x, "%c", square->letter);
+            attroff(COLOR_PAIR(1));
+          }
+          else
+          {
+            attron(COLOR_PAIR(2));
+            mvprintw(screen_y, screen_x, "%c", square->letter);
+            attroff(COLOR_PAIR(2));
+          }
           break;
 
         case SQUARE_EMPTY:
+          attron(COLOR_PAIR(3));
           mvprintw(screen_y, screen_x, ".");
+          attroff(COLOR_PAIR(3));
+          break;
+
+        case SQUARE_BLOCK:
+          attron(COLOR_PAIR(4));
+          mvprintw(screen_y, screen_x, "#");
+          attroff(COLOR_PAIR(4));
           break;
 
         case SQUARE_BORDER:
+          attron(COLOR_PAIR(5));
           mvprintw(screen_y, screen_x, "X");
+          attroff(COLOR_PAIR(5));
           break;
 
         default:

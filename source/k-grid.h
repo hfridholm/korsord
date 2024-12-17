@@ -10,6 +10,14 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+/*
+ * This is a flag that is exposed to the user
+ *
+ * Maybe in future: add mutex locks for safty
+ */
+extern bool is_generating;
+
+
 typedef struct grid_t grid_t;
 
 typedef struct wbase_t wbase_t;

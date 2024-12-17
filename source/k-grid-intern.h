@@ -128,6 +128,8 @@ extern void horiz_word_reset(wbase_t* wbase, grid_t* old_grid, grid_t* grid, con
 
 extern grid_t* grid_create(int width, int height);
 
+extern grid_t* grid_clear(grid_t* grid);
+
 extern grid_t* grid_copy(grid_t* copy, grid_t* grid);
 
 extern grid_t* grid_dup(grid_t* grid);

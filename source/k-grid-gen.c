@@ -9,8 +9,7 @@
 
 #include <unistd.h>
 
-extern bool running;
-extern struct args args;
+bool is_generating = false;
 
 #define GEN_DONE 0
 #define GEN_FAIL 1
@@ -147,7 +146,7 @@ static int horiz_words_test(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid,
 {
   for(size_t index = 0; index < word_count; index++)
   {
-    if(!running) return GEN_STOP;
+    if(!is_generating) return GEN_STOP;
 
     gword_t gword = gwords[index];
 
@@ -175,7 +174,7 @@ static int horiz_words_test(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid,
  */
 static int horiz_word_gen(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, int cross_x, int cross_y)
 {
-  if(!running) return GEN_STOP;
+  if(!is_generating) return GEN_STOP;
 
 
   curr_grid_set(old_grid);
@@ -348,7 +347,7 @@ static int vert_words_test(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, 
 {
   for(size_t index = 0; index < word_count; index++)
   {
-    if(!running) return GEN_STOP;
+    if(!is_generating) return GEN_STOP;
 
     gword_t gword = gwords[index];
 
@@ -376,7 +375,7 @@ static int vert_words_test(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, 
  */
 static int vert_word_gen(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, int cross_x, int cross_y)
 {
-  if(!running) return GEN_STOP;
+  if(!is_generating) return GEN_STOP;
 
 
   curr_grid_set(old_grid);
@@ -442,16 +441,17 @@ static int vert_word_gen(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, in
  */
 grid_t* grid_gen(wbase_t* wbase, const char* filepath)
 {
+  // 1. Load grid from the model
   grid_t* grid = grid_model_load(filepath);
 
-  if(!grid)
-  {
-    return NULL;
-  }
+  if(!grid) return NULL;
 
+  // 2. Prepare the grid for generation
   grid_prep(grid);
 
   grid_t* best_grid = grid_dup(grid);
+
+  is_generating = true;
 
   for(int index = 0; index < grid->square_count; index++)
   {
@@ -474,6 +474,8 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
       break;
     }
   }
+
+  is_generating = false;
 
   grid_free(&best_grid);
 
