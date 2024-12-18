@@ -26,7 +26,9 @@ extern char index_letter_get(int index);
 
 extern wbase_t* wbase_create(const char* primary_filepath, const char* backup_filepath);
 
-extern void wbase_free(wbase_t** wbase);
+extern void     wbase_reset(wbase_t* wbase);
+
+extern void     wbase_free(wbase_t** wbase);
 
 
 extern int  words_search(char*** words, size_t* count, trie_t* trie, const char* pattern);
@@ -41,6 +43,6 @@ extern void wbase_word_use(wbase_t* wbase, const char* word);
 extern void wbase_word_unuse(wbase_t* wbase, const char* word);
 
 
-extern bool word_exists_for_pattern(trie_t* trie, const char* pattern);
+extern int wbase_words_exist_for_pattern(wbase_t* wbase, const char* pattern, int max_amount);
 
 #endif // K_WBASE_H

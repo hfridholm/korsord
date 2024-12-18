@@ -117,6 +117,8 @@ grid_t* grid_copy(grid_t* copy, grid_t* grid)
  */
 grid_t* grid_dup(grid_t* grid)
 {
+  if(!grid) return NULL;
+
   grid_t* dup = malloc(sizeof(grid_t));
 
   if(!dup) return NULL;

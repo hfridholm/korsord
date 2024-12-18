@@ -119,18 +119,22 @@ int words_search(char*** words, size_t* count, trie_t* trie, const char* pattern
 }
 
 /*
- *
+ * RETURN (int amount)
  */
-static bool _word_exists_for_pattern(node_t* node, const char* pattern, int index, char* word)
+static int _words_exist_for_pattern(node_t* node, const char* pattern, int index, char* word, int max_amount)
 {
   // Base case - the end of the word
   if(pattern[index] == '\0')
   {
+    // This evaluates to 0 if false and 1 if true
+    // which represents that 'a' word exist
     return (node->is_end_of_word && !node->is_used);
   }
 
   // Search words with next letter
   int letter_index = letter_index_get(pattern[index]);
+
+  int amount = 0;
 
   for(int child_index = 0; child_index < ALPHABET_SIZE; child_index++)
   {
@@ -149,21 +153,39 @@ static bool _word_exists_for_pattern(node_t* node, const char* pattern, int inde
 
     snprintf(new_word, index + 2, "%.*s%c", index, word, letter);
 
-    if(_word_exists_for_pattern(child, pattern, index + 1, new_word))
-    {
-      return true;
-    }
+    // max_amount - amount means that the next node
+    // only get to search the REST of max_amount
+    amount += _words_exist_for_pattern(child, pattern, index + 1, new_word, max_amount - amount);
+
+    // This is opimization only for performance
+    if(amount > max_amount) break;
   }
 
-  return false;
+  return amount;
 }
 
 /*
- *
+ * RETURN (int amount)
  */
-bool word_exists_for_pattern(trie_t* trie, const char* pattern)
+static int words_exist_for_pattern(trie_t* trie, const char* pattern, int max_amount)
 {
-  if(!trie || !pattern) return false;
+  if(!trie || !pattern) return 0;
 
-  return _word_exists_for_pattern((node_t*) trie, pattern, 0, "");
+  return _words_exist_for_pattern((node_t*) trie, pattern, 0, "", max_amount);
+}
+
+/*
+ * RETURN (int amount)
+ */
+int wbase_words_exist_for_pattern(wbase_t* wbase, const char* pattern, int max_amount)
+{
+  int amount = 0;
+
+  amount += words_exist_for_pattern(wbase->primary, pattern, max_amount - amount);
+
+  if(amount > max_amount) return max_amount;
+
+  amount += words_exist_for_pattern(wbase->backup,  pattern, max_amount - amount);
+
+  return MIN(amount, max_amount);
 }

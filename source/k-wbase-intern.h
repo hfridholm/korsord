@@ -15,6 +15,9 @@
 
 #include "debug.h"
 
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+
 #define ALPHABET_SIZE 29
 
 typedef struct node_t node_t;
@@ -30,6 +33,8 @@ typedef struct node_t
 
 
 extern trie_t* trie_create(const char* filepath);
+
+extern void    trie_reset(trie_t* trie);
 
 extern void    trie_free(trie_t** trie);
 

@@ -8,11 +8,6 @@
  * trie_t* trie_create(const char* filepath)
  *
  * void    trie_free(trie_t** trie)
- *
- *
- * int     words_search(char*** words, size_t* count, trie_t* trie, const char* pattern)
- *
- * void    words_free(char*** words, size_t count)
  */
 
 #include "k-wbase.h"
@@ -192,3 +187,20 @@ void trie_word_unuse(trie_t* trie, const char* word)
 
   if(node) node->is_used = false;
 }
+
+/*
+ *
+ */
+static void node_reset(node_t* node)
+{
+  if(!node) return;
+
+  for(int index = 0; index < ALPHABET_SIZE; index++)
+  {
+    node_reset(node->children[index]);
+  }
+
+  node->is_used = false;
+}
+
+void trie_reset(trie_t* trie) { node_reset((node_t*) trie); }
