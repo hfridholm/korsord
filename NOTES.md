@@ -1,6 +1,5 @@
 # Notes
 - add indexes for å ä ö
-- rewrite vert/horiz_word_exists
 - create different targets in makefile (for speed and debug)
 - duplicate k-grid-curr.c and use it for k-grid-best.c
 - maybe: remove best_grid

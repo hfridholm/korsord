@@ -10,19 +10,6 @@
 #include "k-wbase.h"
 
 /*
- * When checking if words exists in 
- * horiz_word_exists
- * vert_word_exists
- *
- * If at least one word exists, don't have to check
- * words larger than MAX_EXIST_LENGTH
- *
- * Though: check so words upto MAX_EXIST_LENGTH also exists
- * Checking more than just one word exits is better for the algorithm
- */
-#define MAX_EXIST_LENGTH 40
-
-/*
  * Shuffle grid words
  */
 static void gwords_shuffle(gword_t* gwords, size_t count)
@@ -121,7 +108,7 @@ static int gwords_search(gword_t** gwords, size_t* count, trie_t* trie, const ch
 /*
  *
  */
-static int horiz_full_pattern_get(char* pattern, grid_t* grid, int y)
+int horiz_full_pattern_get(char* pattern, grid_t* grid, int y)
 {
   for(int x = 0; x < grid->width; x++)
   {
@@ -140,7 +127,7 @@ static int horiz_full_pattern_get(char* pattern, grid_t* grid, int y)
 /*
  *
  */
-static bool horiz_start_xs_get(int* start_xs, int* count, grid_t* grid, int cross_x, int cross_y)
+bool horiz_start_xs_get(int* start_xs, int* count, grid_t* grid, int cross_x, int cross_y)
 {
   bool is_blocked = true;
 
@@ -165,7 +152,7 @@ static bool horiz_start_xs_get(int* start_xs, int* count, grid_t* grid, int cros
 /*
  *
  */
-static bool horiz_stop_xs_get(int* stop_xs, int* count, grid_t* grid, int cross_x, int cross_y)
+bool horiz_stop_xs_get(int* stop_xs, int* count, grid_t* grid, int cross_x, int cross_y)
 {
   bool is_blocked = true;
 
@@ -280,7 +267,7 @@ int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gr
 /*
  *
  */
-static int vert_full_pattern_get(char* pattern, grid_t* grid, int x)
+int vert_full_pattern_get(char* pattern, grid_t* grid, int x)
 {
   for(int y = 0; y < grid->height; y++)
   {
@@ -299,7 +286,7 @@ static int vert_full_pattern_get(char* pattern, grid_t* grid, int x)
 /*
  *
  */
-static bool vert_start_ys_get(int* start_ys, int* count, grid_t* grid, int cross_x, int cross_y)
+bool vert_start_ys_get(int* start_ys, int* count, grid_t* grid, int cross_x, int cross_y)
 {
   bool is_blocked = true;
 
@@ -325,7 +312,7 @@ static bool vert_start_ys_get(int* start_ys, int* count, grid_t* grid, int cross
  * RETURN (bool is_blocked)
  * - true | It is blocked downwards
  */
-static bool vert_stop_ys_get(int* stop_ys, int* count, grid_t* grid, int cross_x, int cross_y)
+bool vert_stop_ys_get(int* stop_ys, int* count, grid_t* grid, int cross_x, int cross_y)
 {
   bool is_blocked = true;
 
@@ -435,230 +422,4 @@ int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gri
   free(backup_gwords);
 
   return GWORDS_DONE;
-}
-
-/*
- * I have had problems with the differences with these codes:
- *
- * if(!word_exists_for_pattern(wbase->primary, pattern) &&
- *    !word_exists_for_pattern(wbase->backup, pattern))
- * {
- *   return false;
- * }
- *
- * if(word_exists_for_pattern(wbase->primary, pattern) ||
- *    word_exists_for_pattern(wbase->backup, pattern))
- * {
- *   return true;
- * }
- *
- * I got the answer!
- *
- * The first example, returns true, only if all patterns have words
- *
- * The second example, returns true, if just 1 pattern have a word.
- *
- * The problem is, the second example can just "nöja sig" med 2 letter words,
- * not accounting for that they block or not include the rest of the full_pattern letters.
- *
- * Example:
- *        |
- * ____H_GO_I____T_____
- *
- * It is really unneccessary to check more than:
- *    |
- * H_GO_I____T
- *    |
- * H_GO_I
- *    |
- *   GO_I
- *    |
- *   GO
- *
- * Det övre visar när man går ytterst inåt
- *
- * Det undre visar när man utgår ifrån cross x/y och går utåt
- *    |
- *   GO
- *    |
- *   GO_I
- *    |
- * H_GO_I
- *    |
- * H_GO_I____T
- *
- * This way, only words with a chosen max_length (ex 6) have to be checked:
- *    |
- *   GO
- *    |
- *   GO_I
- *    |
- * H_GO_I
- *
- * The solution, is to strip full_pattern of '_' (optional letters)
- * This is done, by continue the loop when '_' occour in pattern, starting from cross x/y
- *
- * for(int start_index = 0; start_index < start_count; start_index++)
- *
- * Start and stop indexes are stored from cross x/y and outwards
- *
- * This way, all the necessary letters nearest to cross x/y are accounted for, 
- * but the optional letters further away can be skipped.
- *
- * 
- * Further skipping can be done by checking for a max_length of words.
- *
- * Either, continue when length > max_length (recommended)
- * or
- * "nöja sig med" just 1 max_length valid word and return true (not recommended for now)
- *
- *
- * Conclution: The second code example is just wrong and should never be used.
- */
-
-/*
- * This function has the same base structure as
- * vert_gwords_get
- */
-bool vert_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
-{
-  // 1. Create full pattern
-  char full_pattern[grid->height + 1];
-
-  if(vert_full_pattern_get(full_pattern, grid, cross_x) != 0)
-  {
-    return false;
-  }
-
-  int start_ys[cross_y + 1];
-  int start_count = 0;
-
-  bool start_is_blocked = vert_start_ys_get(start_ys, &start_count, grid, cross_x, cross_y);
-
-  int stop_ys[grid->height - cross_y];
-  int stop_count = 0;
-
-  bool stop_is_blocked = vert_stop_ys_get(stop_ys, &stop_count, grid, cross_x, cross_y);
-
-
-  if(start_is_blocked && stop_is_blocked)
-  {
-    // Here: Both start and stop is cross_y (1 letter)
-    return true;
-  }
-
-  char pattern[grid->height + 1];
-
-  bool word_exists = false;
-
-  for(int start_index = 0; start_index < start_count; start_index++)
-  {
-    int start_y = start_ys[start_index];
-
-    // Disregard patterns (therefor words) with optional letters
-    if(full_pattern[start_y] == '_') continue;
-
-    for(int stop_index = 0; stop_index < stop_count; stop_index++)
-    {
-      int stop_y  = stop_ys[stop_index];
-
-      // Disregard patterns (therefor words) with optional letters
-      if(full_pattern[stop_y] == '_') continue;
-
-      // Don't bother the case where start and stop is cross_y
-      if(start_y == stop_y) continue;
-
-      int length = (1 + stop_y - start_y);
-
-      
-      // This is done for performance
-      if(word_exists && length > MAX_EXIST_LENGTH) continue;
-
-
-      // Create current pattern
-      sprintf(pattern, "%.*s", length, full_pattern + start_y);
-
-      if(!word_exists_for_pattern(wbase->primary, pattern) &&
-         !word_exists_for_pattern(wbase->backup, pattern))
-      {
-        return false;
-      }
-      else word_exists = true;
-    }
-  }
-
-  return true;
-}
-
-/*
- *
- */
-bool horiz_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
-{
-  // 1. Create full pattern
-  char full_pattern[grid->width + 1];
-
-  if(horiz_full_pattern_get(full_pattern, grid, cross_y) != 0)
-  {
-    return false;
-  }
-
-  int start_xs[cross_x + 1];
-  int start_count = 0;
-
-  bool start_is_blocked = horiz_start_xs_get(start_xs, &start_count, grid, cross_x, cross_y);
-
-  int stop_xs[grid->width - cross_x];
-  int stop_count = 0;
-
-  bool stop_is_blocked = horiz_stop_xs_get(stop_xs, &stop_count, grid, cross_x, cross_y);
-
-
-  if(start_is_blocked && stop_is_blocked)
-  {
-    // Here: Both start and stop is cross_x (1 letter)
-    return true;
-  }
-
-  char pattern[grid->width + 1];
-
-  bool word_exists = false;
-
-  for(int start_index = 0; start_index < start_count; start_index++)
-  {
-    int start_x = start_xs[start_index];
-
-    // Disregard patterns (therefor words) with optional letters
-    if(full_pattern[start_x] == '_') continue;
-
-    for(int stop_index = 0; stop_index < stop_count; stop_index++)
-    {
-      int stop_x  = stop_xs[stop_index];
-
-      // Disregard patterns (therefor words) with optional letters
-      if(full_pattern[stop_x] == '_') continue;
-
-      // Don't bother the case where start and stop is cross_x
-      if(start_x == stop_x) continue;
-
-      int length = (1 + stop_x - start_x);
-
-
-      // This is done for performance
-      if(word_exists && length > MAX_EXIST_LENGTH) continue;
-
-
-      // Create current pattern
-      sprintf(pattern, "%.*s", length, full_pattern + start_x);
-
-      if(!word_exists_for_pattern(wbase->primary, pattern) &&
-         !word_exists_for_pattern(wbase->backup, pattern))
-      {
-        return false;
-      }
-      else word_exists = true;
-    }
-  }
-
-  return true;
 }

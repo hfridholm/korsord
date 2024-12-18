@@ -67,10 +67,23 @@ typedef struct grid_t
   int       word_count;
 } grid_t;
 
+extern int vert_full_pattern_get(char* pattern, grid_t* grid, int x);
 
-extern bool horiz_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);
+extern int horiz_full_pattern_get(char* pattern, grid_t* grid, int y);
 
-extern bool vert_word_exists(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);
+
+extern bool vert_start_ys_get(int* start_ys, int* count, grid_t* grid, int cross_x, int cross_y);
+
+extern bool vert_stop_ys_get(int* stop_ys, int* count, grid_t* grid, int cross_x, int cross_y);
+
+extern bool horiz_start_xs_get(int* start_xs, int* count, grid_t* grid, int cross_x, int cross_y);
+
+extern bool horiz_stop_xs_get(int* stop_xs, int* count, grid_t* grid, int cross_x, int cross_y);
+
+
+extern int vert_word_fits(int* indexes, wbase_t* wbase, grid_t* grid, const char* word, int x, int start_y);
+
+extern int horiz_word_fits(int* indexes, wbase_t* wbase, grid_t* grid, const char* word, int start_x, int y);
 
 
 extern int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);

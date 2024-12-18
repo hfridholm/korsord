@@ -26,27 +26,6 @@ bool is_generating = false;
  * The new_grid should be saved to upsteam grid.
  */
 
-/*
- * Check if the word fits horizontally (on 1st level)
- */
-static bool horiz_word_fits(wbase_t* wbase, grid_t* grid, const char* word, int start_x, int y)
-{
-  for(int index = 0; word[index] != '\0'; index++)
-  {
-    int x = start_x + index;
-
-    // A square that is already crossed is done
-    if(xy_square_is_crossed(grid, x, y)) continue;
-
-    if(!vert_word_exists(wbase, grid, x, y))
-    {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 static int vert_word_gen(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, int cross_x, int cross_y);
 
 /*
@@ -57,16 +36,26 @@ static int vert_word_gen(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, in
  *
  * If the words are generated in the old_grid,
  * the grid will probaly not be solved if one letter fails
+ *
+ * PARAMS
+ * - int* indexes | Which indexes (letters) to embed
+ * - int  count   | Number of letters to embed
+ *
+ * RETURN (int status)
  */
-static int horiz_word_embed(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, const char* word, int start_x, int y)
+static int horiz_word_embed(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, const char* word, int start_x, int y, int* indexes, int count)
 {
   // 1. Duplicating the old grid, to work on seperate temp grid
   grid_t* new_grid = grid_dup(old_grid);
 
-
-  for(int index = 0; word[index] != '\0'; index++)
+  /*
+   * Important to note that:
+   * "index" is the index of the indexes array
+   * indexes[index] is the index of the letter
+   */
+  for(int index = 0; index < count; index++)
   {
-    int x = start_x + index;
+    int x = start_x + indexes[index];
 
     // A square that is already crossed is done
     if(xy_square_is_crossed(new_grid, x, y)) continue;
@@ -109,8 +98,13 @@ static int horiz_word_test(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, 
   }
 
 
+  // Get an ordered list of indexes to letters to embed
+  int indexes[strlen(word)];
+
+  int count = horiz_word_fits(indexes, wbase, new_grid, word, x, y);
+
   // 2. If the word doesn't have a chance of fitting
-  if(!horiz_word_fits(wbase, new_grid, word, x, y))
+  if(count == 0)
   {
     // 3. Remove the tested word from the grid
     horiz_word_reset(wbase, old_grid, new_grid, word, x, y);
@@ -119,8 +113,8 @@ static int horiz_word_test(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, 
   }
 
 
-  // 3. 
-  int embed_status = horiz_word_embed(wbase, best_grid, new_grid, word, x, y);
+  // 3. Embed the word horizontally, by generating words for letters
+  int embed_status = horiz_word_embed(wbase, best_grid, new_grid, word, x, y, indexes, count);
 
   if(embed_status == GEN_STOP)
   {
@@ -236,38 +230,33 @@ static int horiz_word_gen(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, i
 }
 
 /*
- *
- */
-static bool vert_word_fits(wbase_t* wbase, grid_t* grid, const char* word, int x, int start_y)
-{
-  for(int index = 0; word[index] != '\0'; index++)
-  {
-    int y = start_y + index;
-
-    // A square that is already crossed is done
-    if(xy_square_is_crossed(grid, x, y)) continue;
-
-    if(!horiz_word_exists(wbase, grid, x, y))
-    {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-/*
  * When embeding a word, new words perpendicular to it is generated
+ *
+ * The newly generated words are stored in a copy of the grid,
+ * this way, if not all words succeed, the old grid is perserved
+ *
+ * If the words are generated in the old_grid,
+ * the grid will probaly not be solved if one letter fails
+ *
+ * PARAMS
+ * - int* indexes | Which indexes (letters) to embed
+ * - int  count   | Number of letters to embed
+ *
+ * RETURN (int status)
  */
-static int vert_word_embed(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, const char* word, int x, int start_y)
+static int vert_word_embed(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, const char* word, int x, int start_y, int* indexes, int count)
 {
   // 1. Duplicating the old grid, to work on seperate temp grid
   grid_t* new_grid = grid_dup(old_grid);
 
-
-  for(int index = 0; word[index] != '\0'; index++)
+  /*
+   * Important to note that:
+   * "index" is the index of the indexes array
+   * indexes[index] is the index of the letter
+   */
+  for(int index = 0; index < count; index++)
   {
-    int y = start_y + index;
+    int y = start_y + indexes[index];
 
     // A square that is already crossed is done
     if(xy_square_is_crossed(new_grid, x, y)) continue;
@@ -310,8 +299,13 @@ static int vert_word_test(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, g
   }
 
 
+  // Get an ordered list of indexes to letters to embed
+  int indexes[strlen(word)];
+
+  int count = vert_word_fits(indexes, wbase, new_grid, word, x, y);
+
   // 2. If the word doesn't have a chance of fitting
-  if(!vert_word_fits(wbase, new_grid, word, x, y))
+  if(count == 0)
   {
     // 3. Remove the tested word from the grid
     vert_word_reset(wbase, old_grid, new_grid, word, x, y);
@@ -320,8 +314,8 @@ static int vert_word_test(wbase_t* wbase, grid_t* best_grid, grid_t* old_grid, g
   }
 
 
-  // 3. 
-  int embed_status = vert_word_embed(wbase, best_grid, new_grid, word, x, y);
+  // 3. Embed the word vertically, by generating words for letters
+  int embed_status = vert_word_embed(wbase, best_grid, new_grid, word, x, y, indexes, count);
 
   if(embed_status == GEN_STOP)
   {
