@@ -24,6 +24,9 @@
 #include "k-wbase.h"
 #include "k-stats.h"
 
+#include "k-grid-curr.h"
+#include "k-grid-best.h"
+
 bool is_running = false;
 
 #define INPUT_DELAY 100000
@@ -185,14 +188,18 @@ static void* print_routine(void* arg)
     {
       clear();
 
+      best_grid_ncurses_print();
       curr_grid_ncurses_print();
+
       stats_ncurses_print();
 
       refresh();
     }
     else
     {
+      best_grid_print();
       curr_grid_print();
+
       stats_print();
     }
 
@@ -394,10 +401,14 @@ static void debug_routine(wbase_t* wbase)
 
   pthread_join(thread, NULL);
 
+  best_grid_print();
   curr_grid_print();
+
   stats_print();
 
   curr_grid_set(NULL);
+  best_grid_set(NULL);
+
   stats_clear();
 
   info_print("Stop debug routine");
@@ -443,6 +454,7 @@ int main(int argc, char* argv[])
 
 
   curr_grid_init();
+  best_grid_init();
 
   stats_init();
 
@@ -500,6 +512,7 @@ int main(int argc, char* argv[])
 
 
   curr_grid_free();
+  best_grid_free();
   
   stats_free();
 

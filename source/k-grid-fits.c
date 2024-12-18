@@ -18,7 +18,7 @@
  *
  * This is what you have to take to account when choosing this value.
  */
-#define MAX_EXIST_AMOUNT 100
+#define MAX_EXIST_AMOUNT 1000
 
 /*
  * This function returns the amount of words that exist vertically
@@ -212,10 +212,10 @@ int horiz_word_fits(int* indexes, wbase_t* wbase, grid_t* grid, const char* word
     // If no words exist vertically, the horizontal word don't fit
     if(amount == 0) return 0;
 
-    iamounts[count].index  = index;
-    iamounts[count].amount = amount;
-
-    count++;
+    iamounts[count++] = (iamount_t) {
+      .index = index,
+      .amount = amount
+    };
   }
 
   // Sort the indexes based on word amount
@@ -264,10 +264,10 @@ int vert_word_fits(int* indexes, wbase_t* wbase, grid_t* grid, const char* word,
     // If no words exist horizontally, the vertical word don't fit
     if(amount == 0) return 0;
 
-    iamounts[count].index  = index;
-    iamounts[count].amount = amount;
-
-    count++;
+    iamounts[count++] = (iamount_t) {
+      .index = index,
+      .amount = amount
+    };
   }
 
   // Sort the indexes based on word amount

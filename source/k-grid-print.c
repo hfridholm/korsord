@@ -12,15 +12,9 @@
 /*
  * Print crossword grid in ncurses mode
  */
-void grid_ncurses_print(grid_t* grid)
+void grid_ncurses_print(grid_t* grid, int start_x, int start_y)
 {
   if(!grid || !grid->squares) return;
-
-  int h = getmaxy(stdscr);
-  int w = getmaxx(stdscr);
-
-  int start_x = MAX(0, (w - (grid->width  + 2) * 2) / 2);
-  int start_y = MAX(0, (h - (grid->height + 2)) / 2);
 
   for(int y = 0; y < (grid->height + 2); y++)
   {

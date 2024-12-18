@@ -1,10 +1,13 @@
 # Notes
 - add indexes for å ä ö
 - create different targets in makefile (for speed and debug)
-- duplicate k-grid-curr.c and use it for k-grid-best.c
-- maybe: remove best_grid
+- remove grid_is_done
 - maybe add flags to makefile to silent output
 - maybe: move lock inside stats struct and lock inside grid struct
+- Add "output" or "result" argument
+  (store the result grid to a file)
+- write comments explaining things in more detail
+
 - maybe: Change start and stop in gword_t to
 union
 {
@@ -17,28 +20,6 @@ An future idea:
 - add random "ligtning", by changing the word when it goes "segt"
   (let the algorithm try another word and see if it breakes through)
 
-I don't know if this is true anymore:
-
-- something is wrong: when I run the program multiple times, I get different best grids
-  if the algorithm really checks every combination, I would get the same best every time.
-
-
-Memory allocations
-
-memory should be allocated in large chunks
-The size of the allocated memory should be larger than count
-It can be allcoated in powers of 2 (2, 4, 8, 16).
-When to realloc: when count is at one of these powers of 2.
-
-
-- Prevent words from stacking SQUARE_BLOCk after each other
-  The following horizontal word would stack block squares:
-
-  #_HELLO_ -> ##HELLO#
-
-- add block_count to grid_t
-  (when block_count is large based on square_count,
-   that is an indicator that something must change)
 
 new best grid: 868
 new best grid: 872
@@ -48,31 +29,8 @@ new best grid: 880
 new best grid: 883
 new best grid: 887
 
-Something real weird is happening...
-
 - Fix problem with "new best grid" skyrocketing
-- Add "output" or "result" argument
-  (store the result grid to a file)
-- remove outer border from model.txt
-  (don't show the border to the user)
-  (it is an internal thing that shold not be public)
-- create input thread routine, for:
-  - refreshing grid
-  - aborting search
-- write comments explaining things in more detail
-- maybe: write if statements:
-
-if something_is_true()
-{
-
-}
-
-or
-
-if (something_is_true())
-{
-
-}
+I have a fealing that the problem is that singles (1 letter words) don't get restored
 
 New concept idea:
 
@@ -116,19 +74,6 @@ going through the word's all letters
 This is doing more computational work, but prevents obvious bad words from 
 being traversed from the first "good" letter
 (when the second letter is obviously "bad")
-
-
-- fix problem with skyrocketing block_count
-I have a fealing that the problem is that singles (1 letter words) don't get restored
-
-
-Problem in horiz/vert_word_embed:
-
-new_grid can have been changed (and have in experiments),
-that way, when resetting the grid later downwards here,
-The old grids (probaly empty) squares will overwrite new grid
-(This is what causes the empty lines from forming)
-
 
 
 Each sample counts as 0.01 seconds.

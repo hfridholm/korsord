@@ -151,4 +151,9 @@ extern grid_t* grid_model_load(const char* filepath);
 
 extern int     grid_prep(grid_t* grid);
 
+
+extern void grid_print(grid_t* grid);
+
+extern void grid_ncurses_print(grid_t* grid, int start_x, int start_y);
+
 #endif // K_GRID_INTERN_H
