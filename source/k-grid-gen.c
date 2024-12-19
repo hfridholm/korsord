@@ -58,6 +58,16 @@ static int horiz_word_embed(wbase_t* wbase, grid_t* old_grid, const char* word, 
   {
     int x = start_x + indexes[index];
 
+    /*
+     * A square that is already crossed is done
+     *
+     * This is very important to check, because
+     * otherwise, vert_word_gen will fail, because
+     * the word that has been filled in is 
+     * not available anymore
+     */
+    if(xy_square_is_crossed(new_grid, x, y)) continue;
+
     // Recursivly call the vertical gen function
     int gen_status = vert_word_gen(wbase, new_grid, x, y);
 
@@ -170,7 +180,8 @@ static int horiz_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cro
 
 
   curr_grid_set(old_grid);
-  // grid_print(grid);
+
+  // curr_grid_print();
   // usleep(1000000);
 
 
@@ -255,6 +266,9 @@ static int vert_word_embed(wbase_t* wbase, grid_t* old_grid, const char* word, i
   for(int index = 0; index < count; index++)
   {
     int y = start_y + indexes[index];
+
+    // A square that is already crossed is done
+    if(xy_square_is_crossed(new_grid, x, y)) continue;
 
     // Recursivly call the horizontal gen function
     int gen_status = horiz_word_gen(wbase, new_grid, x, y);
@@ -368,7 +382,8 @@ static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cros
 
 
   curr_grid_set(old_grid);
-  // grid_print(grid);
+
+  // curr_grid_print();
   // usleep(1000000);
 
 
@@ -388,6 +403,8 @@ static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cros
   size_t word_count = 0;
 
   int gwords_status = vert_gwords_get(&gwords, &word_count, wbase, old_grid, cross_x, cross_y);
+
+  // info_print("vert_gwords_get count: %d", word_count);
 
   // If the length is 1, it should be marked as crossed
   if(gwords_status == GWORDS_SINGLE)

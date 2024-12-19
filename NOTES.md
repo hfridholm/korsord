@@ -3,6 +3,7 @@
 - create different targets in makefile (for speed and debug)
 - remove grid_is_done
 - maybe add flags to makefile to silent output
+- optimize _words_search with letter_index == -1 check
 - maybe: move lock inside stats struct and lock inside grid struct
 - Add "output" or "result" argument
   (store the result grid to a file)

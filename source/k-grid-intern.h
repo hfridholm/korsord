@@ -67,6 +67,11 @@ typedef struct grid_t
   int       word_count;
 } grid_t;
 
+extern bool vert_block_brakes_words(wbase_t* wbase, grid_t* grid, int block_x, int block_y);
+
+extern bool horiz_block_brakes_words(wbase_t* wbase, grid_t* grid, int block_x, int block_y);
+
+
 extern int vert_full_pattern_get(char* pattern, grid_t* grid, int x);
 
 extern int horiz_full_pattern_get(char* pattern, grid_t* grid, int y);

@@ -43,6 +43,8 @@ extern void wbase_word_use(wbase_t* wbase, const char* word);
 extern void wbase_word_unuse(wbase_t* wbase, const char* word);
 
 
-extern int wbase_words_exist_for_pattern(wbase_t* wbase, const char* pattern, int max_amount);
+extern int  wbase_words_exist_for_pattern(wbase_t* wbase, const char* pattern, int max_amount);
+
+extern bool wbase_word_exists_for_pattern(wbase_t* wbase, const char* pattern);
 
 #endif // K_WBASE_H

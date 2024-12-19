@@ -175,6 +175,82 @@ bool horiz_stop_xs_get(int* stop_xs, int* count, grid_t* grid, int cross_x, int 
 }
 
 /*
+ * Get horizontal start xs which don't break vertical words
+ *
+ * These start xs are ONLY used for horiz_gwords_get,
+ * otherwise a loop would occour, because
+ * horiz_block_brakes_words uses horiz_start_xs_get
+ */
+static bool horiz_non_break_start_xs_get(int* start_xs, int* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
+{
+  int temp_start_xs[cross_x + 1];
+  int temp_count = 0;
+
+  // 1. Get start xs
+  if(horiz_start_xs_get(temp_start_xs, &temp_count, grid, cross_x, cross_y))
+  {
+    memcpy(start_xs, temp_start_xs, sizeof(int) * temp_count);
+
+    *count = temp_count;
+
+    return true; // Is blocked
+  }
+
+  // 2. Only keep the start ys that don't break words in two
+  for(int index = 0; index < temp_count; index++)
+  {
+    int start_x = temp_start_xs[index];
+
+    if ((start_x == 0) ||
+        !horiz_block_brakes_words(wbase, grid, start_x - 1, cross_y))
+    {
+      start_xs[(*count)++] = start_x;
+    }
+  }
+
+  return false; // Is not blocked
+}
+
+/*
+ * Get horizontal stop xs which don't break vertical words
+ *
+ * These stop xs are ONLY used for horiz_gwords_get,
+ * otherwise a loop would occour, because
+ * horiz_block_brakes_words uses horiz_stop_xs_get
+ */
+static bool horiz_non_break_stop_xs_get(int* stop_xs, int* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
+{
+  int temp_stop_xs[grid->width - cross_x];
+  int temp_count = 0;
+
+  // 1. Get stop xs
+  if(horiz_stop_xs_get(temp_stop_xs, &temp_count, grid, cross_x, cross_y))
+  {
+    memcpy(stop_xs, temp_stop_xs, sizeof(int) * temp_count);
+
+    *count = temp_count;
+
+    return true; // Is blocked
+  }
+
+  // 2. Only keep the stop xs that don't break words in two
+  *count = 0;
+
+  for(int index = 0; index < temp_count; index++)
+  {
+    int stop_x = temp_stop_xs[index];
+
+    if ((stop_x == (grid->width - 1)) ||
+        !horiz_block_brakes_words(wbase, grid, stop_x + 1, cross_y))
+    {
+      stop_xs[(*count)++] = stop_x;
+    }
+  }
+
+  return false; // Is not blocked
+}
+
+/*
  *
  */
 int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
@@ -190,12 +266,12 @@ int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gr
   int start_xs[cross_x + 1];
   int start_count = 0;
 
-  bool start_is_blocked = horiz_start_xs_get(start_xs, &start_count, grid, cross_x, cross_y);
+  bool start_is_blocked = horiz_non_break_start_xs_get(start_xs, &start_count, wbase, grid, cross_x, cross_y);
 
   int stop_xs[grid->width - cross_x];
   int stop_count = 0;
 
-  bool stop_is_blocked = horiz_stop_xs_get(stop_xs, &stop_count, grid, cross_x, cross_y);
+  bool stop_is_blocked = horiz_non_break_stop_xs_get(stop_xs, &stop_count, wbase, grid, cross_x, cross_y);
 
 
   if(start_is_blocked && stop_is_blocked)
@@ -335,6 +411,82 @@ bool vert_stop_ys_get(int* stop_ys, int* count, grid_t* grid, int cross_x, int c
 }
 
 /*
+ * Get vertical start ys which don't break horizontal words
+ *
+ * These start ys are ONLY used for vert_gwords_get,
+ * otherwise a loop would occour, because
+ * vert_block_brakes_words uses vert_start_ys_get
+ */
+static bool vert_non_break_start_ys_get(int* start_ys, int* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
+{
+  int temp_start_ys[cross_y + 1];
+  int temp_count = 0;
+
+  // 1. Get start ys
+  if(vert_start_ys_get(temp_start_ys, &temp_count, grid, cross_x, cross_y))
+  {
+    memcpy(start_ys, temp_start_ys, sizeof(int) * temp_count);
+
+    *count = temp_count;
+
+    return true; // Is blocked
+  }
+
+  // 2. Only keep the start ys that don't break words in two
+  for(int index = 0; index < temp_count; index++)
+  {
+    int start_y = temp_start_ys[index];
+
+    if ((start_y == 0) ||
+        !vert_block_brakes_words(wbase, grid, cross_x, start_y - 1))
+    {
+      start_ys[(*count)++] = start_y;
+    }
+  }
+
+  return false; // Is not blocked
+}
+
+/*
+ * Get vertical stop ys which don't break horizontal words
+ *
+ * These stop ys are ONLY used for vert_gwords_get,
+ * otherwise a loop would occour, because
+ * vert_block_brakes_words uses vert_stop_ys_get
+ */
+static bool vert_non_break_stop_ys_get(int* stop_ys, int* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
+{
+  int temp_stop_ys[grid->height - cross_y];
+  int temp_count = 0;
+
+  // 1. Get stop ys
+  if(vert_stop_ys_get(temp_stop_ys, &temp_count, grid, cross_x, cross_y))
+  {
+    memcpy(stop_ys, temp_stop_ys, sizeof(int) * temp_count);
+
+    *count = temp_count;
+
+    return true; // Is blocked
+  }
+
+  // 2. Only keep the stop ys that don't break words in two
+  *count = 0;
+
+  for(int index = 0; index < temp_count; index++)
+  {
+    int stop_y = temp_stop_ys[index];
+
+    if ((stop_y == (grid->height - 1)) ||
+        !vert_block_brakes_words(wbase, grid, cross_x, stop_y + 1))
+    {
+      stop_ys[(*count)++] = stop_y;
+    }
+  }
+
+  return false; // Is not blocked
+}
+
+/*
  *
  */
 int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
@@ -350,12 +502,12 @@ int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gri
   int start_ys[cross_y + 1];
   int start_count = 0;
 
-  bool start_is_blocked = vert_start_ys_get(start_ys, &start_count, grid, cross_x, cross_y);
+  bool start_is_blocked = vert_non_break_start_ys_get(start_ys, &start_count, wbase, grid, cross_x, cross_y);
 
   int stop_ys[grid->height - cross_y];
   int stop_count = 0;
 
-  bool stop_is_blocked = vert_stop_ys_get(stop_ys, &stop_count, grid, cross_x, cross_y);
+  bool stop_is_blocked = vert_non_break_stop_ys_get(stop_ys, &stop_count, wbase, grid, cross_x, cross_y);
 
 
   if(start_is_blocked && stop_is_blocked)

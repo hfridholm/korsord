@@ -136,32 +136,47 @@ static int _words_exist_for_pattern(node_t* node, const char* pattern, int index
 
   int amount = 0;
 
-  for(int child_index = 0; child_index < ALPHABET_SIZE; child_index++)
+  if(letter_index != -1)
   {
-    node_t* child = node->children[child_index];
+    node_t* child = node->children[letter_index];
 
-    // Only go through the allocated letters
-    if(!child) continue;
-
-    // Possibly, only search letter in pattern
-    if(letter_index != -1 && letter_index != child_index) continue; 
-
+    // If no words have the letter, amount 0 is returned
+    if(!child) return 0;
 
     char new_word[index + 2];
 
-    char letter = index_letter_get(child_index);
+    char letter = pattern[index];
 
     snprintf(new_word, index + 2, "%.*s%c", index, word, letter);
 
-    // max_amount - amount means that the next node
-    // only get to search the REST of max_amount
-    amount += _words_exist_for_pattern(child, pattern, index + 1, new_word, max_amount - amount);
+    amount = _words_exist_for_pattern(child, pattern, index + 1, new_word, max_amount);
+  }
+  else
+  {
+    for(int child_index = 0; child_index < ALPHABET_SIZE; child_index++)
+    {
+      node_t* child = node->children[child_index];
 
-    // This is opimization only for performance
-    if(amount > max_amount) break;
+      // Only go through the allocated letters
+      if(!child) continue;
+
+
+      char new_word[index + 2];
+
+      char letter = index_letter_get(child_index);
+
+      snprintf(new_word, index + 2, "%.*s%c", index, word, letter);
+
+      // max_amount - amount means that the next node
+      // only get to search the REST of max_amount
+      amount += _words_exist_for_pattern(child, pattern, index + 1, new_word, max_amount - amount);
+
+      // This is opimization only for performance
+      if(amount >= max_amount) break;
+    }
   }
 
-  return amount;
+  return MIN(amount, max_amount);
 }
 
 /*
@@ -183,9 +198,93 @@ int wbase_words_exist_for_pattern(wbase_t* wbase, const char* pattern, int max_a
 
   amount += words_exist_for_pattern(wbase->primary, pattern, max_amount - amount);
 
-  if(amount > max_amount) return max_amount;
+  if(amount >= max_amount) return max_amount;
 
   amount += words_exist_for_pattern(wbase->backup,  pattern, max_amount - amount);
 
   return MIN(amount, max_amount);
+}
+
+/*
+ * RETURN (bool does_exist)
+ */
+static bool _word_exists_for_pattern(node_t* node, const char* pattern, int index, char* word)
+{
+  // Base case - the end of the word
+  if(pattern[index] == '\0')
+  {
+    // return (node->is_end_of_word && !node->is_used);
+    return node->is_end_of_word;
+  }
+
+  // Search words with next letter
+  int letter_index = letter_index_get(pattern[index]);
+
+  if(letter_index != -1)
+  {
+    node_t* child = node->children[letter_index];
+
+    // If no words have the letter, amount 0 is returned
+    if(!child) return false;
+
+    char new_word[index + 2];
+
+    char letter = pattern[index];
+
+    snprintf(new_word, index + 2, "%.*s%c", index, word, letter);
+
+    return _word_exists_for_pattern(child, pattern, index + 1, new_word);
+  }
+  else
+  {
+    for(int child_index = 0; child_index < ALPHABET_SIZE; child_index++)
+    {
+      node_t* child = node->children[child_index];
+
+      // Only go through the allocated letters
+      if(!child) continue;
+
+
+      char new_word[index + 2];
+
+      char letter = index_letter_get(child_index);
+
+      snprintf(new_word, index + 2, "%.*s%c", index, word, letter);
+
+      if(_word_exists_for_pattern(child, pattern, index + 1, new_word))
+      {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/*
+ * RETURN (bool does_exist)
+ */
+static bool word_exists_for_pattern(trie_t* trie, const char* pattern)
+{
+  if(!trie || !pattern) return false;
+
+  return _word_exists_for_pattern((node_t*) trie, pattern, 0, "");
+}
+
+/*
+ * RETURN (bool does_exist)
+ */
+bool wbase_word_exists_for_pattern(wbase_t* wbase, const char* pattern)
+{
+  if(word_exists_for_pattern(wbase->primary, pattern))
+  {
+    return true;
+  }
+
+  if(word_exists_for_pattern(wbase->backup, pattern))
+  {
+    return true;
+  }
+
+  return false;
 }

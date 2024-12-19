@@ -18,7 +18,7 @@
  *
  * This is what you have to take to account when choosing this value.
  */
-#define MAX_EXIST_AMOUNT 1000
+#define MAX_EXIST_AMOUNT 1
 
 /*
  * This function returns the amount of words that exist vertically
@@ -26,6 +26,8 @@
  * RETURN (int amount)
  * - min 0                | No words exist
  * - max MAX_EXIST_AMOUNT | Too many words exist
+ *
+ * Rename to: vert_words_are_available
  */
 int vert_words_exist(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 {
@@ -83,7 +85,7 @@ int vert_words_exist(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
       amount += wbase_words_exist_for_pattern(wbase, pattern, max_amount);
       
       // This is opimization only done for performance
-      if(amount > MAX_EXIST_AMOUNT) break;
+      if(amount >= MAX_EXIST_AMOUNT) break;
     }
   }
 
@@ -96,6 +98,8 @@ int vert_words_exist(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
  * RETURN (int amount)
  * - min 0                | No words exist
  * - max MAX_EXIST_AMOUNT | Too many words exist
+ *
+ * Rename to: horiz_words_are_available
  */
 int horiz_words_exist(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 {
@@ -153,7 +157,7 @@ int horiz_words_exist(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
       amount += wbase_words_exist_for_pattern(wbase, pattern, max_amount);
       
       // This is opimization only done for performance
-      if(amount > MAX_EXIST_AMOUNT) break;
+      if(amount >= MAX_EXIST_AMOUNT) break;
     }
   }
 
