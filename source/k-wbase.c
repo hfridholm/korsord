@@ -37,7 +37,7 @@ int letter_index_get(char letter)
  * RETURN (wbase_t* wbase)
  * - NULL | Failed to create wbase
  */
-wbase_t* wbase_create(const char* primary_filepath, const char* backup_filepath)
+wbase_t* wbase_create(const char* primary_filepath, const char* backup_filepath, int max_length)
 {
   // 1. Allocate memory for wbase
   wbase_t* wbase = malloc(sizeof(wbase_t));
@@ -45,9 +45,9 @@ wbase_t* wbase_create(const char* primary_filepath, const char* backup_filepath)
   if(!wbase) return NULL;
 
   // 2. Create primary and backup trie
-  wbase->primary = trie_create(primary_filepath);
+  wbase->primary = trie_create(primary_filepath, max_length);
 
-  wbase->backup = trie_create(backup_filepath);
+  wbase->backup = trie_create(backup_filepath, max_length);
 
   return wbase;
 }

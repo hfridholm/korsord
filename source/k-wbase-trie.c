@@ -5,7 +5,7 @@
  *
  * FUNCTIONS:
  *
- * trie_t* trie_create(const char* filepath)
+ * trie_t* trie_create(const char* filepath, int max_length)
  *
  * void    trie_free(trie_t** trie)
  */
@@ -100,7 +100,7 @@ extern size_t file_size_get(const char* filepath);
  * RETURN (trie_t* trie)
  * - NULL | Failed to read file
  */
-trie_t* trie_create(const char* filepath)
+trie_t* trie_create(const char* filepath, int max_length)
 {
   if(!filepath) return NULL;
 
@@ -124,7 +124,10 @@ trie_t* trie_create(const char* filepath)
   {
     char* word = string_lower(strdup(token));
 
-    trie_word_insert(trie, word);
+    if(strlen(word) <= max_length)
+    {
+      trie_word_insert(trie, word);
+    }
 
     free(word);
 

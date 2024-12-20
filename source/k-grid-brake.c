@@ -232,9 +232,13 @@ static int horiz_stop_word_exists(wbase_t* wbase, grid_t* grid, int stop_x, int 
  * Check if block square would brake words in two,
  * meaning it would make it impossible to fill in words
  *
+ *   ?
+ * ? # ?
+ *   _
+ *
  * RETURN (bool do_brake_words)
  */
-bool vert_block_brakes_words(wbase_t* wbase, grid_t* grid, int block_x, int block_y)
+bool vert_start_block_brakes_words(wbase_t* wbase, grid_t* grid, int block_x, int block_y)
 {
   // 1. Check so the word to the left is not broken
   if ((block_x > 0) &&
@@ -252,6 +256,14 @@ bool vert_block_brakes_words(wbase_t* wbase, grid_t* grid, int block_x, int bloc
     return true;
   }
 
+  // 3. Check so the word on the opposite side is not broken
+  if ((block_y > 0) &&
+     !xy_square_is_blocking(grid, block_x, block_y - 1) &&
+     !vert_stop_word_exists(wbase, grid, block_x, block_y - 1))
+  {
+    return true;
+  }
+
   return false;
 }
 
@@ -259,9 +271,13 @@ bool vert_block_brakes_words(wbase_t* wbase, grid_t* grid, int block_x, int bloc
  * Check if block square would brake words in two,
  * meaning it would make it impossible to fill in words
  *
+ *   ?
+ * ? # _
+ *   ?
+ *
  * RETURN (bool do_brake_words)
  */
-bool horiz_block_brakes_words(wbase_t* wbase, grid_t* grid, int block_x, int block_y)
+bool horiz_start_block_brakes_words(wbase_t* wbase, grid_t* grid, int block_x, int block_y)
 {
   // 1. Check so the word on top is not broken
   if ((block_y > 0) &&
@@ -275,6 +291,93 @@ bool horiz_block_brakes_words(wbase_t* wbase, grid_t* grid, int block_x, int blo
   if ((block_y < (grid->height - 1)) &&
      !xy_square_is_blocking(grid, block_x, block_y + 1) &&
      !vert_start_word_exists(wbase, grid, block_x, block_y + 1))
+  {
+    return true;
+  }
+
+  // 3. Check so the word on the opposite side is not broken
+  if ((block_x > 0) &&
+     !xy_square_is_blocking(grid, block_x - 1, block_y) &&
+     !horiz_stop_word_exists(wbase, grid, block_x - 1, block_y))
+  {
+    return true;
+  }
+
+
+  return false;
+}
+
+/*
+ * Check if block square would brake words in two,
+ * meaning it would make it impossible to fill in words
+ *
+ *   _
+ * ? # ?
+ *   ?
+ *
+ * RETURN (bool do_brake_words)
+ */
+bool vert_stop_block_brakes_words(wbase_t* wbase, grid_t* grid, int block_x, int block_y)
+{
+  // 1. Check so the word to the left is not broken
+  if ((block_x > 0) &&
+     !xy_square_is_blocking(grid, block_x - 1, block_y) &&
+     !horiz_stop_word_exists(wbase, grid, block_x - 1, block_y))
+  {
+    return true;
+  }
+
+  // 2. Check so the word to the right is not broken
+  if ((block_x < (grid->width - 1)) &&
+     !xy_square_is_blocking(grid, block_x + 1, block_y) &&
+     !horiz_start_word_exists(wbase, grid, block_x + 1, block_y))
+  {
+    return true;
+  }
+
+  // 3. Check so the word on the opposite side is not broken
+  if ((block_y < (grid->height - 1)) &&
+     !xy_square_is_blocking(grid, block_x, block_y + 1) &&
+     !vert_start_word_exists(wbase, grid, block_x, block_y + 1))
+  {
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Check if block square would brake words in two,
+ * meaning it would make it impossible to fill in words
+ *
+ *   ?
+ * _ # ?
+ *   ?
+ *
+ * RETURN (bool do_brake_words)
+ */
+bool horiz_stop_block_brakes_words(wbase_t* wbase, grid_t* grid, int block_x, int block_y)
+{
+  // 1. Check so the word on top is not broken
+  if ((block_y > 0) &&
+     !xy_square_is_blocking(grid, block_x, block_y - 1) &&
+     !vert_stop_word_exists(wbase, grid, block_x, block_y - 1))
+  {
+    return true;
+  }
+
+  // 2. Check so the word on bottom is not broken
+  if ((block_y < (grid->height - 1)) &&
+     !xy_square_is_blocking(grid, block_x, block_y + 1) &&
+     !vert_start_word_exists(wbase, grid, block_x, block_y + 1))
+  {
+    return true;
+  }
+
+  // 3. Check so the word on the opposite side is not broken
+  if ((block_x < (grid->width - 1)) &&
+     !xy_square_is_blocking(grid, block_x + 1, block_y) &&
+     !horiz_start_word_exists(wbase, grid, block_x + 1, block_y))
   {
     return true;
   }

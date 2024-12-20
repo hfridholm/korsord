@@ -202,7 +202,7 @@ static bool horiz_non_break_start_xs_get(int* start_xs, int* count, wbase_t* wba
     int start_x = temp_start_xs[index];
 
     if ((start_x == 0) ||
-        !horiz_block_brakes_words(wbase, grid, start_x - 1, cross_y))
+        !horiz_start_block_brakes_words(wbase, grid, start_x - 1, cross_y))
     {
       start_xs[(*count)++] = start_x;
     }
@@ -241,7 +241,7 @@ static bool horiz_non_break_stop_xs_get(int* stop_xs, int* count, wbase_t* wbase
     int stop_x = temp_stop_xs[index];
 
     if ((stop_x == (grid->width - 1)) ||
-        !horiz_block_brakes_words(wbase, grid, stop_x + 1, cross_y))
+        !horiz_stop_block_brakes_words(wbase, grid, stop_x + 1, cross_y))
     {
       stop_xs[(*count)++] = stop_x;
     }
@@ -438,7 +438,7 @@ static bool vert_non_break_start_ys_get(int* start_ys, int* count, wbase_t* wbas
     int start_y = temp_start_ys[index];
 
     if ((start_y == 0) ||
-        !vert_block_brakes_words(wbase, grid, cross_x, start_y - 1))
+        !vert_start_block_brakes_words(wbase, grid, cross_x, start_y - 1))
     {
       start_ys[(*count)++] = start_y;
     }
@@ -477,7 +477,7 @@ static bool vert_non_break_stop_ys_get(int* stop_ys, int* count, wbase_t* wbase,
     int stop_y = temp_stop_ys[index];
 
     if ((stop_y == (grid->height - 1)) ||
-        !vert_block_brakes_words(wbase, grid, cross_x, stop_y + 1))
+        !vert_stop_block_brakes_words(wbase, grid, cross_x, stop_y + 1))
     {
       stop_ys[(*count)++] = stop_y;
     }

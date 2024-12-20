@@ -45,7 +45,8 @@ static struct argp_option options[] =
   { "debug",    'd', 0,        0, "Print debug messages" },
   { "output",   'o', "FILE",   0, "Output debug to file" },
   { "single",   's', 0,        0, "Only try generate once" },
-  { "fps",      'f', "NUMBER", 0, "Frames per second" },
+  { "fps",      'f', "AMOUNT", 0, "Frames per second" },
+  { "length",   'l', "LENGTH", 0, "Max length of words" },
   { 0 }
 };
 
@@ -58,6 +59,7 @@ struct args
   bool  ncurses;
   bool  single;
   int   fps;
+  int   length;
   char* output;
 };
 
@@ -70,6 +72,7 @@ struct args args =
   .ncurses = false,
   .single  = false,
   .fps     = 1,
+  .length  = 30,
   .output  = NULL
 };
 
@@ -80,16 +83,31 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
 {
   struct args* args = state->input;
 
+  int number;
+
   switch(key)
   {
     case 'f':
       if(!arg || *arg == '-') argp_usage(state);
 
-      int number = atoi(arg);
+      number = atoi(arg);
 
       if(number >= 1 && number <= 100)
       {
         args->fps = number;
+      }
+      else argp_usage(state);
+
+      break;
+
+    case 'l':
+      if(!arg || *arg == '-') argp_usage(state);
+
+      number = atoi(arg);
+
+      if(number >= 1)
+      {
+        args->length = number;
       }
       else argp_usage(state);
 
@@ -475,7 +493,7 @@ int main(int argc, char* argv[])
   info_print("Creating word base");
 
   // 1. Load the word bases
-  wbase_t* wbase = wbase_create(args.primary, args.backup);
+  wbase_t* wbase = wbase_create(args.primary, args.backup, args.length);
 
   if(!wbase)
   {

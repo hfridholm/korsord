@@ -9,7 +9,7 @@
 
 #include "k-stats.h"
 
-#define MAX_CROWD_AMOUNT 3
+#define MAX_CROWD_AMOUNT 2
 
 /*
  * The x and y is not accounting for border

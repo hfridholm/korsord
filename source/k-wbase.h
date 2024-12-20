@@ -24,7 +24,7 @@ extern int  letter_index_get(char letter);
 extern char index_letter_get(int index);
 
 
-extern wbase_t* wbase_create(const char* primary_filepath, const char* backup_filepath);
+extern wbase_t* wbase_create(const char* primary_filepath, const char* backup_filepath, int max_length);
 
 extern void     wbase_reset(wbase_t* wbase);
 

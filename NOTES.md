@@ -4,6 +4,8 @@
 - remove grid_is_done
 - maybe add flags to makefile to silent output
 - optimize _words_search with letter_index == -1 check
+- add MAX_CROWD_AMOUNT to argp args
+- add MAX_EXIST_AMOUNT to argp args
 - maybe: move lock inside stats struct and lock inside grid struct
 - Add "output" or "result" argument
   (store the result grid to a file)
@@ -15,6 +17,11 @@ union
   int start_x;
   int start_y;
 };
+
+
+When I have implemented non_block xs/ys and refined _word_fits:
+- _words_exist_for_pattern takes more and more time
+
 
 An future idea:
 

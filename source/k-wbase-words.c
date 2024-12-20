@@ -85,24 +85,39 @@ static void _words_search(char*** words, size_t* count, node_t* node, const char
   // Search words with next letter
   int letter_index = letter_index_get(pattern[index]);
 
-  for(int child_index = 0; child_index < ALPHABET_SIZE; child_index++)
+  if(letter_index != -1)
   {
-    node_t* child = node->children[child_index];
+    node_t* child = node->children[letter_index];
 
-    // Only go through the allocated letters
-    if(!child) continue;
-
-    // Possibly, only search letter in pattern
-    if(letter_index != -1 && letter_index != child_index) continue; 
-
+    // If no words have the letter, abort
+    if(!child) return;
 
     char new_word[index + 2];
 
-    char letter = index_letter_get(child_index);
+    char letter = pattern[index];
 
     snprintf(new_word, index + 2, "%.*s%c", index, word, letter);
 
     _words_search(words, count, child, pattern, index + 1, new_word);
+  }
+  else
+  {
+    for(int child_index = 0; child_index < ALPHABET_SIZE; child_index++)
+    {
+      node_t* child = node->children[child_index];
+
+      // Only go through the allocated letters
+      if(!child) continue;
+
+
+      char new_word[index + 2];
+
+      char letter = index_letter_get(child_index);
+
+      snprintf(new_word, index + 2, "%.*s%c", index, word, letter);
+
+      _words_search(words, count, child, pattern, index + 1, new_word);
+    }
   }
 }
 

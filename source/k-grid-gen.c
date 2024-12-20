@@ -181,8 +181,8 @@ static int horiz_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cro
 
   curr_grid_set(old_grid);
 
-  // curr_grid_print();
-  // usleep(1000000);
+  curr_grid_print();
+  usleep(1000000);
 
 
   square_t* square = xy_square_get(old_grid, cross_x, cross_y);
@@ -383,8 +383,8 @@ static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cros
 
   curr_grid_set(old_grid);
 
-  // curr_grid_print();
-  // usleep(1000000);
+  curr_grid_print();
+  usleep(1000000);
 
 
   square_t* square = xy_square_get(old_grid, cross_x, cross_y);
