@@ -62,3 +62,32 @@ size_t file_read(void* pointer, size_t size, const char* filepath)
 
   return read_size;
 }
+
+/*
+ * Write a number of bytes from memory at pointer to file
+ *
+ * The function returns the number of written bytes
+ *
+ * PARAMS
+ * - const void* pointer  | Address to write data to
+ * - size_t      size     | Number of bytes to write
+ * - const char* filepath | Path to file
+ *
+ * RETURN (same as fwrite, size_t write_size)
+ * - 0  | Error
+ * - >0 | Success!
+ */
+size_t file_write(const void* pointer, size_t size, const char* filepath)
+{
+  if(!pointer) return 0;
+
+  FILE* stream = fopen(filepath, "wb");
+
+  if(!stream) return 0;
+
+  size_t write_size = fwrite(pointer, 1, size, stream);
+
+  fclose(stream);
+
+  return write_size;
+}

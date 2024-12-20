@@ -1,14 +1,7 @@
 # Notes
 - add indexes for å ä ö
-- create different targets in makefile (for speed and debug)
-- remove grid_is_done
 - maybe add flags to makefile to silent output
-- optimize _words_search with letter_index == -1 check
-- add MAX_CROWD_AMOUNT to argp args
-- add MAX_EXIST_AMOUNT to argp args
 - maybe: move lock inside stats struct and lock inside grid struct
-- Add "output" or "result" argument
-  (store the result grid to a file)
 - write comments explaining things in more detail
 
 - maybe: Change start and stop in gword_t to
@@ -17,6 +10,10 @@ union
   int start_x;
   int start_y;
 };
+
+- maybe: store gwords in lookup table with grid hash keys
+this way, if the algorithm has to go back,
+it don't have to calculate all the allowed words again
 
 
 When I have implemented non_block xs/ys and refined _word_fits:

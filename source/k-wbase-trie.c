@@ -13,6 +13,8 @@
 #include "k-wbase.h"
 #include "k-wbase-intern.h"
 
+#include "k-file.h"
+
 /*
  *
  */
@@ -89,10 +91,6 @@ static char* string_lower(char* string)
 
   return string;
 }
-
-extern size_t file_read(void* pointer, size_t size, const char* filepath);
-
-extern size_t file_size_get(const char* filepath);
 
 /*
  * Create trie struct

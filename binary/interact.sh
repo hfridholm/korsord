@@ -11,7 +11,7 @@
 # Step 1: Compile the program
 echo
 echo "Compiling the program..."
-make korsord
+make speed
 
 # Check if the program was compiled successfully
 if [ ! -f ./korsord ]; then

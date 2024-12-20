@@ -181,8 +181,8 @@ static int horiz_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cro
 
   curr_grid_set(old_grid);
 
-  curr_grid_print();
-  usleep(1000000);
+  // curr_grid_print();
+  // usleep(1000000);
 
 
   square_t* square = xy_square_get(old_grid, cross_x, cross_y);
@@ -383,8 +383,8 @@ static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cros
 
   curr_grid_set(old_grid);
 
-  curr_grid_print();
-  usleep(1000000);
+  // curr_grid_print();
+  // usleep(1000000);
 
 
   square_t* square = xy_square_get(old_grid, cross_x, cross_y);
@@ -486,27 +486,4 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
   curr_grid_set(grid);
 
   return grid;
-}
-
-/*
- * Check if grid is done and complete
- *
- * RETURN (bool is_done)
- * - false | Grid is not done or allocated
- */
-bool grid_is_done(grid_t* grid)
-{
-  if(!grid) return false;
-
-  for(int index = 0; index < grid->square_count; index++)
-  {
-    int x = (index % grid->width);
-    int y = (index / grid->width);
-
-    square_t* square = xy_square_get(grid, x, y);
-
-    if(square->type == SQUARE_EMPTY) return false;
-  }
-
-  return true;
 }

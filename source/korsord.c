@@ -23,6 +23,7 @@
 #include "k-grid.h"
 #include "k-wbase.h"
 #include "k-stats.h"
+#include "k-file.h"
 
 #include "k-grid-curr.h"
 #include "k-grid-best.h"
@@ -30,6 +31,10 @@
 bool is_running = false;
 
 #define INPUT_DELAY 100000
+
+extern int MAX_CROWD_AMOUNT;
+
+extern int MAX_EXIST_AMOUNT;
 
 
 static char doc[] = "korsord - swedish crossword generator";
@@ -44,9 +49,11 @@ static struct argp_option options[] =
   { "interact", 'i', 0,        0, "Enter interactive mode" },
   { "debug",    'd', 0,        0, "Print debug messages" },
   { "output",   'o', "FILE",   0, "Output debug to file" },
-  { "single",   's', 0,        0, "Only try generate once" },
+  { "result",   'r', "FILE",   0, "Save result to file" },
   { "fps",      'f', "AMOUNT", 0, "Frames per second" },
   { "length",   'l', "LENGTH", 0, "Max length of words" },
+  { "crowd",    'c', "AMOUNT", 0, "Max amount of nerby blocks" },
+  { "exist",    'e', "AMOUNT", 0, "Amount of precission" },
   { 0 }
 };
 
@@ -57,12 +64,13 @@ struct args
   char* backup;
   bool  visual;
   bool  ncurses;
-  bool  single;
   int   fps;
   int   length;
   char* output;
+  char* result;
 };
 
+// Default values of korsord arguments
 struct args args =
 {
   .model   = NULL,
@@ -70,10 +78,10 @@ struct args args =
   .backup  = "../assets/backup.words",
   .visual  = false,
   .ncurses = false,
-  .single  = false,
   .fps     = 1,
-  .length  = 30,
-  .output  = NULL
+  .length  = 10,
+  .output  = NULL,
+  .result  = NULL
 };
 
 /*
@@ -95,6 +103,32 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
       if(number >= 1 && number <= 100)
       {
         args->fps = number;
+      }
+      else argp_usage(state);
+
+      break;
+
+    case 'c':
+      if(!arg || *arg == '-') argp_usage(state);
+
+      number = atoi(arg);
+
+      if(number >= 1 && number <= 7)
+      {
+        MAX_CROWD_AMOUNT = number;
+      }
+      else argp_usage(state);
+
+      break;
+
+    case 'e':
+      if(!arg || *arg == '-') argp_usage(state);
+
+      number = atoi(arg);
+
+      if(number >= 1 && number <= 100000)
+      {
+        MAX_EXIST_AMOUNT = number;
       }
       else argp_usage(state);
 
@@ -127,10 +161,6 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
       args->visual = true;
       break;
 
-    case 's':
-      args->single = true;
-      break;
-
     case 'p':
       if(!arg || *arg == '-') argp_usage(state);
 
@@ -141,6 +171,12 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
       if(!arg || *arg == '-') argp_usage(state);
 
       args->output = arg;
+      break;
+
+    case 'r':
+      if(!arg || *arg == '-') argp_usage(state);
+
+      args->result = arg;
       break;
 
     case 'b':
@@ -320,6 +356,16 @@ static void* gen_routine(void* wbase)
   grid_free(&grid);
 
   info_print("Generated grid");
+
+
+  if(args.result)
+  {
+    info_print("Saving result");
+
+    // Call saving code here
+
+    info_print("Saved result");
+  }
 
   return NULL;
 }

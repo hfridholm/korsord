@@ -18,7 +18,7 @@
  *
  * This is what you have to take to account when choosing this value.
  */
-#define MAX_EXIST_AMOUNT 1000
+int MAX_EXIST_AMOUNT = 1000;
 
 /*
  * This function returns the amount of words that exist vertically

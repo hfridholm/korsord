@@ -27,6 +27,4 @@ extern grid_t* grid_gen(wbase_t* wbase, const char* filepath);
 
 extern void grid_free(grid_t** grid);
 
-extern bool grid_is_done(grid_t* grid);
-
 #endif // K_GRID_H

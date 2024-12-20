@@ -9,7 +9,10 @@
 
 #include "k-stats.h"
 
-#define MAX_CROWD_AMOUNT 2
+/*
+ *
+ */
+int MAX_CROWD_AMOUNT = 5;
 
 /*
  * The x and y is not accounting for border
@@ -47,7 +50,7 @@ static bool patt_crowd_is_allowed(grid_t* grid, int block_x, int block_y)
       {
         block_amount++;
 
-        if(block_amount > MAX_CROWD_AMOUNT) return false;
+        if(block_amount >= MAX_CROWD_AMOUNT) return false;
       }
     }
   }

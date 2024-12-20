@@ -8,10 +8,7 @@
 #include "k-grid-intern.h"
 
 #include "k-wbase.h"
-
-extern size_t file_read(void* pointer, size_t size, const char* filepath);
-
-extern size_t file_size_get(const char* filepath);
+#include "k-file.h"
 
 /*
  *
