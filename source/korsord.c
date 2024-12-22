@@ -240,7 +240,7 @@ static void* print_routine(void* arg)
   {
     if(args.ncurses)
     {
-      clear();
+      erase();
 
       best_grid_ncurses_print();
       curr_grid_ncurses_print();
@@ -309,7 +309,7 @@ static int ncurses_init(void)
   init_pair(4, COLOR_RED,   COLOR_BLACK);
   init_pair(5, COLOR_RED,  COLOR_BLACK);
 
-  clear();
+  erase();
   refresh();
 
   info_print("Initialized ncurses");

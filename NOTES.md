@@ -1,8 +1,21 @@
 # Notes
-- add indexes for å ä ö
+
+I _embed, if a letter fails, try removing the letters that is not _crossed and call _gen again for the same direction from _embed.
+This keeps the progress that the other letters achieved. Something like this is what caused the bug erlier with blank stripes in grid. But if done correctly, that is not an issue.
+
+- future: add indexes for å ä ö
 - maybe add flags to makefile to silent output
 - maybe: move lock inside stats struct and lock inside grid struct
 - write comments explaining things in more detail
+- add new square type for initial block squares (ex ground, base, )
+  (those do not count when checking for crowd)
+- try implementing the old algorithm and see if that was better
+- go through all words in loaded model and _use those words
+
+new idea:
+- squares that are not _crossed should be able to be changed by new words,
+  if the words are still valid and available.
+  These kinds of small adjustments prevents unnecessary recursion backtracking.
 
 - maybe: Change start and stop in gword_t to
 union
