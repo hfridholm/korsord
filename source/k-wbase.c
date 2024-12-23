@@ -1,5 +1,5 @@
 /*
- * k-wbase.c
+ * k-wbase.c - word base manipulation functions
  */
 
 #include "k-wbase.h"
@@ -58,7 +58,7 @@ wbase_t* wbase_create(const char* primary_filepath, const char* backup_filepath,
 }
 
 /*
- * Free word base structure wbase
+ * Free word base struct
  */
 void wbase_free(wbase_t** wbase)
 {
@@ -74,7 +74,7 @@ void wbase_free(wbase_t** wbase)
 }
 
 /*
- *
+ * Duplicate word base struct
  */
 wbase_t* wbase_dup(wbase_t* wbase)
 {
@@ -92,7 +92,7 @@ wbase_t* wbase_dup(wbase_t* wbase)
 }
 
 /*
- *
+ * Copy word base struct
  */
 wbase_t* wbase_copy(wbase_t* copy, wbase_t* wbase)
 {
@@ -110,7 +110,7 @@ wbase_t* wbase_copy(wbase_t* copy, wbase_t* wbase)
 }
 
 /*
- *
+ * Reset word base - remove _used mark from words
  */
 void wbase_reset(wbase_t* wbase)
 {
@@ -126,7 +126,7 @@ void wbase_reset(wbase_t* wbase)
 }
 
 /*
- *
+ * Mark word in word base as _used
  */
 void wbase_word_use(wbase_t* wbase, const char* word)
 {
@@ -142,7 +142,7 @@ void wbase_word_use(wbase_t* wbase, const char* word)
 }
 
 /*
- *
+ * Remove _used mark from word in word base
  */
 void wbase_word_unuse(wbase_t* wbase, const char* word)
 {

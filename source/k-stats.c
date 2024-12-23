@@ -1,7 +1,5 @@
 /*
  * k-stats.c - stats management
- *
- * Written by Hampus Fridholm
  */
 
 #include "k-stats.h"
@@ -12,7 +10,7 @@ pthread_mutex_t stats_lock;
 stats_t stats;
 
 /*
- *
+ * Init stats object
  */
 void stats_init(void)
 {
@@ -22,7 +20,7 @@ void stats_init(void)
 }
 
 /*
- *
+ * Free stats object
  */
 void stats_free(void)
 {
@@ -32,7 +30,7 @@ void stats_free(void)
 }
 
 /*
- *
+ * Clear stats object - zero all stats
  */
 void stats_clear(void)
 {
@@ -44,7 +42,7 @@ void stats_clear(void)
 }
 
 /*
- *
+ * Increment stats pattern letter count
  */
 void stats_patt_letter_incr(void)
 {
@@ -56,7 +54,7 @@ void stats_patt_letter_incr(void)
 }
 
 /*
- *
+ * Increment stats pattern trap count
  */
 void stats_patt_trap_incr(void)
 {
@@ -68,7 +66,7 @@ void stats_patt_trap_incr(void)
 }
 
 /*
- *
+ * Increment stats pattern crowd count
  */
 void stats_patt_crowd_incr(void)
 {
@@ -80,7 +78,7 @@ void stats_patt_crowd_incr(void)
 }
 
 /*
- *
+ * Increment stats pattern edge count
  */
 void stats_patt_edge_incr(void)
 {
@@ -92,7 +90,7 @@ void stats_patt_edge_incr(void)
 }
 
 /*
- *
+ * Increment stats pattern corner count
  */
 void stats_patt_corner_incr(void)
 {
@@ -104,7 +102,7 @@ void stats_patt_corner_incr(void)
 }
 
 /*
- *
+ * Increment stats pattern block count
  */
 void stats_patt_block_incr(void)
 {
@@ -116,7 +114,7 @@ void stats_patt_block_incr(void)
 }
 
 /*
- *
+ * Increment stats pattern none count
  */
 void stats_patt_none_incr(void)
 {
@@ -128,7 +126,7 @@ void stats_patt_none_incr(void)
 }
 
 /*
- *
+ * Increment stats test count
  */
 void stats_test_incr(void)
 {
@@ -140,7 +138,7 @@ void stats_test_incr(void)
 }
 
 /*
- *
+ * Print stats object with ncurses
  */
 void stats_ncurses_print(void)
 {
@@ -159,7 +157,7 @@ void stats_ncurses_print(void)
 }
 
 /*
- *
+ * Print stats object in terminal
  */
 void stats_print(void)
 {

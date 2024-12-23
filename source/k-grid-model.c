@@ -1,7 +1,5 @@
 /*
  * k-grid-model.c - import grid from model
- *
- * Written by Hampus Fridholm
  */
 
 #include "k-grid.h"
@@ -11,7 +9,9 @@
 #include "k-file.h"
 
 /*
+ * Load grid from model
  *
+ * RETURN (grid_t* grid)
  */
 grid_t* grid_model_load(const char* filepath)
 {

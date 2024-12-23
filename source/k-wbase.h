@@ -1,7 +1,5 @@
 /*
  * k-wbase.h - declarations of public functions
- *
- * Written by Hampus Fridholm
  */
 
 #ifndef K_WBASE_H

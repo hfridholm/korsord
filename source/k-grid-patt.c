@@ -1,7 +1,5 @@
 /*
  * k-grid-patt.c - check if block is allowed
- *
- * Written by Hampus Fridholm
  */
 
 #include "k-grid.h"

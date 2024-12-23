@@ -1,7 +1,5 @@
 /*
  * k-grid-curr.c - manipulate current grid
- *
- * Written by Hampus Fridholm
  */
 
 #include "k-grid.h"

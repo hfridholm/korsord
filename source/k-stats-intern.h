@@ -1,7 +1,5 @@
 /*
  * k-stats-intern.h - internal declarations
- *
- * Written by Hampus Fridholm
  */
 
 #ifndef K_STATS_INTERN_H

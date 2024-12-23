@@ -1,7 +1,5 @@
 /*
  * k-grid-print.c - print grid to screen
- *
- * Written by Hampus Fridholm
  */
 
 #include "k-grid.h"
@@ -70,7 +68,7 @@ void grid_ncurses_print(grid_t* grid, int start_x, int start_y)
 }
 
 /*
- * 
+ * Print crossword grid in terminal
  */
 void grid_print(grid_t* grid)
 {

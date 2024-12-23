@@ -1,7 +1,5 @@
 /*
  * k-file.h - file manipulation functions
- *
- * Written by Hampus Fridholm
  */
 
 #ifndef K_FILE_H

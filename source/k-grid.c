@@ -1,7 +1,5 @@
 /*
  * k-grid.c - basic grid functions
- *
- * Written by Hampus Fridholm
  */
 
 #include "k-grid.h"

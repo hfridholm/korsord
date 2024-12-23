@@ -1,7 +1,5 @@
 /*
  * k-stats.h - debugging statistics
- *
- * Written by Hampus Fridholm
  */
 
 #ifndef K_STATS_H

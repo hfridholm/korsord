@@ -1,7 +1,5 @@
 /*
  * k-grid.h - declarations of public functions
- *
- * Written by Hampus Fridholm
  */
 
 #ifndef K_GRID_H

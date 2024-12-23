@@ -1,7 +1,5 @@
 /*
  * k-grid-prep.c - prepare grid before generation
- *
- * Written by Hampus Fridholm
  */
 
 #include "k-grid.h"
@@ -18,6 +16,7 @@ static void grid_prep_border(grid_t* grid)
 {
   square_t* square;
 
+  // 1. Fill in border on top and bottom
   for(int x = 0; x < (grid->width + 2); x++)
   {
     square = xy_real_square_get(grid, x, 0);
@@ -29,6 +28,7 @@ static void grid_prep_border(grid_t* grid)
     if(square) square->type = SQUARE_BORDER;
   }
 
+  // 2. Fill in border to the left and right
   for(int y = 0; y < (grid->height + 2); y++)
   {
     square = xy_real_square_get(grid, 0, y);
@@ -45,7 +45,7 @@ static void grid_prep_border(grid_t* grid)
 #define CAPACITY(n) (1 << (sizeof(n) * 8 - __builtin_clz(n)))
 
 /*
- *
+ * Append index to index array
  */
 static int index_append(int** indexes, int* count, int index)
 {
@@ -64,7 +64,7 @@ static int index_append(int** indexes, int* count, int index)
 }
 
 /*
- *
+ * Get indexes of corners in grid
  */
 static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
 {
@@ -184,6 +184,7 @@ static void grid_prep_blocks(grid_t* grid)
 
   grid_corner_indexes_get(&indexes, &count, grid);
 
+
   // 2. Assign SQUARE_BLOCK to the squares in the corners
   for(int index = 0; index < count; index++)
   {
@@ -199,6 +200,7 @@ static void grid_prep_blocks(grid_t* grid)
 
     square->type = SQUARE_BLOCK;
   }
+
 
   // 3. Randomly assign SQUARE_BLOCK to squares at edges
   for(int index = 0; index < count; index++)
@@ -385,13 +387,11 @@ static void grid_words_use(wbase_t* wbase, grid_t* grid)
 /*
  * Prepare the grid before generation
  */
-int grid_prep(wbase_t* wbase, grid_t* grid)
+void grid_prep(wbase_t* wbase, grid_t* grid)
 {
   grid_prep_border(grid);
 
   grid_prep_blocks(grid);
 
   grid_words_use(wbase, grid);
-
-  return 0;
 }

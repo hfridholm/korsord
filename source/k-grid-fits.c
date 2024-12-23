@@ -1,11 +1,11 @@
 /*
  * k-grid-fits.c - check if a word fits
- *
- * Written by Hampus Fridholm
  */
 
 #include "k-grid.h"
 #include "k-grid-intern.h"
+
+#include "k-grid-span.h"
 
 #include "k-wbase.h"
 
@@ -13,10 +13,6 @@
  * The larger this value is:
  * - the smarter the algorithm can work (prioritize)
  * - the longer the function takes
- *
- * But, even if this function is slower, the algorithm might be faster.
- *
- * This is what you have to take to account when choosing this value.
  */
 int MAX_EXIST_AMOUNT = 1000;
 

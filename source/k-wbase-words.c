@@ -1,5 +1,5 @@
 /*
- *
+ * k-wbase-words.c - search for words in trie
  */
 
 #include "k-wbase.h"
@@ -9,7 +9,11 @@
 #define CAPACITY(n) (1 << (sizeof(n) * 8 - __builtin_clz(n)))
 
 /*
+ * Append word in word array
  *
+ * RETURN (int status)
+ * - 0 | Success
+ * - 1 | Failed to allocate memory
  */
 static int word_append(char*** words, size_t* count, char* word)
 {
@@ -28,7 +32,7 @@ static int word_append(char*** words, size_t* count, char* word)
 }
 
 /*
- *
+ * Free memory of allocated word array
  */
 void words_free(char*** words, size_t count)
 {
@@ -45,7 +49,7 @@ void words_free(char*** words, size_t count)
 }
 
 /*
- *
+ * Shuffle word array
  */
 void words_shuffle(char** words, size_t count)
 {
@@ -62,6 +66,8 @@ void words_shuffle(char** words, size_t count)
 }
 
 /*
+ * Recursive word search function
+ *
  * EXPECTS:
  * - words are either allocated or NULL
  * - count is defined as an integer
@@ -122,7 +128,9 @@ static void _words_search(char*** words, size_t* count, node_t* node, const char
 }
 
 /*
+ * Search words that matches specific pattern
  *
+ * Maybe: remove args checking and add EXPECTS
  */
 int words_search(char*** words, size_t* count, trie_t* trie, const char* pattern)
 {
@@ -134,6 +142,8 @@ int words_search(char*** words, size_t* count, trie_t* trie, const char* pattern
 }
 
 /*
+ * Recursive function for counting existing words
+ *
  * RETURN (int amount)
  */
 static int _words_exist_for_pattern(node_t* node, const char* pattern, int index, char* word, int max_amount)
@@ -195,7 +205,11 @@ static int _words_exist_for_pattern(node_t* node, const char* pattern, int index
 }
 
 /*
+ * Count how many words exist for pattern
+ *
  * RETURN (int amount)
+ * - min | 0
+ * - max | max_amount
  */
 static int words_exist_for_pattern(trie_t* trie, const char* pattern, int max_amount)
 {
@@ -205,7 +219,11 @@ static int words_exist_for_pattern(trie_t* trie, const char* pattern, int max_am
 }
 
 /*
+ * Count how many words (both backup and primary) exist for pattern
+ *
  * RETURN (int amount)
+ * - min | 0
+ * - max | max_amount
  */
 int wbase_words_exist_for_pattern(wbase_t* wbase, const char* pattern, int max_amount)
 {
@@ -221,6 +239,8 @@ int wbase_words_exist_for_pattern(wbase_t* wbase, const char* pattern, int max_a
 }
 
 /*
+ * Recursive function for checking if a word exists for pattern
+ *
  * RETURN (bool does_exist)
  */
 static bool _word_exists_for_pattern(node_t* node, const char* pattern, int index, char* word)
@@ -276,6 +296,8 @@ static bool _word_exists_for_pattern(node_t* node, const char* pattern, int inde
 }
 
 /*
+ * Check if a word exists for pattern
+ *
  * RETURN (bool does_exist)
  */
 static bool word_exists_for_pattern(trie_t* trie, const char* pattern)
@@ -286,6 +308,8 @@ static bool word_exists_for_pattern(trie_t* trie, const char* pattern)
 }
 
 /*
+ * Check if a word (from either primary or backup) exists for pattern
+ *
  * RETURN (bool does_exist)
  */
 bool wbase_word_exists_for_pattern(wbase_t* wbase, const char* pattern)

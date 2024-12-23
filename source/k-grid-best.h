@@ -1,7 +1,5 @@
 /*
  * k-grid-best.h - declarations of best grid functions
- *
- * Written by Hampus Fridholm
  */
 
 #ifndef K_GRID_BEST_H

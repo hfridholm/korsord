@@ -1,5 +1,5 @@
 /*
- *
+ * k-file.c - read and write to file
  */
 
 #include <stdio.h>

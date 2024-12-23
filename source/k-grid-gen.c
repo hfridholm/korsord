@@ -1,7 +1,5 @@
 /*
  * k-grid-gen.c - generate words in grid
- *
- * Written by Hampus Fridholm
  */
 
 #include "k-grid.h"

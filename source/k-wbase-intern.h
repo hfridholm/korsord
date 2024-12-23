@@ -1,7 +1,5 @@
 /*
  * k-wbase-intern.h - intern declarations in k-wbase
- *
- * Written by Hampus Fridholm
  */
 
 #ifndef K_WBASE_INTERN_H

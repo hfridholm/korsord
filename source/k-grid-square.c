@@ -1,7 +1,5 @@
 /*
- * k-grid.c - basic grid functions
- *
- * Written by Hampus Fridholm
+ * k-grid.c - basic grid square functions
  */
 
 #include "k-grid.h"
@@ -25,7 +23,6 @@
 int xy_real_index_get(grid_t* grid, int x, int y)
 {
   return (y * (grid->width + 2)) + x;
-  // return (y * grid->width) + x;
 }
 
 /*
@@ -54,7 +51,6 @@ int xy_index_get(grid_t* grid, int x, int y)
   if(y < 0 || y >= grid->height) return -1;
 
   return (y + 1) * (grid->width + 2) + (x + 1);
-  // return (y * grid->width) + x;
 }
 
 /*
@@ -73,7 +69,7 @@ square_t* xy_square_get(grid_t* grid, int x, int y)
 }
 
 /*
- *
+ * Set is_crossed flag to square in grid
  */
 void xy_square_set_crossed(grid_t* grid, int x, int y)
 {
@@ -86,7 +82,7 @@ void xy_square_set_crossed(grid_t* grid, int x, int y)
 }
 
 /*
- *
+ * Check if real square is SQUARE_BLOCK
  */
 bool xy_real_square_is_block(grid_t* grid, int x, int y)
 {
@@ -96,7 +92,7 @@ bool xy_real_square_is_block(grid_t* grid, int x, int y)
 }
 
 /*
- *
+ * Check if square is SQUARE_BLOCK
  */
 bool xy_square_is_block(grid_t* grid, int x, int y)
 {
@@ -106,7 +102,7 @@ bool xy_square_is_block(grid_t* grid, int x, int y)
 }
 
 /*
- *
+ * Check if square is SQUARE_LETTER
  */
 bool xy_square_is_letter(grid_t* grid, int x, int y)
 {
@@ -116,7 +112,7 @@ bool xy_square_is_letter(grid_t* grid, int x, int y)
 }
 
 /*
- *
+ * Check if square has flag is_crossed
  */
 bool xy_square_is_crossed(grid_t* grid, int x, int y)
 {
@@ -126,7 +122,7 @@ bool xy_square_is_crossed(grid_t* grid, int x, int y)
 }
 
 /*
- *
+ * Check if real square is SQUARE_BORDER
  */
 bool xy_real_square_is_border(grid_t* grid, int x, int y)
 {
@@ -136,7 +132,7 @@ bool xy_real_square_is_border(grid_t* grid, int x, int y)
 }
 
 /*
- *
+ * Check if square is SQUARE_BORDER
  */
 bool xy_square_is_border(grid_t* grid, int x, int y)
 {
@@ -146,7 +142,7 @@ bool xy_square_is_border(grid_t* grid, int x, int y)
 }
 
 /*
- *
+ * Set real square type SQUARE_BLOCK
  */
 void xy_real_square_set_block(grid_t* grid, int x, int y)
 {
@@ -167,7 +163,7 @@ bool xy_square_is_blocking(grid_t* grid, int x, int y)
 }
 
 /*
- *
+ * Check if square is done (crossed letter)
  */
 bool xy_square_is_done(grid_t* grid, int x, int y)
 {

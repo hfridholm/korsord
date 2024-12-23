@@ -1,7 +1,5 @@
 /*
  * k-wbase-trie.c - get words that matches a pattern
- *
- * Written by Hampus Fridholm
  */
 
 #include "k-wbase.h"
@@ -10,7 +8,7 @@
 #include "k-file.h"
 
 /*
- *
+ * Create blank trie node
  */
 static node_t* node_create(void)
 {
@@ -25,7 +23,7 @@ static node_t* node_create(void)
 }
 
 /*
- *
+ * Free memory of trie node
  */
 static void node_free(node_t** node)
 {
@@ -44,7 +42,7 @@ static void node_free(node_t** node)
 void trie_free(trie_t** trie) { node_free((node_t**) trie); }
 
 /*
- *
+ * Insert word in trie
  */
 static void trie_word_insert(trie_t* trie, const char* word)
 {
@@ -69,7 +67,7 @@ static void trie_word_insert(trie_t* trie, const char* word)
 }
 
 /*
- *
+ * Convert string to lowercase
  */
 static char* string_lower(char* string)
 {
@@ -84,7 +82,10 @@ static char* string_lower(char* string)
 }
 
 /*
- * Create trie struct
+ * Create trie struct by loading words from file
+ *
+ * PARAMS
+ * - int max_length | Max length of words
  *
  * RETURN (trie_t* trie)
  * - NULL | Failed to read file
@@ -129,7 +130,7 @@ trie_t* trie_create(const char* filepath, int max_length)
 }
 
 /*
- *
+ * Mark word in trie as used
  */
 void trie_word_use(trie_t* trie, const char* word)
 {
@@ -155,7 +156,7 @@ void trie_word_use(trie_t* trie, const char* word)
 }
 
 /*
- *
+ * Remove used mark of word in trie
  */
 void trie_word_unuse(trie_t* trie, const char* word)
 {
@@ -181,7 +182,7 @@ void trie_word_unuse(trie_t* trie, const char* word)
 }
 
 /*
- *
+ * Reset trie node, by removing the used mark
  */
 static void node_reset(node_t* node)
 {
@@ -198,7 +199,10 @@ static void node_reset(node_t* node)
 void trie_reset(trie_t* trie) { node_reset((node_t*) trie); }
 
 /*
+ * Duplicate trie node
  *
+ * RETURN (node_t* dup)
+ * - allocated node_t struct
  */
 static node_t* node_dup(node_t* node)
 {
@@ -220,6 +224,8 @@ static node_t* node_dup(node_t* node)
 trie_t* trie_dup(trie_t* trie) { return node_dup((node_t*) trie); }
 
 /*
+ * Copy trie node
+ *
  * EXPECTS:
  * - copy and node have the same structure
  */
