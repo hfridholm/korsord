@@ -456,7 +456,7 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
   if(!grid) return NULL;
 
   // 2. Prepare the grid for generation
-  grid_prep(grid);
+  grid_prep(wbase, grid);
 
   best_grid_set(grid);
 

@@ -7,6 +7,8 @@
 #include "k-grid.h"
 #include "k-grid-intern.h"
 
+#include "k-wbase.h"
+
 /*
  * Assign the out most squares as SQUARE_BORDER
  *
@@ -310,13 +312,86 @@ static void grid_prep_blocks(grid_t* grid)
 }
 
 /*
+ * Identify words in grid and _use them,
+ * so they can't be used elsewhere in the grid
+ */
+static void grid_words_use(wbase_t* wbase, grid_t* grid)
+{
+  // Identify vertical words and _use them
+  for(int x = 1; x < (grid->width + 2); x++)
+  {
+    char word[grid->height + 1];
+    int  length = 0;
+
+    for(int y = 1; y < (grid->height + 2); y++)
+    {
+      square_t* square = xy_real_square_get(grid, x, y);
+
+      if(square->type == SQUARE_EMPTY)
+      {
+        length = 0;
+      }
+      else if(square->type == SQUARE_BLOCK || square->type == SQUARE_BORDER)
+      {
+        if(length > 1)
+        {
+          word[length++] = '\0';
+
+          wbase_word_use(wbase, word);
+        }
+
+        length = 0;
+      }
+      else if(square->type == SQUARE_LETTER)
+      {
+        word[length++] = square->letter;
+      }
+    }
+  }
+
+  // Identify horizontal words and _use them
+  for(int y = 1; y < (grid->height + 2); y++)
+  {
+    char word[grid->width + 1];
+    int  length = 0;
+
+    for(int x = 1; x < (grid->width + 2); x++)
+    {
+      square_t* square = xy_real_square_get(grid, x, y);
+
+      if(square->type == SQUARE_EMPTY)
+      {
+        length = 0;
+      }
+      else if(square->type == SQUARE_BLOCK || square->type == SQUARE_BORDER)
+      {
+        if(length > 1)
+        {
+          word[length++] = '\0';
+
+          wbase_word_use(wbase, word);
+        }
+
+        length = 0;
+      }
+      else if(square->type == SQUARE_LETTER)
+      {
+        word[length++] = square->letter;
+      }
+    }
+  }
+}
+
+/*
  * Prepare the grid before generation
  */
-int grid_prep(grid_t* grid)
+int grid_prep(wbase_t* wbase, grid_t* grid)
 {
   grid_prep_border(grid);
 
   grid_prep_blocks(grid);
+
+  grid_words_use(wbase, grid);
 
   return 0;
 }
