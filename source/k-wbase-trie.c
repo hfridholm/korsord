@@ -2,12 +2,6 @@
  * k-wbase-trie.c - get words that matches a pattern
  *
  * Written by Hampus Fridholm
- *
- * FUNCTIONS:
- *
- * trie_t* trie_create(const char* filepath, int max_length)
- *
- * void    trie_free(trie_t** trie)
  */
 
 #include "k-wbase.h"
@@ -26,13 +20,6 @@ static node_t* node_create(void)
   node->is_used = false;
 
   memset(node->children, 0, sizeof(node_t*) * ALPHABET_SIZE);
-
-  /*
-  for(int index = 0; index < ALPHABET_SIZE; index++)
-  {
-    node->children[index] = NULL;
-  }
-  */
 
   return node;
 }

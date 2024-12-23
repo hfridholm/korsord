@@ -18,7 +18,7 @@
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
-#define ALPHABET_SIZE 29
+#define ALPHABET_SIZE 26
 
 typedef struct node_t node_t;
 

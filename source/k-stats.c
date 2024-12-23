@@ -1,5 +1,7 @@
 /*
+ * k-stats.c - stats management
  *
+ * Written by Hampus Fridholm
  */
 
 #include "k-stats.h"

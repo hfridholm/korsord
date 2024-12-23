@@ -8,7 +8,6 @@ This keeps the progress that the other letters achieved. Something like this is 
 - rename old_grid and new_grid better, like embed_grid, test_grid and grid
 
 - change if-statements to switch statements when checking _status in -gen.c
-- change alphabet size to 26 instead of 29
 - remove old_grid from _reset, instead set is_crossed on SQUARE_BLOCK and from that _reset
 
 idea:
@@ -17,8 +16,6 @@ idea:
 - maybe add flags to makefile to silent output
 - maybe: move lock inside stats struct and lock inside grid struct
 - write comments explaining things in more detail
-- add new square type for initial block squares (ex ground, base, )
-  (those do not count when checking for crowd)
 - try implementing the old algorithm and see if that was better
 - go through all words in loaded model and _use those words
 

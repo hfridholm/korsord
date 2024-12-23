@@ -31,6 +31,8 @@ int HALF_WORD_AMOUNT = 10;
 
 static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cross_y);
 
+static int horiz_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cross_y);
+
 /*
  * When embeding a word, new words perpendicular to it is generated
  *
@@ -101,7 +103,9 @@ static int horiz_word_embed(wbase_t* wbase, grid_t* old_grid, const char* word, 
 static int horiz_word_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, const char* word, int x, int y)
 {
   // 1. Insert the word in the grid
-  if(horiz_word_insert(wbase, new_grid, word, x, y) == INSERT_PERFECT)
+  int insert_status = horiz_word_insert(wbase, new_grid, word, x, y);
+
+  if(insert_status == INSERT_PERFECT)
   {
     // If the word fits perfect, the crossword is solved?
     return GEN_DONE;
@@ -209,8 +213,6 @@ static int horiz_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cro
   {
     xy_square_set_crossed(old_grid, cross_x, cross_y);
 
-    old_grid->cross_count++;
-
     return GEN_DONE;
   }
 
@@ -303,7 +305,9 @@ static int vert_word_embed(wbase_t* wbase, grid_t* old_grid, const char* word, i
 static int vert_word_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, const char* word, int x, int y)
 {
   // 1. Insert the word in the grid
-  if(vert_word_insert(wbase, new_grid, word, x, y) == INSERT_PERFECT)
+  int insert_status = vert_word_insert(wbase, new_grid, word, x, y);
+
+  if(insert_status == INSERT_PERFECT)
   {
     // If the word fits perfect, the crossword is solved?
     return GEN_DONE;
@@ -384,7 +388,6 @@ static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cros
 
 
   curr_grid_set(old_grid);
-
   // curr_grid_print();
   // usleep(1000000);
 
@@ -412,8 +415,6 @@ static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cros
   if(gwords_status == GWORDS_SINGLE)
   {
     xy_square_set_crossed(old_grid, cross_x, cross_y);
-
-    old_grid->cross_count++;
 
     return GEN_DONE;
   }

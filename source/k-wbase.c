@@ -1,12 +1,14 @@
 /*
- *
+ * k-wbase.c
  */
 
 #include "k-wbase.h"
 #include "k-wbase-intern.h"
 
 /*
- *
+ * RETURN (char letter)
+ * - '_' | Index out of range
+ * - 'a' - 'z'
  */
 char index_letter_get(int index)
 {
@@ -19,7 +21,10 @@ char index_letter_get(int index)
 }
 
 /*
- *
+ * RETURN (int index)
+ * - -1  | Letter doesn't exist
+ * - min | 0
+ * - max | ALPHABET_SIZE - 1
  */
 int letter_index_get(char letter)
 {

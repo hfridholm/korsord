@@ -228,7 +228,6 @@ static bool _word_exists_for_pattern(node_t* node, const char* pattern, int inde
   // Base case - the end of the word
   if(pattern[index] == '\0')
   {
-    // return (node->is_end_of_word && !node->is_used);
     return node->is_end_of_word;
   }
 
