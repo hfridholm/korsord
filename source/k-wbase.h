@@ -30,6 +30,10 @@ extern void     wbase_reset(wbase_t* wbase);
 
 extern void     wbase_free(wbase_t** wbase);
 
+extern wbase_t* wbase_dup(wbase_t* wbase);
+
+extern wbase_t* wbase_copy(wbase_t* copy, wbase_t* wbase);
+
 
 extern int  words_search(char*** words, size_t* count, trie_t* trie, const char* pattern);
 

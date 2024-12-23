@@ -25,10 +25,14 @@ static node_t* node_create(void)
   node->is_end_of_word = false;
   node->is_used = false;
 
+  memset(node->children, 0, sizeof(node_t*) * ALPHABET_SIZE);
+
+  /*
   for(int index = 0; index < ALPHABET_SIZE; index++)
   {
     node->children[index] = NULL;
   }
+  */
 
   return node;
 }
@@ -205,3 +209,46 @@ static void node_reset(node_t* node)
 }
 
 void trie_reset(trie_t* trie) { node_reset((node_t*) trie); }
+
+/*
+ *
+ */
+static node_t* node_dup(node_t* node)
+{
+  if(!node) return NULL;
+
+  node_t* dup = malloc(sizeof(node_t));
+
+  dup->is_end_of_word = node->is_end_of_word;
+  dup->is_used        = node->is_used;
+
+  for(int index = 0; index < ALPHABET_SIZE; index++)
+  {
+    dup->children[index] = node_dup(node->children[index]);
+  }
+
+  return dup;
+}
+
+trie_t* trie_dup(trie_t* trie) { return node_dup((node_t*) trie); }
+
+/*
+ * EXPECTS:
+ * - copy and node have the same structure
+ */
+static node_t* node_copy(node_t* copy, node_t* node)
+{
+  if(!node || !copy) return NULL;
+
+  copy->is_end_of_word = node->is_end_of_word;
+  copy->is_used        = node->is_used;
+
+  for(int index = 0; index < ALPHABET_SIZE; index++)
+  {
+    node_copy(copy->children[index], node->children[index]);
+  }
+
+  return copy;
+}
+
+trie_t* trie_copy(trie_t* copy, trie_t* trie) { return node_copy((node_t*) copy, (node_t*) trie); }

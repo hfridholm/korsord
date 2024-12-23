@@ -71,6 +71,42 @@ void wbase_free(wbase_t** wbase)
 /*
  *
  */
+wbase_t* wbase_dup(wbase_t* wbase)
+{
+  // 1. Allocate memory for wbase
+  wbase_t* dup = malloc(sizeof(wbase_t));
+
+  if(!wbase) return NULL;
+
+  // 2. Create primary and backup trie
+  dup->primary = trie_dup(wbase->primary);
+
+  dup->backup = trie_dup(wbase->backup);
+
+  return dup;
+}
+
+/*
+ *
+ */
+wbase_t* wbase_copy(wbase_t* copy, wbase_t* wbase)
+{
+  if(wbase->primary)
+  {
+    trie_copy(copy->primary, wbase->primary);
+  }
+
+  if(wbase->backup)
+  {
+    trie_copy(copy->backup, wbase->backup);
+  }
+
+  return copy;
+}
+
+/*
+ *
+ */
 void wbase_reset(wbase_t* wbase)
 {
   if(wbase->primary)

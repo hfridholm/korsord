@@ -1,9 +1,19 @@
 # Notes
 
-I _embed, if a letter fails, try removing the letters that is not _crossed and call _gen again for the same direction from _embed.
+If a letter fails, try removing the letters that is not _crossed and call _gen again for the same direction from _embed.
 This keeps the progress that the other letters achieved. Something like this is what caused the bug erlier with blank stripes in grid. But if done correctly, that is not an issue.
 
-- future: add indexes for å ä ö
+- create EMBED_ status codes and add EMBED_HALF
+- call _gen again when EMBED_HALF
+- rename old_grid and new_grid better, like embed_grid, test_grid and grid
+
+- change if-statements to switch statements when checking _status in -gen.c
+- change alphabet size to 26 instead of 29
+- remove old_grid from _reset, instead set is_crossed on SQUARE_BLOCK and from that _reset
+
+idea:
+- SQUARE_BLOCK from prep should not be counted for in _crowd function
+
 - maybe add flags to makefile to silent output
 - maybe: move lock inside stats struct and lock inside grid struct
 - write comments explaining things in more detail

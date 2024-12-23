@@ -38,6 +38,10 @@ extern void    trie_reset(trie_t* trie);
 
 extern void    trie_free(trie_t** trie);
 
+extern trie_t* trie_dup(trie_t* trie);
+
+extern trie_t* trie_copy(trie_t* copy, trie_t* trie);
+
 
 extern void trie_word_use(trie_t* trie, const char* word);
 

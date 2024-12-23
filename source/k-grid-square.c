@@ -80,6 +80,9 @@ void xy_square_set_crossed(grid_t* grid, int x, int y)
   square_t* square = xy_square_get(grid, x, y);
 
   if(square) square->is_crossed = true;
+
+  grid->cross_count++;
+
 }
 
 /*

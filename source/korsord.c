@@ -33,8 +33,8 @@ bool is_running = false;
 #define INPUT_DELAY 100000
 
 extern int MAX_CROWD_AMOUNT;
-
 extern int MAX_EXIST_AMOUNT;
+extern int HALF_WORD_AMOUNT;
 
 
 static char doc[] = "korsord - swedish crossword generator";
@@ -54,6 +54,7 @@ static struct argp_option options[] =
   { "length",   'l', "LENGTH", 0, "Max length of words" },
   { "crowd",    'c', "AMOUNT", 0, "Max amount of nerby blocks" },
   { "exist",    'e', "AMOUNT", 0, "Amount of precission" },
+  { "half",     'h', "AMOUNT", 0, "Progress preserve amount" },
   { 0 }
 };
 
@@ -116,6 +117,19 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
       if(number >= 1 && number <= 7)
       {
         MAX_CROWD_AMOUNT = number;
+      }
+      else argp_usage(state);
+
+      break;
+
+    case 'h':
+      if(!arg || *arg == '-') argp_usage(state);
+
+      number = atoi(arg);
+
+      if(number >= 1)
+      {
+        HALF_WORD_AMOUNT = number;
       }
       else argp_usage(state);
 

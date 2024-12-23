@@ -128,7 +128,7 @@ void stats_patt_none_incr(void)
 /*
  *
  */
-void stats_patt_test_incr(void)
+void stats_test_incr(void)
 {
   pthread_mutex_lock(&stats_lock);
 

@@ -28,7 +28,8 @@ extern void stats_patt_block_incr(void);
 
 extern void stats_patt_none_incr(void);
 
-extern void stats_patt_test_incr(void);
+
+extern void stats_test_incr(void);
 
 
 extern void stats_ncurses_print(void);
