@@ -6,3 +6,4 @@
 !debug.sh
 !valgrind.sh
 !interact.sh
+!render.py
