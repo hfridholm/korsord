@@ -3,12 +3,88 @@
 If a letter fails, try removing the letters that is not _crossed and call _gen again for the same direction from _embed.
 This keeps the progress that the other letters achieved. Something like this is what caused the bug erlier with blank stripes in grid. But if done correctly, that is not an issue.
 
+- create function that extracts all words in grid
+  (store those words in result.words when storing result.grid after _gen)
+[result.words]
+[result.grid]
+- refine python words prepare script
+- create file.h header library file
+- add min_length to wbase_create
+- change out the word lists completely
+- add blocks near block ridge (2 squares in) in prep stage
+- add dir_file_read ("assets") and move words and models dir to assets
+  (./korsord model1 mormor.words jul.words svenska.words)
+- instread of primary and backup, store and array of trie_t based on inputted order
+  (./korsord [MODEL] [WORDS...])
+- instead of _used flag, store used words in used_trie.
+  (in _search and _exist functions: pass along the current used_trie node along with search node)
+  (duplicate used_trie along with grid in _gen functions)
+- add prep block procent to argp argument (60% is it now, but change default to something else)
+- the same way grid is reverted, wbase should also be reverted
 - create EMBED_ status codes and add EMBED_HALF
 - call _gen again when EMBED_HALF
 - rename old_grid and new_grid better, like embed_grid, test_grid and grid
+- get better words for crosswords
 
 - change if-statements to switch statements when checking _status in -gen.c
 - remove old_grid from _reset, instead set is_crossed on SQUARE_BLOCK and from that _reset
+
+maybe in future:
+- create program to render a visual correct crossword based on generated grid and user-written clues
+- The program could take in:
+1. the exported generated grid (from ./korsord) and 
+2. the exported list of words, which the user then has written clues after each word, like this:
+
+[result.words]
+hus        :
+skateboard :
+...
+
+[user altered result.words]
+hus        : i ett sådant kan man bo
+skateboard : platta med fyra hjul
+...
+
+The program would then extract the words and clues in a dictionary and 
+render the clues in the appropriate boxes
+
+maybe (this is highly recommended)
+- expand border to 2 in width (search box of 5x5 instead of 3x3)
+- remove outer border from anything to the user (model and print)
+- SQUARE_BLOCK med endast 1 bokstav under och till höger (utan start) ska inte få finnas
+. . . . .
+. . . . .
+. . + . # Om båda blocks är här får en block i mitten inte finnas
+. . . . .
+. . # . .
+
+. . . . .
+. . . . . Om SQUARE_BLOCK eller SQUARE_BORDER är både i område a och b,
+. . + a a får inte en block placeras i mitten
+. . b . .
+. . b . . Detta gör patt_corner_is_allowed obsolete och den kan tas bort
+
+
+. . . . .
+. . . . . Om SQUARE_BLOCK är i a och SQUARE_BLOCK eller SQUARE_BORDER är i område c,
+a b + . . eller
+c d . . . Om SQUARE_BLOCK är i b och SQUARE_BLOCK eller SQUARE_BORDER är i område d,
+c d . . . får inte en block placeras i mitten
+
+. . a c c
+. . b d d
+. . + . . --||--
+. . . . .
+. . . . .
+
+
+maybe in future:
+- extract the squares of 5x5 box into a new mini grid,
+  that then can be checked mirrored by switching x and y:
+
+  patt_block_is_allowed(5x5, x, y)
+  patt_block_is_allowed(5x5, y, x)
+
 
 idea:
 - SQUARE_BLOCK from prep should not be counted for in _crowd function

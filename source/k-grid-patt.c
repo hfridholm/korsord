@@ -30,6 +30,9 @@ int MAX_CROWD_AMOUNT = 5;
 /*
  * This function checks if the pattern is crowded with block squares
  *
+ * EXPECTS:
+ * - (block_x, block_y) is not SQUARE_BLOCK
+ *
  * PARAMS:
  * - int block_x | Not real x
  * - int block_y | Not real y

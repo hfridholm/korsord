@@ -7,6 +7,8 @@
 
 #include "k-wbase.h"
 
+int PREP_EMPTY_CHANCE = 70;
+
 /*
  * Assign the out most squares as SQUARE_BORDER
  *
@@ -250,8 +252,8 @@ static void grid_prep_blocks(grid_t* grid)
         continue;
       }
 
-      // If the last is a block, this has a 60% chance of also being a block
-      if((rand() % 100) > 60)
+      // If the last is a block, this has a chance of also being a block
+      if((rand() % 100) > PREP_EMPTY_CHANCE)
       {
         square->type = SQUARE_BLOCK;
 
@@ -299,8 +301,8 @@ static void grid_prep_blocks(grid_t* grid)
         continue;
       }
 
-      // If the last is a block, this has a 60% chance of also being a block
-      if((rand() % 100) > 60)
+      // If the last is a block, this has a chance of also being a block
+      if((rand() % 100) > PREP_EMPTY_CHANCE)
       {
         square->type = SQUARE_BLOCK;
 
