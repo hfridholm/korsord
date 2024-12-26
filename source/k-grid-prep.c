@@ -220,11 +220,14 @@ static void grid_prep_blocks(grid_t* grid)
     /*
      * The square to the right of the top left block must be empty
      */
-    xy_real_square_set_empty(grid, start_x + 1, start_y);
+    if(start_x < grid->width)
+    {
+      xy_real_square_set_empty(grid, start_x + 1, start_y);
+    }
 
     bool last_is_block = false;
 
-    for(int x = (start_x + 2); x < (grid->width + 0); x++)
+    for(int x = (start_x + 2); x < grid->width; x++)
     {
       // This ensures that the egde is being followed
       if(!xy_real_square_is_border(grid, x, start_y - 1) ||
@@ -273,7 +276,7 @@ static void grid_prep_blocks(grid_t* grid)
      */
     last_is_block = true;
 
-    for(int y = start_y; y < (grid->height + 2); y++)
+    for(int y = (start_y + 1); y < grid->height; y++)
     {
       // This ensures that the egde is being followed
       if(!xy_real_square_is_border(grid, start_x - 1, y) ||

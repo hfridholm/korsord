@@ -9,7 +9,8 @@ from PIL import Image, ImageDraw, ImageFont
 import textwrap
 import os
 
-result_dir = "korsord"
+# result_dir = "korsord"
+result_dir = None
 
 FONT_FILE = "/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf"
 RESULTS_DIR  = "results"
@@ -140,6 +141,10 @@ def block_words_find(grid):
     block_words = {}
 
     # Extract horizontal words
+    #
+    # By going from the top to the bottom (y getting bigger),
+    # the double clue squares becomes correct
+    #
     for y in range(grid.height):
         word = ""
 
@@ -162,7 +167,7 @@ def block_words_find(grid):
             elif (square.type == "LETTER"):
                 word = square.letter + word
 
-            if ((x == 0 or square.type == "BORDER") and y < grid.height - 1):
+            if ((x == 0 or grid.squares[x - 1][y].type == "BORDER") and y < grid.height - 1):
                 # The clue square is one below
                 if(len(word) > 1):
                     if((x, y + 1) in block_words):
@@ -174,7 +179,11 @@ def block_words_find(grid):
                 word = ""
 
     # Extract vertical words
-    for x in range(grid.width):
+    #
+    # By going from right to left (x getting smaller),
+    # the double clue squares becomes correct
+    #
+    for x in range(grid.width - 1, -1, -1):
         word = ""
 
         for y in range(grid.height - 1, -1, -1):
@@ -196,7 +205,7 @@ def block_words_find(grid):
             elif(square.type == "LETTER"):
                 word = square.letter + word
 
-            if ((y == 0 or square.type == "BORDER") and x > 0):
+            if ((y == 0 or grid.squares[x][y - 1].type == "BORDER") and x > 0):
                 # The clue square is one to the left
                 if(len(word) > 1):
                     if((x - 1, y) in block_words):
