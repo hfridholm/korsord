@@ -1,9 +1,16 @@
 *
 !.gitignore
 !makefile
-!models
-!words
+
+# Shell scripts for korsord
 !debug.sh
 !valgrind.sh
 !interact.sh
+
+# Python scripts
 !render.py
+!clues.py
+!generate.sh
+
+!models
+!words

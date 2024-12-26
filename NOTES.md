@@ -25,6 +25,8 @@ This keeps the progress that the other letters achieved. Something like this is 
 - call _gen again when EMBED_HALF
 - rename old_grid and new_grid better, like embed_grid, test_grid and grid
 - get better words for crosswords
+- add argp to render.py
+- maybe add argp to clues.py
 
 - change if-statements to switch statements when checking _status in -gen.c
 - remove old_grid from _reset, instead set is_crossed on SQUARE_BLOCK and from that _reset

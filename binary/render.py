@@ -12,8 +12,8 @@ FONT_FILE = "/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf"
 
 MAX_CLUE_LENGTH = 30
 FONT_SIZE = 30
-WRAP_WIDTH = 15
-TEXT_MARGIN = 1
+WRAP_WIDTH = 10
+LINE_MARGIN = 10
 SQUARE_SIZE = 200
 LINE_WIDTH = 1
 
@@ -263,13 +263,14 @@ def clue_draw(x, y, clue, half=False):
 
     text_h = bbox[3] - bbox[1]
 
-    wrapped_text = textwrap.fill(clue, width=WRAP_WIDTH)
+    wrapped_text = textwrap.fill(clue, width=WRAP_WIDTH, break_long_words=True)
 
     line_amount = len(wrapped_text.split("\n"))
 
-    print(f"clue: ({clue}) lines: {line_amount}")
+    # Height of text lines
+    lines_h = text_h + (line_amount - 1) * (text_h + LINE_MARGIN)
 
-    text_y = y + max(0, (h - text_h * line_amount) // 2)
+    text_y = y + max(0, (h - lines_h) // 2)
 
     print(f"SQUARE_SIZE: {SQUARE_SIZE} h: {h} text_h: {text_h} text_y: {text_y}")
 
@@ -287,7 +288,7 @@ def clue_draw(x, y, clue, half=False):
         # Draw the text on the image
         draw.text((text_x, text_y), line, fill="black", font=font)
 
-        text_y += max(0, (h - text_h) // 2)
+        text_y += text_h + LINE_MARGIN
 
 #
 # Draw crossword grid
