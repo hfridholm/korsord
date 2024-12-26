@@ -23,6 +23,11 @@ typedef struct wbase_t wbase_t;
 
 extern grid_t* grid_gen(wbase_t* wbase, const char* filepath);
 
-extern void grid_free(grid_t** grid);
+extern void    grid_free(grid_t** grid);
+
+
+extern int grid_words_export(grid_t* grid);
+
+extern int grid_export(grid_t* grid);
 
 #endif // K_GRID_H

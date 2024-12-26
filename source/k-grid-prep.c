@@ -212,16 +212,19 @@ static void grid_prep_blocks(grid_t* grid)
     int start_x = square_index % (grid->width + 2);
     int start_y = square_index / (grid->width + 2);
 
-    // Important: At least one open square next to top left block
-    // Implement this as soon as possible
+    /*
+     * X X X X X
+     * X # . + .
+     */
 
     /*
-     * X X X X
-     * X # + .
+     * The square to the right of the top left block must be empty
      */
-    bool last_is_block = true;
+    xy_real_square_set_empty(grid, start_x + 1, start_y);
 
-    for(int x = (start_x + 1); x < (grid->width + 0); x++)
+    bool last_is_block = false;
+
+    for(int x = (start_x + 2); x < (grid->width + 0); x++)
     {
       // This ensures that the egde is being followed
       if(!xy_real_square_is_border(grid, x, start_y - 1) ||
@@ -321,69 +324,20 @@ static void grid_prep_blocks(grid_t* grid)
  */
 static void grid_words_use(wbase_t* wbase, grid_t* grid)
 {
-  // Identify vertical words and _use them
-  for(int x = 1; x < (grid->width + 2); x++)
+  char** words = NULL;
+  size_t count = 0;
+
+  if(grid_words_get(&words, &count, grid) != 0)
   {
-    char word[grid->height + 1];
-    int  length = 0;
-
-    for(int y = 1; y < (grid->height + 2); y++)
-    {
-      square_t* square = xy_real_square_get(grid, x, y);
-
-      if(square->type == SQUARE_EMPTY)
-      {
-        length = 0;
-      }
-      else if(square->type == SQUARE_BLOCK || square->type == SQUARE_BORDER)
-      {
-        if(length > 1)
-        {
-          word[length++] = '\0';
-
-          wbase_word_use(wbase, word);
-        }
-
-        length = 0;
-      }
-      else if(square->type == SQUARE_LETTER)
-      {
-        word[length++] = square->letter;
-      }
-    }
+    return;
   }
 
-  // Identify horizontal words and _use them
-  for(int y = 1; y < (grid->height + 2); y++)
+  for(size_t index = 0; index < count; index++)
   {
-    char word[grid->width + 1];
-    int  length = 0;
-
-    for(int x = 1; x < (grid->width + 2); x++)
-    {
-      square_t* square = xy_real_square_get(grid, x, y);
-
-      if(square->type == SQUARE_EMPTY)
-      {
-        length = 0;
-      }
-      else if(square->type == SQUARE_BLOCK || square->type == SQUARE_BORDER)
-      {
-        if(length > 1)
-        {
-          word[length++] = '\0';
-
-          wbase_word_use(wbase, word);
-        }
-
-        length = 0;
-      }
-      else if(square->type == SQUARE_LETTER)
-      {
-        word[length++] = square->letter;
-      }
-    }
+    wbase_word_use(wbase, words[index]);
   }
+
+  words_free(&words, count);
 }
 
 /*

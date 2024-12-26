@@ -9,6 +9,7 @@
 from openai import OpenAI
 
 MAX_CLUE_LENGTH = 30
+MAX_WORD_AMOUNT = 4
 
 api_key_file = "api.key"
 
@@ -35,8 +36,10 @@ def word_clue_gen(word):
         Skriv en ledtråd till ordet '{word}'.
         Ledtråden ska användas i ett korsord.
         Ditt svar ska inte sluta med en punkt.
-        Ditt svar får inte vara mer än {MAX_CLUE_LENGTH} tecken.
+        Ditt svar ska innehålla färre än {MAX_WORD_AMOUNT} ord.
         Själva ordet får inte stå med i ledtråden.
+        Ordet 'ledtråd' får inte finnas med i ditt svar.
+        Inga långa ord får finnas med.
     """
 
     try:
@@ -120,12 +123,17 @@ if __name__ == "__main__":
         print(f"Failed to load word clues")
         exit(1)
 
+    print(f"Loaded words")
+
     # 2. Fill in missing clues using ChatGPT
     for word, clue in word_clues.items():
         if(len(clue) == 0):
             clue = word_clue_gen(word)
+            print(f"Generated ({word}): {clue}")
 
         word_clues[word] = clue
 
     # 3. Load word clues
     word_clues_save(word_clues, "result.words")
+
+    print(f"Saved result")

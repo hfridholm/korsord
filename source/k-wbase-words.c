@@ -5,6 +5,8 @@
 #include "k-wbase.h"
 #include "k-wbase-intern.h"
 
+#include "k-grid-intern.h"
+
 // __builtin_clz counts the leading zeros, so the bit length is:
 #define CAPACITY(n) (1 << (sizeof(n) * 8 - __builtin_clz(n)))
 
@@ -63,6 +65,86 @@ void words_shuffle(char** words, size_t count)
 
     words[rand_index] = temp_word;
   }
+}
+
+/*
+ * Get the words in grid
+ *
+ * The function allocates an array of words, which has to be freed
+ *
+ * RETURN (int status)
+ * - 0 | Success
+ * - 1 | Bad input
+ */
+int grid_words_get(char*** words, size_t* count, grid_t* grid)
+{
+  if(!words || !count || !grid) return 1;
+
+  // Identify vertical words and remember them
+  for(int x = 1; x < (grid->width + 2); x++)
+  {
+    char word[grid->height + 1];
+    int  length = 0;
+
+    for(int y = 1; y < (grid->height + 2); y++)
+    {
+      square_t* square = xy_real_square_get(grid, x, y);
+
+      if(square->type == SQUARE_EMPTY)
+      {
+        length = 0;
+      }
+      else if(square->type == SQUARE_BLOCK || square->type == SQUARE_BORDER)
+      {
+        if(length > 1)
+        {
+          word[length++] = '\0';
+
+          word_append(words, count, word);
+        }
+
+        length = 0;
+      }
+      else if(square->type == SQUARE_LETTER)
+      {
+        word[length++] = square->letter;
+      }
+    }
+  }
+
+  // Identify horizontal words and remember them
+  for(int y = 1; y < (grid->height + 2); y++)
+  {
+    char word[grid->width + 1];
+    int  length = 0;
+
+    for(int x = 1; x < (grid->width + 2); x++)
+    {
+      square_t* square = xy_real_square_get(grid, x, y);
+
+      if(square->type == SQUARE_EMPTY)
+      {
+        length = 0;
+      }
+      else if(square->type == SQUARE_BLOCK || square->type == SQUARE_BORDER)
+      {
+        if(length > 1)
+        {
+          word[length++] = '\0';
+
+          word_append(words, count, word);
+        }
+
+        length = 0;
+      }
+      else if(square->type == SQUARE_LETTER)
+      {
+        word[length++] = square->letter;
+      }
+    }
+  }
+
+  return 0;
 }
 
 /*

@@ -7,12 +7,19 @@
 # Import image library
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
+import os
+
+result_dir = "korsord"
 
 FONT_FILE = "/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf"
+RESULTS_DIR  = "results"
 
 MAX_CLUE_LENGTH = 30
-FONT_SIZE = 30
 WRAP_WIDTH = 10
+
+LETTER_FONT_SIZE = 100
+CLUE_FONT_SIZE = 30
+
 LINE_MARGIN = 10
 SQUARE_SIZE = 200
 LINE_WIDTH = 2
@@ -88,6 +95,7 @@ def grid_load(filepath):
                     grid.squares[x][y] = Square("LETTER", letter)
 
                 else: # Invalid symbols in grid
+                    print(f"Invalid symbol ({x}, {y}): '{symbol}'")
                     return None
 
     return grid
@@ -139,7 +147,7 @@ def block_words_find(grid):
             square = grid.squares[x][y]
 
             if(square.type == "EMPTY"):
-                return None
+                word = ""
 
             elif(square.type == "BLOCK"):
                 if(len(word) > 1):
@@ -173,7 +181,7 @@ def block_words_find(grid):
             square = grid.squares[x][y]
 
             if(square.type == "EMPTY"):
-                return None
+                word = ""
 
             elif (square.type == "BLOCK"):
                 if(len(word) > 1):
@@ -217,9 +225,6 @@ if(block_words == None):
     print(f"Failed to find block words")
     exit(2)
 
-for block in block_words:
-    print(f"{block}: {block_words[block]}")
-
 # Load words along with threir clues
 word_clues = word_clues_load("result.words")
 
@@ -231,11 +236,14 @@ if(word_clues == None):
 img_w = grid.width  * SQUARE_SIZE
 img_h = grid.height * SQUARE_SIZE
 
-img = Image.new('RGB', (img_w, img_h), color='white')
+img = Image.new('RGBA', (img_w, img_h), color=(0, 0, 0, 0))
 draw = ImageDraw.Draw(img)
 
 try:
-    font = ImageFont.truetype(FONT_FILE, FONT_SIZE)
+    clue_font = ImageFont.truetype(FONT_FILE, CLUE_FONT_SIZE)
+
+    letter_font = ImageFont.truetype(FONT_FILE, LETTER_FONT_SIZE)
+
     print(f"Loaded {FONT_FILE}")
 
 except IOError:
@@ -245,11 +253,13 @@ except IOError:
 #
 # Draw the outline for a square
 #
-def square_draw(x, y, half=False):
+def square_draw(x, y, square_type, half=False):
     w = SQUARE_SIZE
     h = (SQUARE_SIZE // 2) if half else SQUARE_SIZE
 
-    draw.rectangle([x, y, x + w, y + h], outline='black', width=LINE_WIDTH)
+    color = "white" if square_type == "LETTER" else "lightgray"
+
+    draw.rectangle([x, y, x + w, y + h], fill=color, outline='black', width=LINE_WIDTH)
 
 #
 # Draw the text for the clue
@@ -259,7 +269,7 @@ def clue_draw(x, y, clue, half=False):
     h = (SQUARE_SIZE // 2) if half else SQUARE_SIZE
 
     # Calculate text size
-    bbox = draw.textbbox((0, 0), clue, font=font)
+    bbox = draw.textbbox((0, 0), clue, font=clue_font)
 
     text_h = bbox[3] - bbox[1]
 
@@ -272,12 +282,10 @@ def clue_draw(x, y, clue, half=False):
 
     text_y = y + max(0, (h - lines_h) // 2)
 
-    print(f"SQUARE_SIZE: {SQUARE_SIZE} h: {h} text_h: {text_h} text_y: {text_y}")
-
     # Draw the wrapped text line by line
     for index, line in enumerate(wrapped_text.split("\n")):
         # Calculate text size
-        bbox = draw.textbbox((0, 0), line, font=font)
+        bbox = draw.textbbox((0, 0), line, font=clue_font)
 
         # Calculate width and height of the text
         text_w = bbox[2] - bbox[0]
@@ -286,9 +294,29 @@ def clue_draw(x, y, clue, half=False):
         text_x = x + max(0, (w - text_w) // 2)
 
         # Draw the text on the image
-        draw.text((text_x, text_y), line, fill="black", font=font)
+        draw.text((text_x, text_y), line, fill="black", font=clue_font)
 
         text_y += text_h + LINE_MARGIN
+
+#
+# Draw letter in grid
+#
+def letter_draw(x, y, letter):
+    w = SQUARE_SIZE
+    h = SQUARE_SIZE
+
+    text = letter.upper()
+
+    # Calculate text size
+    bbox = draw.textbbox((0, 0), text, font=letter_font)
+
+    text_w = bbox[2] - bbox[0]
+    text_h = bbox[3] - bbox[1]
+
+    text_x = x + max(0, (w - text_w) // 2)
+    text_y = y + max(0, (h - text_h) // 2)
+
+    draw.text((text_x, text_y), text, fill="red", font=letter_font)
 
 #
 # Draw crossword grid
@@ -304,7 +332,7 @@ for x in range(grid.width):
         img_y = (y * SQUARE_SIZE)
 
         # Draw grid square
-        square_draw(img_x, img_y)
+        square_draw(img_x, img_y, square.type)
 
         # Square is not block
         if((x, y) not in block_words):
@@ -318,7 +346,7 @@ for x in range(grid.width):
                 img_x = (x * SQUARE_SIZE)
                 img_y = (y * SQUARE_SIZE) if index == 0 else ((y + 1/2) * SQUARE_SIZE)
 
-                square_draw(img_x, img_y, half=True)
+                square_draw(img_x, img_y, "BLOCK", half=True)
 
                 if(word not in word_clues):
                     continue
@@ -340,5 +368,39 @@ for x in range(grid.width):
             if(clue):
                 clue_draw(img_x, img_y, clue)
 
-# Save image
-img.save("korsord.png")
+#
+# Get path to new result directory
+#
+def new_result_dir_get():
+    count = 1
+    new_result_dir = f"korsord{count}"
+
+    while os.path.exists(f"{RESULTS_DIR}/{new_result_dir}"):
+        count += 1
+        new_result_dir = f"korsord{count}"
+
+    return new_result_dir
+
+# Get the path to new result directory
+if(result_dir == None):
+    result_dir = new_result_dir_get()
+
+if not os.path.exists(f"{RESULTS_DIR}/{result_dir}"):
+    os.makedirs(f"{RESULTS_DIR}/{result_dir}")
+
+
+img.save(f"{RESULTS_DIR}/{result_dir}/korsord.png", "PNG")
+
+# Create solved crossword image
+for x in range(grid.width):
+    for y in range(grid.height):
+        square = grid.squares[x][y]
+
+        img_x = (x * SQUARE_SIZE)
+        img_y = (y * SQUARE_SIZE)
+
+        if(square.type == "LETTER"):
+            letter_draw(img_x, img_y, square.letter)
+
+# Save solved crossword image
+img.save(f"{RESULTS_DIR}/{result_dir}/solved.png", "PNG")

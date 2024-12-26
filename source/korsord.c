@@ -369,19 +369,19 @@ static void* gen_routine(void* wbase)
 
   curr_grid_set(grid);
 
-  grid_free(&grid);
-
   info_print("Generated grid");
 
 
-  if(args.result)
-  {
-    info_print("Saving result");
+  info_print("Saving result");
 
-    // Call saving code here
+  grid_export(grid);
 
-    info_print("Saved result");
-  }
+  grid_words_export(grid);
+
+  info_print("Saved result");
+
+
+  grid_free(&grid);
 
   return NULL;
 }

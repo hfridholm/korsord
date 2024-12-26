@@ -49,4 +49,9 @@ extern int  wbase_words_exist_for_pattern(wbase_t* wbase, const char* pattern, i
 
 extern bool wbase_word_exists_for_pattern(wbase_t* wbase, const char* pattern);
 
+
+typedef struct grid_t grid_t;
+
+extern int grid_words_get(char*** words, size_t* count, grid_t* grid);
+
 #endif // K_WBASE_H

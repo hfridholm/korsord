@@ -91,6 +91,7 @@ extern int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid
 extern void gwords_free(gword_t** gwords, size_t count);
 
 
+extern void xy_real_square_set_empty(grid_t* grid, int x, int y);
 
 extern void xy_square_set_crossed(grid_t* grid, int x, int y);
 
