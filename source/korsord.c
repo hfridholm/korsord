@@ -11,6 +11,9 @@
 #define DEBUG_IMPLEMENT
 #include "debug.h"
 
+#define FILE_IMPLEMENT
+#include "file.h"
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,7 +26,6 @@
 #include "k-grid.h"
 #include "k-wbase.h"
 #include "k-stats.h"
-#include "k-file.h"
 
 #include "k-grid-curr.h"
 #include "k-grid-best.h"
@@ -76,7 +78,7 @@ struct args args =
 {
   .model   = NULL,
   .primary = NULL,
-  .backup  = "../assets/backup.words",
+  .backup  = "svenska.words",
   .visual  = false,
   .ncurses = false,
   .fps     = 1,

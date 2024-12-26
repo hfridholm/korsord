@@ -5,7 +5,9 @@
 #include "k-wbase.h"
 #include "k-wbase-intern.h"
 
-#include "k-file.h"
+#include "file.h"
+
+#define WORDS_DIR "../assets/words"
 
 /*
  * Create blank trie node
@@ -90,15 +92,15 @@ static char* string_lower(char* string)
  * RETURN (trie_t* trie)
  * - NULL | Failed to read file
  */
-trie_t* trie_create(const char* filepath, int max_length)
+trie_t* trie_create(const char* name, int max_length)
 {
-  if(!filepath) return NULL;
+  if(!name) return NULL;
 
-  size_t file_size = file_size_get(filepath);
+  size_t file_size = dir_file_size_get(WORDS_DIR, name);
 
   char* buffer = malloc(sizeof(char) * (file_size + 1));
 
-  if(file_read(buffer, file_size, filepath) == 0)
+  if(dir_file_read(buffer, file_size, WORDS_DIR, name) == 0)
   {
     return NULL;
   }

@@ -1,4 +1,5 @@
 *
 !.gitignore
-!backup.words
 !ordlista.py
+!words
+!models

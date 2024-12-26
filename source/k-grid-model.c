@@ -6,22 +6,25 @@
 #include "k-grid-intern.h"
 
 #include "k-wbase.h"
-#include "k-file.h"
+
+#include "file.h"
+
+#define MODEL_DIR "../assets/models"
 
 /*
  * Load grid from model
  *
  * RETURN (grid_t* grid)
  */
-grid_t* grid_model_load(const char* filepath)
+grid_t* grid_model_load(const char* model)
 {
-  if(!filepath) return NULL;
+  if(!model) return NULL;
 
-  size_t file_size = file_size_get(filepath);
+  size_t file_size = dir_file_size_get(MODEL_DIR, model);
 
   char* buffer = malloc(sizeof(char) * (file_size + 1));
 
-  if(file_read(buffer, file_size, filepath) == 0)
+  if(dir_file_read(buffer, file_size, MODEL_DIR, model) == 0)
   {
     return NULL;
   }
