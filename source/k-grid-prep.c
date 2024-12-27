@@ -43,31 +43,30 @@ static int index_append(int** indexes, int* count, int index)
 static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
 {
   /*   
-   * . X . . 
-   * X A . .
-   * . .\. .
-   * . . \ .
-   *
-   * X . . . 
-   * . A . .
-   * . .\. .
-   * . . \ .
+   * Add indexes of top left corners
    */
   for(int x = (grid->width + 3); x-- > 3;)
   {
     for(int y = (grid->height + 3); y-- > 3;)
     {
-      if(xy_real_square_is_border(grid, x, y))
-      {
-        continue;
-      }
-
-      if((xy_real_square_is_border(grid, x, y - 1) &&
-          xy_real_square_is_border(grid, x - 1, y)) ||
-
-         (xy_real_square_is_border(grid, x - 1, y - 1) &&
-         !xy_real_square_is_border(grid, x, y - 1) &&
-         !xy_real_square_is_border(grid, x - 1, y)))
+      if (!xy_real_square_is_border(grid, x, y) &&
+        /*
+         *  . X . .
+         *  X A . .
+         *  . .\. .
+         *  . . \ .
+         */
+         ((xy_real_square_is_border(grid, x,     y - 1) &&
+           xy_real_square_is_border(grid, x - 1, y    )) ||
+        /*
+         *  X . . .
+         *  . A . .
+         *  . .\. .
+         *  . . \ .
+         */
+          (xy_real_square_is_border(grid, x - 1, y - 1) &&
+          !xy_real_square_is_border(grid, x,     y - 1) &&
+          !xy_real_square_is_border(grid, x - 1, y    ))))
       {
         int index = xy_real_index_get(grid, x, y);
 
@@ -77,32 +76,29 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
   }
 
   /*
-   * . . / .
-   * . ./. .
-   * X V . .
-   * . X . . 
-   *
-   * The pattern below is at the next to left edge
-   *
-   * . . / .
-   * - ./. .
-   * X V . .
-   * . . . . 
+   * Add indexes of bottom left corners
    */
   for(int x = (grid->width + 3); x-- > 3;)
   {
     for(int y = 3; y < (grid->height + 3); y++)
     {
-      if(xy_real_square_is_border(grid, x, y))
-      {
-        continue;
-      }
-
-      if((xy_real_square_is_border(grid, x - 1, y) &&
-          xy_real_square_is_border(grid, x, y + 1)) ||
-
-         (xy_real_square_is_border(grid, x - 1, y) &&
-         !xy_real_square_is_border(grid, x - 1, y - 1)))
+      if (!xy_real_square_is_border(grid, x, y) &&
+        /*
+         *  . . / .
+         *  . ./. .
+         *  X V . .
+         *  . X . .
+         */
+         ((xy_real_square_is_border(grid, x - 1, y    ) &&
+           xy_real_square_is_border(grid, x,     y + 1)) ||
+        /*
+         *  . . / .
+         *  - ./. .
+         *  X V . .
+         *  . . . .
+         */
+          (xy_real_square_is_border(grid, x - 1, y    ) &&
+          !xy_real_square_is_border(grid, x - 1, y - 1))))
       {
         int index = xy_real_index_get(grid, x, y);
 
@@ -112,32 +108,29 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
   }
 
   /*
-   * . . X .
-   * . . A X
-   * . ./. .
-   * . / . .
-   *
-   * The pattern below is at the under edge of right block
-   *
-   * . - X .
-   * . . A .
-   * . ./. .
-   * . / . .
+   * Add indexes of top right corners
    */
   for(int x = 3; x < (grid->width + 3); x++)
   {
     for(int y = (grid->height + 3); y-- > 3;)
     {
-      if(xy_real_square_is_border(grid, x, y))
-      {
-        continue;
-      }
-
-      if((xy_real_square_is_border(grid, x, y - 1) &&
-          xy_real_square_is_border(grid, x + 1, y)) ||
-
-         (xy_real_square_is_border(grid, x, y - 1) &&
-         !xy_real_square_is_border(grid, x - 1, y - 1)))
+      if (!xy_real_square_is_border(grid, x, y) &&
+        /*
+         *  . . X .
+         *  . . A X
+         *  . ./. .
+         *  . / . .
+         */
+         ((xy_real_square_is_border(grid, x,     y - 1) &&
+           xy_real_square_is_border(grid, x + 1, y    )) ||
+        /*
+         *  . - X .
+         *  . . A .
+         *  . ./. .
+         *  . / . .
+         */
+          (xy_real_square_is_border(grid, x,     y - 1) &&
+          !xy_real_square_is_border(grid, x - 1, y - 1))))
       {
         int index = xy_real_index_get(grid, x, y);
 
