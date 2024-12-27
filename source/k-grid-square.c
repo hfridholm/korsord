@@ -6,11 +6,14 @@
 #include "k-grid-intern.h"
 
 /*
- * X X X X X
- * X . . . X
- * X . . . X
- * X . . . X
- * X X X X X
+ * X X X X X X X X
+ * X X X X X X X X
+ * X X X X X X X X
+ * X X X . . . X X
+ * X X X . . . X X
+ * X X X . . . X X
+ * X X X X X X X X
+ * X X X X X X X X
  *
  * The outer most squares are not ment to be accessed
  *
@@ -22,7 +25,7 @@
  */
 int xy_real_index_get(grid_t* grid, int x, int y)
 {
-  return (y * (grid->width + 2)) + x;
+  return (y * (grid->width + 5)) + x;
 }
 
 /*
@@ -35,6 +38,29 @@ square_t* xy_real_square_get(grid_t* grid, int x, int y)
   return grid->squares + index;
 }
 
+/*
+ *
+ */
+int real_index_x_get(grid_t* grid, int index)
+{
+  return (index % (grid->width + 5));
+}
+
+/*
+ *
+ */
+int real_index_y_get(grid_t* grid, int index)
+{
+  return (index / (grid->width + 5));
+}
+
+/*
+ *
+ */
+square_t* real_square_get(grid_t* grid, int index)
+{
+  return grid->squares + index;
+}
 
 /*
  * EXPECTS:
@@ -50,7 +76,7 @@ int xy_index_get(grid_t* grid, int x, int y)
 
   if(y < 0 || y >= grid->height) return -1;
 
-  return (y + 1) * (grid->width + 2) + (x + 1);
+  return (y + 3) * (grid->width + 5) + (x + 3);
 }
 
 /*

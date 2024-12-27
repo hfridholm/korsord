@@ -20,6 +20,7 @@ grid_t* grid_model_load(const char* model)
 {
   if(!model) return NULL;
 
+  // 1. Read model file
   size_t file_size = dir_file_size_get(MODEL_DIR, model);
 
   char* buffer = malloc(sizeof(char) * (file_size + 1));
@@ -32,6 +33,7 @@ grid_t* grid_model_load(const char* model)
   buffer[file_size] = '\0';
 
 
+  // 2. Get width and height of model grid
   char* buffer_copy = strdup(buffer);
 
   int width  = 0;
@@ -54,9 +56,8 @@ grid_t* grid_model_load(const char* model)
     return NULL;
   }
 
-  // Initialize empty grid
-  grid_t* grid = grid_create(width - 2, height - 2);
-
+  // 3. Populate empty grid with model squares
+  grid_t* grid = grid_create(width, height);
 
   strcpy(buffer_copy, buffer);
 
@@ -69,15 +70,7 @@ grid_t* grid_model_load(const char* model)
 
     for(int x = 0; x < width; x++)
     {
-      int square_index = (y * width) + x;
-
-      square_t* square = grid->squares + square_index;
-
-      if(x >= curr_width)
-      {
-        square->type = SQUARE_BORDER;
-        continue;
-      }
+      square_t* square = xy_square_get(grid, x, y);
 
       char symbol = token[x * 2];
 
@@ -102,13 +95,12 @@ grid_t* grid_model_load(const char* model)
           if(letter_index != -1)
           {
             square->type = SQUARE_LETTER;
+
             square->letter = symbol;
-            square->is_crossed = false;
           }
           break;
       }
     }
-
     token = strtok(NULL, "\n");
   }
 

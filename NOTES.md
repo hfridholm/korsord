@@ -3,21 +3,25 @@
 If a letter fails, try removing the letters that is not _crossed and call _gen again for the same direction from _embed.
 This keeps the progress that the other letters achieved. Something like this is what caused the bug erlier with blank stripes in grid. But if done correctly, that is not an issue.
 
+- remove square_count and maybe rename real_count to square_count
 - add helping numbers to render.py script (rendered before solved letters)
 - refine python words prepare script
-- add min_length to wbase_create
 - change out the word lists completely
 - instead of _used flag, store used words in used_trie.
   (in _search and _exist functions: pass along the current used_trie node along with search node)
   (duplicate used_trie along with grid in _gen functions)
 - add prep block procent to argp argument (60% is it now, but change default to something else)
+
 - the same way grid is reverted, wbase should also be reverted
 - create EMBED_ status codes and add EMBED_HALF
 - call _gen again when EMBED_HALF
 - rename old_grid and new_grid better, like embed_grid, test_grid and grid
+
 - get better words for crosswords
+
 - add argp to render.py
 - maybe add argp to clues.py
+
 - add blocks near block ridge (2 squares in) in prep stage
 
 - change if-statements to switch statements when checking _status in -gen.c
@@ -34,10 +38,8 @@ skateboard : platta med fyra hjul
 ...
 
 maybe (this is highly recommended)
-- expand border to 2 in width (search box of 5x5 instead of 3x3)
 - remove outer border from anything to the user (model and print)
 
-maybe 6x6
 . . . . . .
 . . . . . .
 . . . . . .
@@ -92,6 +94,10 @@ c d . . . får inte en block placeras i mitten
 . . + . . --||--
 . . . . .
 . . . . .
+
+Detta gör dessa obsoleta:
+patt_corner_is_allowed
+patt_edge_is_allowed
 
 
 maybe in future:

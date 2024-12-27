@@ -464,29 +464,29 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
 
   is_generating = true;
 
-  for(int index = 0; index < grid->square_count; index++)
+  for(int x = 0; (x < grid->width) && is_generating; x++)
   {
-    int x = (index % grid->width);
-    int y = (index / grid->width);
-
-    if(xy_square_is_done(grid, x, y)) continue;
-      
-    int gen_status = vert_word_gen(wbase, grid, x, y);
-
-    if(gen_status == GEN_STOP)
+    for(int y = 0; (y < grid->height) && is_generating; y++)
     {
-      error_print("Generation stopped");
-      break;
-    }
+      if(xy_square_is_done(grid, x, y)) continue;
+        
+      int gen_status = vert_word_gen(wbase, grid, x, y);
 
-    if(gen_status == GEN_FAIL)
-    {
-      error_print("Generation failed");
-      break;
+      if(gen_status == GEN_STOP)
+      {
+        error_print("Generation stopped");
+
+        is_generating = false;
+      }
+
+      if(gen_status == GEN_FAIL)
+      {
+        error_print("Generation failed");
+
+        is_generating = false;
+      }
     }
   }
-
-  is_generating = false;
 
   curr_grid_set(grid);
 

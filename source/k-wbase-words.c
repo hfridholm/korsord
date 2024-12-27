@@ -81,12 +81,12 @@ int grid_words_get(char*** words, size_t* count, grid_t* grid)
   if(!words || !count || !grid) return 1;
 
   // Identify vertical words and remember them
-  for(int x = 1; x < (grid->width + 2); x++)
+  for(int x = 3; x < (grid->width + 4); x++)
   {
     char word[grid->height + 1];
     int  length = 0;
 
-    for(int y = 1; y < (grid->height + 2); y++)
+    for(int y = 3; y < (grid->height + 4); y++)
     {
       square_t* square = xy_real_square_get(grid, x, y);
 
@@ -113,12 +113,12 @@ int grid_words_get(char*** words, size_t* count, grid_t* grid)
   }
 
   // Identify horizontal words and remember them
-  for(int y = 1; y < (grid->height + 2); y++)
+  for(int y = 2; y < (grid->height + 4); y++)
   {
     char word[grid->width + 1];
     int  length = 0;
 
-    for(int x = 1; x < (grid->width + 2); x++)
+    for(int x = 2; x < (grid->width + 4); x++)
     {
       square_t* square = xy_real_square_get(grid, x, y);
 

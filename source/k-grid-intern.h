@@ -58,7 +58,6 @@ typedef struct square_t
 typedef struct grid_t
 {
   square_t* squares;
-  int       square_count;
   int       width;
   int       height;
   int       cross_count;
@@ -89,6 +88,13 @@ extern int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, gri
 extern int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y);
 
 extern void gwords_free(gword_t** gwords, size_t count);
+
+
+extern int real_index_x_get(grid_t* grid, int index);
+
+extern int real_index_y_get(grid_t* grid, int index);
+
+extern square_t* real_square_get(grid_t* grid, int index);
 
 
 extern void xy_real_square_set_empty(grid_t* grid, int x, int y);

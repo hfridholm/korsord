@@ -1,5 +1,8 @@
 /*
  * k-grid-prep.c - prepare grid before generation
+ *
+ * Change the preperation.
+ * Call grid_words_use from outside prep call
  */
 
 #include "k-grid.h"
@@ -7,41 +10,10 @@
 
 #include "k-wbase.h"
 
-int PREP_EMPTY_CHANCE = 70;
-
 /*
- * Assign the out most squares as SQUARE_BORDER
  *
- * This outer border is a buffer that prevents index out of range
  */
-static void grid_prep_border(grid_t* grid)
-{
-  square_t* square;
-
-  // 1. Fill in border on top and bottom
-  for(int x = 0; x < (grid->width + 2); x++)
-  {
-    square = xy_real_square_get(grid, x, 0);
-    
-    if(square) square->type = SQUARE_BORDER;
-
-    square = xy_real_square_get(grid, x, grid->height + 1);
-    
-    if(square) square->type = SQUARE_BORDER;
-  }
-
-  // 2. Fill in border to the left and right
-  for(int y = 0; y < (grid->height + 2); y++)
-  {
-    square = xy_real_square_get(grid, 0, y);
-    
-    if(square) square->type = SQUARE_BORDER;
-
-    square = xy_real_square_get(grid, grid->width + 1, y);
-    
-    if(square) square->type = SQUARE_BORDER;
-  }
-}
+int PREP_EMPTY_CHANCE = 70;
 
 // __builtin_clz counts the leading zeros, so the bit length is:
 #define CAPACITY(n) (1 << (sizeof(n) * 8 - __builtin_clz(n)))
@@ -81,9 +53,9 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
    * . .\. .
    * . . \ .
    */
-  for(int x = (grid->width + 1); x-- > 1;)
+  for(int x = (grid->width + 3); x-- > 3;)
   {
-    for(int y = (grid->height + 1); y-- > 1;)
+    for(int y = (grid->height + 3); y-- > 3;)
     {
       if(xy_real_square_is_border(grid, x, y))
       {
@@ -97,7 +69,7 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
          !xy_real_square_is_border(grid, x, y - 1) &&
          !xy_real_square_is_border(grid, x - 1, y)))
       {
-        int index = (y * (grid->width + 2) + x);
+        int index = xy_real_index_get(grid, x, y);
 
         index_append(indexes, count, index);
       }
@@ -117,9 +89,9 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
    * X V . .
    * . . . . 
    */
-  for(int x = (grid->width + 1); x-- > 1;)
+  for(int x = (grid->width + 3); x-- > 3;)
   {
-    for(int y = 1; y < (grid->height + 1); y++)
+    for(int y = 3; y < (grid->height + 3); y++)
     {
       if(xy_real_square_is_border(grid, x, y))
       {
@@ -132,7 +104,7 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
          (xy_real_square_is_border(grid, x - 1, y) &&
          !xy_real_square_is_border(grid, x - 1, y - 1)))
       {
-        int index = (y * (grid->width + 2) + x);
+        int index = xy_real_index_get(grid, x, y);
 
         index_append(indexes, count, index);
       }
@@ -152,9 +124,9 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
    * . ./. .
    * . / . .
    */
-  for(int x = 1; x < (grid->width + 1); x++)
+  for(int x = 3; x < (grid->width + 3); x++)
   {
-    for(int y = (grid->height + 1); y-- > 1;)
+    for(int y = (grid->height + 3); y-- > 3;)
     {
       if(xy_real_square_is_border(grid, x, y))
       {
@@ -167,7 +139,7 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
          (xy_real_square_is_border(grid, x, y - 1) &&
          !xy_real_square_is_border(grid, x - 1, y - 1)))
       {
-        int index = (y * (grid->width + 2) + x);
+        int index = xy_real_index_get(grid, x, y);
 
         index_append(indexes, count, index);
       }
@@ -192,10 +164,7 @@ static void grid_prep_blocks(grid_t* grid)
   {
     int square_index = indexes[index];
 
-    int x = square_index % (grid->width + 2);
-    int y = square_index / (grid->width + 2);
-
-    square_t* square = xy_real_square_get(grid, x, y);
+    square_t* square = real_square_get(grid, square_index);
 
     // Don't overwrite model letters
     if(square->type == SQUARE_LETTER) continue;
@@ -209,8 +178,8 @@ static void grid_prep_blocks(grid_t* grid)
   {
     int square_index = indexes[index];
 
-    int start_x = square_index % (grid->width + 2);
-    int start_y = square_index / (grid->width + 2);
+    int start_x = real_index_x_get(grid, square_index);
+    int start_y = real_index_y_get(grid, square_index);
 
     /*
      * X X X X X
@@ -227,7 +196,7 @@ static void grid_prep_blocks(grid_t* grid)
 
     bool last_is_block = false;
 
-    for(int x = (start_x + 2); x < grid->width; x++)
+    for(int x = (start_x + 2); x < (grid->width + 2); x++)
     {
       // This ensures that the egde is being followed
       if(!xy_real_square_is_border(grid, x, start_y - 1) ||
@@ -276,7 +245,7 @@ static void grid_prep_blocks(grid_t* grid)
      */
     last_is_block = true;
 
-    for(int y = (start_y + 1); y < grid->height; y++)
+    for(int y = (start_y + 1); y < (grid->height + 2); y++)
     {
       // This ensures that the egde is being followed
       if(!xy_real_square_is_border(grid, start_x - 1, y) ||
@@ -348,8 +317,6 @@ static void grid_words_use(wbase_t* wbase, grid_t* grid)
  */
 void grid_prep(wbase_t* wbase, grid_t* grid)
 {
-  grid_prep_border(grid);
-
   grid_prep_blocks(grid);
 
   grid_words_use(wbase, grid);
