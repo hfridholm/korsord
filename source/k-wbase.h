@@ -12,8 +12,8 @@ typedef struct node_t trie_t;
 
 typedef struct wbase_t
 {
-  trie_t* primary;
-  trie_t* backup;
+  trie_t** tries;
+  size_t   count;
 } wbase_t;
 
 
@@ -22,15 +22,11 @@ extern int  letter_index_get(char letter);
 extern char index_letter_get(int index);
 
 
-extern wbase_t* wbase_create(const char* primary_filepath, const char* backup_filepath, int max_length);
+extern wbase_t* wbase_create(char** wfiles, size_t count, int max_length);
 
 extern void     wbase_reset(wbase_t* wbase);
 
 extern void     wbase_free(wbase_t** wbase);
-
-extern wbase_t* wbase_dup(wbase_t* wbase);
-
-extern wbase_t* wbase_copy(wbase_t* copy, wbase_t* wbase);
 
 
 extern int  words_search(char*** words, size_t* count, trie_t* trie, const char* pattern);

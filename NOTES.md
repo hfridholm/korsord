@@ -3,18 +3,10 @@
 If a letter fails, try removing the letters that is not _crossed and call _gen again for the same direction from _embed.
 This keeps the progress that the other letters achieved. Something like this is what caused the bug erlier with blank stripes in grid. But if done correctly, that is not an issue.
 
-- create function that extracts all words in grid
-  (store those words in result.words when storing result.grid after _gen)
-[result.words]
-[result.grid]
+- add helping numbers to render.py script (rendered before solved letters)
 - refine python words prepare script
 - add min_length to wbase_create
 - change out the word lists completely
-- add blocks near block ridge (2 squares in) in prep stage
-- add dir_file_read ("assets") and move words and models dir to assets
-  (./korsord model1 mormor.words jul.words svenska.words)
-- instread of primary and backup, store and array of trie_t based on inputted order
-  (./korsord [MODEL] [WORDS...])
 - instead of _used flag, store used words in used_trie.
   (in _search and _exist functions: pass along the current used_trie node along with search node)
   (duplicate used_trie along with grid in _gen functions)
@@ -26,6 +18,7 @@ This keeps the progress that the other letters achieved. Something like this is 
 - get better words for crosswords
 - add argp to render.py
 - maybe add argp to clues.py
+- add blocks near block ridge (2 squares in) in prep stage
 
 - change if-statements to switch statements when checking _status in -gen.c
 - remove old_grid from _reset, instead set is_crossed on SQUARE_BLOCK and from that _reset
@@ -43,6 +36,37 @@ skateboard : platta med fyra hjul
 maybe (this is highly recommended)
 - expand border to 2 in width (search box of 5x5 instead of 3x3)
 - remove outer border from anything to the user (model and print)
+
+maybe 6x6
+. . . . . .
+. . . . . .
+. . . . . .
+. . . + . .
+. . . . . .
+. . . . . .
+
+By being able to check 3 squares to the left and top,
+start blocks can be properly handled.
+The blocks at the left and top edge don't need either 2 blocks to the right or at bottom
+
+These cases are legal
+
+```
+. . . . X .
+. . . # _ #
+. . . . . .
+. . . + . .
+. . . . . .
+. . . . . .
+
+. . . . . .
+. # . . . .
+X _ . . . .
+. # . + . .
+. . . . . .
+. . . . . .
+```
+
 - SQUARE_BLOCK med endast 1 bokstav under och till höger (utan start) ska inte få finnas
 . . . . .
 . . . . .

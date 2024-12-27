@@ -125,7 +125,89 @@ int horiz_full_pattern_get(char* pattern, grid_t* grid, int y)
 }
 
 /*
+ * This struct is only used by these internal functions
+ */
+typedef struct gwords_t
+{
+  gword_t* gwords;
+  size_t   count;
+} gwords_t;
+
+/*
+ * Search grid words from an array of word bases
+ */
+static void gwords_array_search(size_t* total_count, gwords_t* gwords_array, wbase_t* wbase, const char* pattern, int start, int stop)
+{
+  for(size_t index = 0; index < wbase->count; index++)
+  {
+    gword_t** curr_gwords = &gwords_array[index].gwords;
+    size_t*   curr_count  = &gwords_array[index].count;
+
+    size_t old_count = *curr_count;
+
+    trie_t* curr_trie = wbase->tries[index];
+
+    gwords_search(curr_gwords, curr_count, curr_trie, pattern, start, stop);
+
+    // Increase total_count by how many gwords was added
+    *total_count += (*curr_count - old_count);
+  }
+}
+
+/*
+ * Shuffle an array of grid words
+ */
+static void gwords_array_shuffle(gwords_t* gwords_array, size_t count)
+{
+  for(size_t index = 0; index < count; index++)
+  {
+    gword_t* curr_gwords = gwords_array[index].gwords;
+    size_t   curr_count  = gwords_array[index].count;
+
+    gwords_shuffle(curr_gwords, curr_count);
+  }
+}
+
+/*
+ * Merge array of grid words together to one array of grid words
  *
+ * Only free the pointer to the merged grid words arrays,
+ * as the actual words is still being used
+ */
+static void gwords_array_merge(gword_t* gwords, gwords_t* gwords_array, size_t count)
+{
+  gword_t* pointer = gwords;
+
+  for(size_t index = 0; index < count; index++)
+  {
+    gword_t* curr_gwords = gwords_array[index].gwords;
+    size_t   curr_count  = gwords_array[index].count;
+
+    memcpy(pointer, curr_gwords, sizeof(gword_t) * curr_count);
+
+    pointer += curr_count;
+
+    free(curr_gwords);
+  }
+}
+
+/*
+ * Free the grid words array and all the words
+ *
+ * in case of the memory allocation to gwords failed
+ */
+static void gwords_array_free(gwords_t* gwords_array, size_t count)
+{
+  for(size_t index = 0; index < count; index++)
+  {
+    gwords_t gwords = gwords_array[index];
+
+    gwords_free(&gwords.gwords, gwords.count);
+  }
+}
+
+/*
+ * Get the horizontal grid words through cross x, y
  */
 int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 {
@@ -155,11 +237,11 @@ int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gr
   }
 
 
-  gword_t* primary_gwords = NULL;
-  size_t primary_count = 0;
+  gwords_t gwords_array[wbase->count];
+  memset(gwords_array, 0, sizeof(gwords_t) * wbase->count);
 
-  gword_t* backup_gwords = NULL;
-  size_t backup_count = 0;
+
+  size_t total_count = 0;
 
   char pattern[grid->width + 1];
 
@@ -178,44 +260,38 @@ int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gr
       // Create current pattern
       sprintf(pattern, "%.*s", length, full_pattern + start_x);
 
-      gwords_search(&primary_gwords, &primary_count, wbase->primary, pattern, start_x, stop_x);
-
-      gwords_search(&backup_gwords, &backup_count, wbase->backup, pattern, start_x, stop_x);
+      gwords_array_search(&total_count, gwords_array, wbase, pattern, start_x, stop_x);
     }
   }
 
-  if(primary_count == 0 && backup_count == 0)
+  if(total_count == 0)
   {
-    // No words was found
     return GWORDS_NO_WORDS;
   }
 
+  // 2. Suffle word lists seperately
+  gwords_array_shuffle(gwords_array, wbase->count);
 
-  // 2. Shuffle the two word lists seperately
-  gwords_shuffle(primary_gwords, primary_count);
+  // 3. Concatonate shuffled lists
+  gword_t* new_gwords = malloc(sizeof(gword_t) * total_count);
 
-  gwords_shuffle(backup_gwords,  backup_count);
+  if(!new_gwords)
+  {
+    gwords_array_free(gwords_array, wbase->count);
 
-  // 3. Concatonate the two shuffled lists
-  *count = (primary_count + backup_count);
+    return GWORDS_FAIL;
+  }
 
-  *gwords = malloc(sizeof(gword_t) * *count);
+  *gwords = new_gwords;
+  *count  = total_count;
 
-  memcpy(*gwords, primary_gwords, sizeof(gword_t) * primary_count);
-
-  memcpy(*gwords + primary_count, backup_gwords, sizeof(gword_t) * backup_count);
-
-  // Only free the pointer to the arrays,
-  // because the conntent pointers is being reused by gwords
-  free(primary_gwords);
-
-  free(backup_gwords);
+  gwords_array_merge(*gwords, gwords_array, wbase->count);
 
   return GWORDS_DONE;
 }
 
 /*
- *
+ * Get the full pattern of a vertical line
  */
 int vert_full_pattern_get(char* pattern, grid_t* grid, int x)
 {
@@ -234,7 +310,7 @@ int vert_full_pattern_get(char* pattern, grid_t* grid, int x)
 }
 
 /*
- *
+ * Get the vertical grid words through cross x, y
  */
 int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 {
@@ -264,11 +340,11 @@ int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gri
   }
 
 
-  gword_t* primary_gwords = NULL;
-  size_t primary_count = 0;
+  gwords_t gwords_array[wbase->count];
+  memset(gwords_array, 0, sizeof(gwords_t) * wbase->count);
 
-  gword_t* backup_gwords = NULL;
-  size_t backup_count = 0;
+
+  size_t total_count = 0;
 
   char pattern[grid->height + 1];
 
@@ -287,38 +363,32 @@ int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gri
       // Create current pattern
       sprintf(pattern, "%.*s", length, full_pattern + start_y);
 
-      gwords_search(&primary_gwords, &primary_count, wbase->primary, pattern, start_y, stop_y);
-
-      gwords_search(&backup_gwords, &backup_count, wbase->backup, pattern, start_y, stop_y);
+      gwords_array_search(&total_count, gwords_array, wbase, pattern, start_y, stop_y);
     }
   }
 
-  if(primary_count == 0 && backup_count == 0)
+  if(total_count == 0)
   {
-    // No words was found
     return GWORDS_NO_WORDS;
   }
 
-  // The following could be extracted to a function:
+  // 2. Suffle word lists seperately
+  gwords_array_shuffle(gwords_array, wbase->count);
 
+  // 3. Concatonate shuffled lists
+  gword_t* new_gwords = malloc(sizeof(gword_t) * total_count);
 
-  // 2. Shuffle the two word lists seperately
-  gwords_shuffle(primary_gwords, primary_count);
+  if(!new_gwords)
+  {
+    gwords_array_free(gwords_array, wbase->count);
 
-  gwords_shuffle(backup_gwords,  backup_count);
+    return GWORDS_FAIL;
+  }
 
-  // 3. Concatonate the two shuffled lists
-  *count = (primary_count + backup_count);
+  *gwords = new_gwords;
+  *count  = total_count;
 
-  *gwords = malloc(sizeof(gword_t) * *count);
-
-  memcpy(*gwords, primary_gwords, sizeof(gword_t) * primary_count);
-
-  memcpy(*gwords + primary_count, backup_gwords, sizeof(gword_t) * backup_count);
-
-  free(primary_gwords);
-
-  free(backup_gwords);
+  gwords_array_merge(*gwords, gwords_array, wbase->count);
 
   return GWORDS_DONE;
 }

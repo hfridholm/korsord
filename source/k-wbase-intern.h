@@ -30,7 +30,7 @@ typedef struct node_t
 } node_t;
 
 
-extern trie_t* trie_create(const char* filepath, int max_length);
+extern trie_t* trie_create(const char* wfile, int max_length);
 
 extern void    trie_reset(trie_t* trie);
 

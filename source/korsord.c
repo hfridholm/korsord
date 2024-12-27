@@ -41,17 +41,13 @@ extern int HALF_WORD_AMOUNT;
 
 static char doc[] = "korsord - swedish crossword generator";
 
-static char args_doc[] = "[MODEL]";
+static char args_doc[] = "[MODEL] [WORDS...]";
 
 static struct argp_option options[] =
 {
-  { "primary",  'p', "FILE",   0, "Primary words file" },
-  { "backup",   'b', "FILE",   0, "Backup words file" },
   { "visual",   'v', 0,        0, "Visualize generation" },
   { "interact", 'i', 0,        0, "Enter interactive mode" },
-  { "debug",    'd', 0,        0, "Print debug messages" },
   { "output",   'o', "FILE",   0, "Output debug to file" },
-  { "result",   'r', "FILE",   0, "Save result to file" },
   { "fps",      'f', "AMOUNT", 0, "Frames per second" },
   { "length",   'l', "LENGTH", 0, "Max length of words" },
   { "crowd",    'c', "AMOUNT", 0, "Max amount of nerby blocks" },
@@ -62,30 +58,50 @@ static struct argp_option options[] =
 
 struct args
 {
-  char* model;
-  char* primary;
-  char* backup;
-  bool  visual;
-  bool  ncurses;
-  int   fps;
-  int   length;
-  char* output;
-  char* result;
+  char*  model;
+  char** wfiles;
+  size_t wfile_count;
+  bool   visual;
+  bool   ncurses;
+  int    fps;
+  int    max_length;
+  char*  output;
 };
 
 // Default values of korsord arguments
 struct args args =
 {
-  .model   = NULL,
-  .primary = NULL,
-  .backup  = "svenska.words",
-  .visual  = false,
-  .ncurses = false,
-  .fps     = 1,
-  .length  = 10,
-  .output  = NULL,
-  .result  = NULL
+  .model       = NULL,
+  .wfiles      = NULL,
+  .wfile_count = 0,
+  .visual      = false,
+  .ncurses     = false,
+  .fps         = 1,
+  .max_length  = 40,
+  .output      = NULL
 };
+
+// __builtin_clz counts the leading zeros, so the bit length is:
+#define CAPACITY(n) (1 << (sizeof(n) * 8 - __builtin_clz(n)))
+
+/*
+ * Append word file to array of word files
+ */
+static int wfile_append(char*** wfiles, size_t* count, char* wfile)
+{
+  if(*count == 0 || ((*count) + 1) >= CAPACITY(*count))
+  {
+    char** new_wfiles = realloc(*wfiles, sizeof(char*) * CAPACITY((*count) + 1));
+
+    if(!new_wfiles) return 1;
+
+    *wfiles = new_wfiles;
+  }
+
+  (*wfiles)[(*count)++] = wfile;
+
+  return 0;
+}
 
 /*
  * This is the option parsing function used by argp
@@ -157,7 +173,7 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
 
       if(number >= 1)
       {
-        args->length = number;
+        args->max_length = number;
       }
       else argp_usage(state);
 
@@ -167,20 +183,10 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
       args->visual = true;
       break;
 
-    case 'd':
-      args->ncurses = false;
-      break;
-
     case 'i':
       args->ncurses = true;
 
       args->visual = true;
-      break;
-
-    case 'p':
-      if(!arg || *arg == '-') argp_usage(state);
-
-      args->primary = arg;
       break;
 
     case 'o':
@@ -189,26 +195,19 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
       args->output = arg;
       break;
 
-    case 'r':
-      if(!arg || *arg == '-') argp_usage(state);
-
-      args->result = arg;
-      break;
-
-    case 'b':
-      if(!arg || *arg == '-') argp_usage(state);
-
-      args->backup = arg;
-      break;
-
     case ARGP_KEY_ARG:
-      if(state->arg_num >= 1) argp_usage(state);
-
-      args->model = arg;
+      if(state->arg_num > 0)
+      {
+        wfile_append(&args->wfiles, &args->wfile_count, arg);
+      }
+      else
+      {
+        args->model = arg;
+      }
       break;
 
     case ARGP_KEY_END:
-      if(state->arg_num < 1) argp_usage(state);
+      if(state->arg_num < 2) argp_usage(state);
       break;
 
     default:
@@ -242,7 +241,7 @@ static int stick_this_thread_to_core(int core_id)
 }
 
 /*
- *
+ * Routine for async printing of grid
  */
 static void* print_routine(void* arg)
 {
@@ -323,7 +322,7 @@ static int ncurses_init(void)
   init_pair(2, COLOR_WHITE, COLOR_BLACK);
   init_pair(3, COLOR_BLUE,  COLOR_BLACK);
   init_pair(4, COLOR_RED,   COLOR_BLACK);
-  init_pair(5, COLOR_RED,  COLOR_BLACK);
+  init_pair(5, COLOR_RED,   COLOR_BLACK);
 
   erase();
   refresh();
@@ -387,7 +386,7 @@ static void* gen_routine(void* wbase)
 }
 
 /*
- *
+ * Routine for interactivly generating crossword grids using ncurses
  */
 static void interact_routine(wbase_t* wbase)
 {
@@ -507,8 +506,16 @@ int main(int argc, char* argv[])
   signal(SIGINT, stop_handler);
 
   // srand(time(NULL));
+  
+  for(size_t index = 0; index < args.wfile_count; index++)
+  {
+    info_print("#%d: %s", index + 1, args.wfiles[index]);
+  }
 
-  if(args.ncurses) args.output = "output.txt";
+  if(args.ncurses)
+  {
+    args.output = "output.txt";
+  }
 
   if(args.output)
   {
@@ -533,6 +540,25 @@ int main(int argc, char* argv[])
   }
 
 
+  info_print("Creating word base");
+
+  // 1. Load the word bases
+  wbase_t* wbase = wbase_create(args.wfiles, args.wfile_count, args.max_length);
+
+  if(!wbase)
+  {
+    perror("Failed to create word base");
+
+    ncurses_free();
+    
+    return 2;
+  }
+
+  info_print("Created word base");
+
+  info_print("wbase count: %d", wbase->count);
+
+
   curr_grid_init();
   best_grid_init();
 
@@ -549,24 +575,15 @@ int main(int argc, char* argv[])
 
     ncurses_free();
 
+    wbase_free(&wbase);
+
+    curr_grid_free();
+    best_grid_free();
+    
+    stats_free();
+
     return 1;
   }
-
-  info_print("Creating word base");
-
-  // 1. Load the word bases
-  wbase_t* wbase = wbase_create(args.primary, args.backup, args.length);
-
-  if(!wbase)
-  {
-    perror("Failed to create word base");
-
-    ncurses_free();
-    
-    return 2;
-  }
-
-  info_print("Created word base");
 
 
   // Enter the main routine (main loop)
@@ -605,6 +622,8 @@ int main(int argc, char* argv[])
   info_print("Stop main");
 
   debug_file_close();
+
+  free(args.wfiles);
 
   return 0;
 }

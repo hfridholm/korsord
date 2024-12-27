@@ -87,20 +87,21 @@ static char* string_lower(char* string)
  * Create trie struct by loading words from file
  *
  * PARAMS
- * - int max_length | Max length of words
+ * - const char* wfile | Word file
+ * - int max_length    | Max length of words
  *
  * RETURN (trie_t* trie)
  * - NULL | Failed to read file
  */
-trie_t* trie_create(const char* name, int max_length)
+trie_t* trie_create(const char* wfile, int max_length)
 {
-  if(!name) return NULL;
+  if(!wfile) return NULL;
 
-  size_t file_size = dir_file_size_get(WORDS_DIR, name);
+  size_t file_size = dir_file_size_get(WORDS_DIR, wfile);
 
   char* buffer = malloc(sizeof(char) * (file_size + 1));
 
-  if(dir_file_read(buffer, file_size, WORDS_DIR, name) == 0)
+  if(dir_file_read(buffer, file_size, WORDS_DIR, wfile) == 0)
   {
     return NULL;
   }

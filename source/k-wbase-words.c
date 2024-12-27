@@ -301,7 +301,7 @@ static int words_exist_for_pattern(trie_t* trie, const char* pattern, int max_am
 }
 
 /*
- * Count how many words (both backup and primary) exist for pattern
+ * Count how many words in word base exist for pattern
  *
  * RETURN (int amount)
  * - min | 0
@@ -311,13 +311,14 @@ int wbase_words_exist_for_pattern(wbase_t* wbase, const char* pattern, int max_a
 {
   int amount = 0;
 
-  amount += words_exist_for_pattern(wbase->primary, pattern, max_amount - amount);
+  for(size_t index = 0; index < wbase->count; index++)
+  {
+    amount += words_exist_for_pattern(wbase->tries[index], pattern, max_amount - amount);
 
-  if(amount >= max_amount) return max_amount;
+    if(amount >= max_amount) return max_amount;
+  }
 
-  amount += words_exist_for_pattern(wbase->backup,  pattern, max_amount - amount);
-
-  return MIN(amount, max_amount);
+  return amount;
 }
 
 /*
@@ -390,20 +391,18 @@ static bool word_exists_for_pattern(trie_t* trie, const char* pattern)
 }
 
 /*
- * Check if a word (from either primary or backup) exists for pattern
+ * Check if a word in word base exists for pattern
  *
  * RETURN (bool does_exist)
  */
 bool wbase_word_exists_for_pattern(wbase_t* wbase, const char* pattern)
 {
-  if(word_exists_for_pattern(wbase->primary, pattern))
+  for(size_t index = 0; index < wbase->count; index++)
   {
-    return true;
-  }
-
-  if(word_exists_for_pattern(wbase->backup, pattern))
-  {
-    return true;
+    if(word_exists_for_pattern(wbase->tries[index], pattern))
+    {
+      return true;
+    }
   }
 
   return false;

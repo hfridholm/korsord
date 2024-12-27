@@ -206,6 +206,9 @@ static int horiz_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cro
 
   int gwords_status = horiz_gwords_get(&gwords, &word_count, wbase, old_grid, cross_x, cross_y);
 
+  // info_print("horiz_gwords_get count: %d status: %d", word_count, gwords_status);
+
+
   // If the length is 1, it should be marked as crossed
   if(gwords_status == GWORDS_SINGLE)
   {
@@ -407,7 +410,8 @@ static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cros
 
   int gwords_status = vert_gwords_get(&gwords, &word_count, wbase, old_grid, cross_x, cross_y);
 
-  // info_print("vert_gwords_get count: %d", word_count);
+  // info_print("vert_gwords_get count: %d status: %d", word_count, gwords_status);
+
 
   // If the length is 1, it should be marked as crossed
   if(gwords_status == GWORDS_SINGLE)

@@ -39,20 +39,39 @@ int letter_index_get(char letter)
 /*
  * Create word base structure wbase
  *
+ * PARAMS
+ * - char** wfiles  | Word files
+ * - size_t count   | Number of word files
+ * - int max_length | Max length of words
+ *
  * RETURN (wbase_t* wbase)
  * - NULL | Failed to create wbase
  */
-wbase_t* wbase_create(const char* primary_filepath, const char* backup_filepath, int max_length)
+wbase_t* wbase_create(char** wfiles, size_t count, int max_length)
 {
+  if(!wfiles || count == 0) return NULL;
+
   // 1. Allocate memory for wbase
   wbase_t* wbase = malloc(sizeof(wbase_t));
 
   if(!wbase) return NULL;
 
-  // 2. Create primary and backup trie
-  wbase->primary = trie_create(primary_filepath, max_length);
+  trie_t** tries = malloc(sizeof(trie_t*) * count);
 
-  wbase->backup = trie_create(backup_filepath, max_length);
+  if(!tries)
+  {
+    free(wbase);
+
+    return NULL;
+  }
+
+  wbase->tries = tries;
+  wbase->count = count;
+
+  for(size_t index = 0; index < count; index++)
+  {
+    wbase->tries[index] = trie_create(wfiles[index], max_length);
+  }
 
   return wbase;
 }
@@ -64,9 +83,12 @@ void wbase_free(wbase_t** wbase)
 {
   if(!wbase || !(*wbase)) return;
 
-  trie_free(&(*wbase)->primary);
+  for(size_t index = 0; index < (*wbase)->count; index++)
+  {
+    trie_free(&(*wbase)->tries[index]);
+  }
 
-  trie_free(&(*wbase)->backup);
+  free((*wbase)->tries);
 
   free(*wbase);
 
@@ -74,54 +96,13 @@ void wbase_free(wbase_t** wbase)
 }
 
 /*
- * Duplicate word base struct
- */
-wbase_t* wbase_dup(wbase_t* wbase)
-{
-  // 1. Allocate memory for wbase
-  wbase_t* dup = malloc(sizeof(wbase_t));
-
-  if(!wbase) return NULL;
-
-  // 2. Create primary and backup trie
-  dup->primary = trie_dup(wbase->primary);
-
-  dup->backup = trie_dup(wbase->backup);
-
-  return dup;
-}
-
-/*
- * Copy word base struct
- */
-wbase_t* wbase_copy(wbase_t* copy, wbase_t* wbase)
-{
-  if(wbase->primary)
-  {
-    trie_copy(copy->primary, wbase->primary);
-  }
-
-  if(wbase->backup)
-  {
-    trie_copy(copy->backup, wbase->backup);
-  }
-
-  return copy;
-}
-
-/*
  * Reset word base - remove _used mark from words
  */
 void wbase_reset(wbase_t* wbase)
 {
-  if(wbase->primary)
+  for(size_t index = 0; index < wbase->count; index++)
   {
-    trie_reset(wbase->primary);
-  }
-
-  if(wbase->backup)
-  {
-    trie_reset(wbase->backup);
+    trie_reset(wbase->tries[index]);
   }
 }
 
@@ -130,14 +111,9 @@ void wbase_reset(wbase_t* wbase)
  */
 void wbase_word_use(wbase_t* wbase, const char* word)
 {
-  if(wbase->primary)
+  for(size_t index = 0; index < wbase->count; index++)
   {
-    trie_word_use(wbase->primary, word);
-  }
-
-  if(wbase->backup)
-  {
-    trie_word_use(wbase->backup, word);
+    trie_word_use(wbase->tries[index], word);
   }
 }
 
@@ -146,13 +122,8 @@ void wbase_word_use(wbase_t* wbase, const char* word)
  */
 void wbase_word_unuse(wbase_t* wbase, const char* word)
 {
-  if(wbase->primary)
+  for(size_t index = 0; index < wbase->count; index++)
   {
-    trie_word_unuse(wbase->primary, word);
-  }
-
-  if(wbase->backup)
-  {
-    trie_word_unuse(wbase->backup, word);
+    trie_word_unuse(wbase->tries[index], word);
   }
 }
