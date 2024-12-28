@@ -3,6 +3,10 @@
 If a letter fails, try removing the letters that is not _crossed and call _gen again for the same direction from _embed.
 This keeps the progress that the other letters achieved. Something like this is what caused the bug erlier with blank stripes in grid. But if done correctly, that is not an issue.
 
+Small words are being unusable because wbase don't reset them when a chain of GEN_DONE recuses back.
+The problem is that used words are not stored temporarly like grid is in test gen functions.
+When used words (used_trie) is being temp stored this way, this problem is no more.
+
 - maybe add flags to makefile to silent output
 - maybe: move lock inside stats struct and lock inside grid struct
 - write comments explaining things in more detail
@@ -13,7 +17,6 @@ This keeps the progress that the other letters achieved. Something like this is 
 - instead of _used flag, store used words in used_trie.
   (in _search and _exist functions: pass along the current used_trie node along with search node)
   (duplicate used_trie along with grid in _gen functions)
-- add prep block procent to argp argument (60% is it now, but change default to something else)
 
 - the same way grid is reverted, wbase should also be reverted
 - create EMBED_ status codes and add EMBED_HALF
@@ -26,18 +29,8 @@ This keeps the progress that the other letters achieved. Something like this is 
 - maybe add argp to clues.py
 
 - change if-statements to switch statements when checking _status in -gen.c
-- remove old_grid from _reset, instead set is_crossed on SQUARE_BLOCK and from that _reset
 
-[result.words]
-hus        :
-skateboard :
-...
-
-[user altered result.words]
-hus        : i ett sådant kan man bo
-skateboard : platta med fyra hjul
-...
-
+- maybe: remove old_grid from _reset, instead set is_crossed on SQUARE_BLOCK and from that _reset
 
 new idea:
 - squares that are not _crossed should be able to be changed by new words,

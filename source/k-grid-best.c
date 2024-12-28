@@ -105,8 +105,8 @@ void best_grid_ncurses_print(void)
     int h = getmaxy(stdscr);
     int w = getmaxx(stdscr);
 
-    int start_x = MAX(0, ((w / 2) - (best_grid->width  + 2) * 2) / 2);
-    int start_y = MAX(0, (h - (best_grid->height + 2)) / 2);
+    int start_x = MAX(0, ((w / 2) - best_grid->width * 2) / 2);
+    int start_y = MAX(0, (h       - best_grid->height   ) / 2);
 
     grid_ncurses_print(best_grid, start_x, start_y);
   }

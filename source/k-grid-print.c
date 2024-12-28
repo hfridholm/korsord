@@ -16,11 +16,11 @@ void grid_ncurses_print(grid_t* grid, int start_x, int start_y)
 {
   if(!grid || !grid->squares) return;
 
-  for(int y = 0; y < (grid->height + 5); y++)
+  for(int y = 0; y < grid->height; y++)
   {
-    for(int x = 0; x < (grid->width + 5); x++)
+    for(int x = 0; x < grid->width; x++)
     {
-      square_t* square = xy_real_square_get(grid, x, y);
+      square_t* square = xy_square_get(grid, x, y);
 
       if(!square) continue;
 
@@ -76,11 +76,11 @@ void grid_print(grid_t* grid)
 {
   if(!grid || !grid->squares) return;
 
-  for(int y = 0; y < (grid->height + 5); y++)
+  for(int y = 0; y < grid->height; y++)
   {
-    for(int x = 0; x < (grid->width + 5); x++)
+    for(int x = 0; x < grid->width; x++)
     {
-      square_t* square = xy_real_square_get(grid, x, y);
+      square_t* square = xy_square_get(grid, x, y);
 
       if(!square) continue;
 
