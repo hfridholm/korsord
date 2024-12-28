@@ -12,8 +12,6 @@ When used words (used_trie) is being temp stored this way, this problem is no mo
 - write comments explaining things in more detail
 - try implementing the old algorithm and see if that was better
 
-- refine python words prepare script
-- change out the word lists completely
 - instead of _used flag, store used words in used_trie.
   (in _search and _exist functions: pass along the current used_trie node along with search node)
   (duplicate used_trie along with grid in _gen functions)
@@ -22,8 +20,6 @@ When used words (used_trie) is being temp stored this way, this problem is no mo
 - create EMBED_ status codes and add EMBED_HALF
 - call _gen again when EMBED_HALF
 - rename old_grid and new_grid better, like embed_grid, test_grid and grid
-
-- get better words for crosswords
 
 - add argp to render.py
 - maybe add argp to clues.py

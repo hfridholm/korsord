@@ -1,3 +1,5 @@
 *
 !.gitignore
-!svenska.words
+!ordlista.py
+!svenska150k.words
+!svenska270k.words
