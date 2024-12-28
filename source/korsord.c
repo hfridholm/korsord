@@ -37,6 +37,7 @@ bool is_running = false;
 extern int MAX_CROWD_AMOUNT;
 extern int MAX_EXIST_AMOUNT;
 extern int HALF_WORD_AMOUNT;
+extern int PREP_EMPTY_CHANCE;
 
 
 static char doc[] = "korsord - swedish crossword generator";
@@ -53,6 +54,7 @@ static struct argp_option options[] =
   { "crowd",    'c', "AMOUNT", 0, "Max amount of nerby blocks" },
   { "exist",    'e', "AMOUNT", 0, "Amount of precission" },
   { "half",     'h', "AMOUNT", 0, "Progress preserve amount" },
+  { "prep",     'p', "AMOUNT", 0, "Prepare empty procentage" },
   { 0 }
 };
 
@@ -122,6 +124,19 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
       if(number >= 1 && number <= 100)
       {
         args->fps = number;
+      }
+      else argp_usage(state);
+
+      break;
+
+    case 'p':
+      if(!arg || *arg == '-') argp_usage(state);
+
+      number = atoi(arg);
+
+      if(number >= 0 && number <= 100)
+      {
+        PREP_EMPTY_CHANCE = number;
       }
       else argp_usage(state);
 
@@ -507,11 +522,6 @@ int main(int argc, char* argv[])
 
   // srand(time(NULL));
   
-  for(size_t index = 0; index < args.wfile_count; index++)
-  {
-    info_print("#%d: %s", index + 1, args.wfiles[index]);
-  }
-
   if(args.ncurses)
   {
     args.output = "output.txt";

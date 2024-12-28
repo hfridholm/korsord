@@ -3,15 +3,11 @@
 If a letter fails, try removing the letters that is not _crossed and call _gen again for the same direction from _embed.
 This keeps the progress that the other letters achieved. Something like this is what caused the bug erlier with blank stripes in grid. But if done correctly, that is not an issue.
 
-- in patt_crowd_is_allowed, also check so surrounding blocks don't excede limit
-
 - maybe add flags to makefile to silent output
 - maybe: move lock inside stats struct and lock inside grid struct
 - write comments explaining things in more detail
 - try implementing the old algorithm and see if that was better
 
-- remove square_count and maybe rename real_count to square_count
-- add helping numbers to render.py script (rendered before solved letters)
 - refine python words prepare script
 - change out the word lists completely
 - instead of _used flag, store used words in used_trie.
