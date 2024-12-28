@@ -8,13 +8,14 @@
 /*
  * Extra SQUARE_BORDER squares are added around the grid
  *
- * X X X X X X X
- * X X X X X X X
- * X X X X X X X
- * X X X . . X X
- * X X X . . X X
- * X X X X X X X
- * X X X X X X X
+ * X X X X X X X X
+ * X X X X X X X X
+ * X X X X X X X X
+ * X X X . . . X X
+ * X X X . . . X X
+ * X X X . . . X X
+ * X X X X X X X X
+ * X X X X X X X X
  */
 
 /*
@@ -46,14 +47,19 @@ grid_t* grid_create(int width, int height)
   grid->cross_count = 0;
   grid->word_count = 0;
 
+  // Initialize empty squares and border squares
   for(int x = 0; x < (width + 5); x++)
   {
     for(int y = 0; y < (height + 5); y++)
     {
       square_t* square = xy_real_square_get(grid, x, y);
 
-      square->letter = '\0';
-      square->is_crossed = false;
+      *square = (square_t)
+      {
+        .letter     = '\0',
+        .is_crossed = false,
+        .is_prep    = false
+      };
 
       if ((x >= 3) && (x < (width  + 3)) &&
           (y >= 3) && (y < (height + 3)))

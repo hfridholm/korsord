@@ -20,14 +20,24 @@
 /*
  *
  */
-int MAX_CROWD_AMOUNT = 5;
+int MAX_CROWD_AMOUNT = 2;
 
 /*
  * This function checks if the pattern is crowded with block squares
  *
- * . . .
- * . + .
- * . . .
+ * Grid prepare blocks (blocks at top and left edges) only count for 1 block together
+ *
+ *  X . . . .
+ *  X # . . .
+ *  X # + . . This would give nerby blocks: 1
+ *  X # . . .
+ *  X . . . .
+ *
+ *  X . . . .
+ *  X . . # .
+ *  X # + . . This would give nerby blocks: 2
+ *  X # . . .
+ *  X . . . .
  *
  * EXPECTS:
  * - (block_x, block_y) is not SQUARE_BLOCK
@@ -44,17 +54,25 @@ static bool patt_crowd_is_allowed(grid_t* grid, int block_x, int block_y)
   int real_y = block_y + 3;
 
   int block_amount = 0;
+  bool nerby_prep = false;
 
   for(int x = (real_x - 1); x <= (real_x + 1); x++)
   {
     for(int y = (real_y - 1); y <= (real_y + 1); y++)
     {
-      if(xy_real_square_is_block(grid, x, y))
+      square_t* square = xy_real_square_get(grid, x, y);
+
+      if(!square) return false;
+
+      if (square->type == SQUARE_BLOCK &&
+         (!square->is_prep || (square->is_prep && !nerby_prep)))
       {
         block_amount++;
 
         if(block_amount >= MAX_CROWD_AMOUNT) return false;
       }
+
+      if(square->is_prep) nerby_prep = true;
     }
   }
 

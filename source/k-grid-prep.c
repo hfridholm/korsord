@@ -141,6 +141,100 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
 }
 
 /*
+ * Randomly assign SQUARE_BLOCK to squares at top edge
+ *
+ * X X X X X
+ * X # . + .
+ */
+static void grid_prep_top_blocks(grid_t* grid, int start_x, int start_y)
+{
+  // The square to the right of the top left block must be empty
+  if(start_x < grid->width)
+  {
+    xy_real_square_set_empty(grid, start_x + 1, start_y);
+  }
+
+  bool last_is_block = false;
+
+  for(int x = (start_x + 2); x < (grid->width + 2); x++)
+  {
+    // This ensures that the egde is being followed
+    if (!xy_real_square_is_border(grid, x, start_y - 1) ||
+         xy_real_square_is_border(grid, x, start_y))
+    {
+      break;
+    }
+
+    square_t* square = xy_real_square_get(grid, x, start_y);
+
+    // Don't overwrite model letters
+    if(square->type == SQUARE_LETTER) continue;
+
+    /*
+     * This square gets to be a block if either:
+     * - it already is a block, or
+     * - the last square wasn't a block, or
+     * - it randomly is decided to be one
+     */
+    if (square->type == SQUARE_BLOCK ||
+        !last_is_block ||
+        (rand() % 100) > PREP_EMPTY_CHANCE)
+    {
+      square->type    = SQUARE_BLOCK;
+      square->is_prep = true;
+
+      last_is_block = true;
+    }
+    else last_is_block = false;
+  }
+}
+
+/*
+ * Randomly assign SQUARE_BLOCK to squares at left edge
+ *
+ * X X
+ * X #
+ * X +
+ * X .
+ */
+static void grid_prep_left_blocks(grid_t* grid, int start_x, int start_y)
+{
+    bool last_is_block = true;
+
+    for(int y = (start_y + 1); y < (grid->height + 2); y++)
+    {
+      // This ensures that the egde is being followed
+      if(!xy_real_square_is_border(grid, start_x - 1, y) ||
+          xy_real_square_is_border(grid, start_x, y))
+      {
+        break;
+      }
+
+      square_t* square = xy_real_square_get(grid, start_x, y);
+
+      // Don't overwrite model letters
+      if(square->type == SQUARE_LETTER) continue;
+
+      /*
+       * This square gets to be a block if either:
+       * - it already is a block, or
+       * - the last square wasn't a block, or
+       * - it randomly is decided to be one
+       */
+      if (square->type == SQUARE_BLOCK ||
+          !last_is_block ||
+          (rand() % 100) > PREP_EMPTY_CHANCE)
+      {
+        square->type    = SQUARE_BLOCK;
+        square->is_prep = true;
+
+        last_is_block = true;
+      }
+      else last_is_block = false;
+    }
+}
+
+/*
  * Add blocks at left and top side of grid
  */
 static void grid_prep_blocks(grid_t* grid)
@@ -162,7 +256,8 @@ static void grid_prep_blocks(grid_t* grid)
     // Don't overwrite model letters
     if(square->type == SQUARE_LETTER) continue;
 
-    square->type = SQUARE_BLOCK;
+    square->type    = SQUARE_BLOCK;
+    square->is_prep = true;
   }
 
 
@@ -174,110 +269,9 @@ static void grid_prep_blocks(grid_t* grid)
     int start_x = real_index_x_get(grid, square_index);
     int start_y = real_index_y_get(grid, square_index);
 
-    /*
-     * X X X X X
-     * X # . + .
-     */
+    grid_prep_top_blocks(grid, start_x, start_y);
 
-    /*
-     * The square to the right of the top left block must be empty
-     */
-    if(start_x < grid->width)
-    {
-      xy_real_square_set_empty(grid, start_x + 1, start_y);
-    }
-
-    bool last_is_block = false;
-
-    for(int x = (start_x + 2); x < (grid->width + 2); x++)
-    {
-      // This ensures that the egde is being followed
-      if(!xy_real_square_is_border(grid, x, start_y - 1) ||
-          xy_real_square_is_border(grid, x, start_y))
-      {
-        break;
-      }
-
-      square_t* square = xy_real_square_get(grid, x, start_y);
-
-      // Don't overwrite model letters
-      if(square->type == SQUARE_LETTER) continue;
-
-      if(square->type == SQUARE_BLOCK)
-      {
-        last_is_block = true;
-
-        continue;
-      }
-
-      // If the last square is not a block, this must be a block
-      if(!last_is_block)
-      {
-        square->type = SQUARE_BLOCK;
-
-        last_is_block = true;
-
-        continue;
-      }
-
-      // If the last is a block, this has a chance of also being a block
-      if((rand() % 100) > PREP_EMPTY_CHANCE)
-      {
-        square->type = SQUARE_BLOCK;
-
-        last_is_block = true;
-      }
-      else last_is_block = false;
-    }
-
-    /*
-     * X X
-     * X #
-     * X +
-     * X .
-     */
-    last_is_block = true;
-
-    for(int y = (start_y + 1); y < (grid->height + 2); y++)
-    {
-      // This ensures that the egde is being followed
-      if(!xy_real_square_is_border(grid, start_x - 1, y) ||
-          xy_real_square_is_border(grid, start_x, y))
-      {
-        break;
-      }
-
-      square_t* square = xy_real_square_get(grid, start_x, y);
-
-      // Don't overwrite model letters
-      if(square->type == SQUARE_LETTER) continue;
-
-      if(square->type == SQUARE_BLOCK)
-      {
-        last_is_block = true;
-
-        continue;
-      }
-
-      // If the last square is not a block, this must be a block
-      if(!last_is_block)
-      {
-        square->type = SQUARE_BLOCK;
-
-        last_is_block = true;
-
-        continue;
-      }
-
-      // If the last is a block, this has a chance of also being a block
-      if((rand() % 100) > PREP_EMPTY_CHANCE)
-      {
-        square->type = SQUARE_BLOCK;
-
-        last_is_block = true;
-      }
-      else last_is_block = false;
-    }
+    grid_prep_left_blocks(grid, start_x, start_y);
   }
 
   free(indexes);

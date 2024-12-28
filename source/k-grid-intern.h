@@ -53,6 +53,7 @@ typedef struct square_t
   square_type_t type;
   char          letter;
   bool          is_crossed;
+  bool          is_prep;
 } square_t;
 
 typedef struct grid_t
