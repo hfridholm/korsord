@@ -23,8 +23,6 @@
 int MAX_CROWD_AMOUNT = 2;
 
 /*
- * This function checks if the pattern is crowded with block squares
- *
  * Grid prepare blocks (blocks at top and left edges) only count for 1 block together
  *
  *  X . . . .
@@ -38,6 +36,55 @@ int MAX_CROWD_AMOUNT = 2;
  *  X # + . . This would give nerby blocks: 2
  *  X # . . .
  *  X . . . .
+ */
+
+/*
+ * Check if nerby block is crowded, accounting for new block
+ *
+ * PARAMS:
+ * - int real_x | Real x of nerby (this) block
+ * - int real_y | Real y of nerby (this) block
+ *
+ * RETURN (bool is_crowded)
+ */
+static bool nerby_block_is_crowded(grid_t* grid, int real_x, int real_y)
+{
+  int block_amount = 1;
+  bool nerby_prep = false;
+
+  for(int x = (real_x - 1); x <= (real_x + 1); x++)
+  {
+    for(int y = (real_y - 1); y <= (real_y + 1); y++)
+    {
+      square_t* square = xy_real_square_get(grid, x, y);
+
+      if (!square) return true;
+
+      if (square->type != SQUARE_BLOCK) continue;
+
+      if (!square->is_prep)
+      {
+        block_amount++;
+
+        if (block_amount > MAX_CROWD_AMOUNT) return true;
+      }
+      else if (!nerby_prep)
+      {
+        block_amount++;
+
+        nerby_prep = true;
+
+        if (block_amount > MAX_CROWD_AMOUNT) return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/*
+ *
+ * This function checks if the pattern is crowded with block squares
  *
  * EXPECTS:
  * - (block_x, block_y) is not SQUARE_BLOCK
@@ -62,17 +109,26 @@ static bool patt_crowd_is_allowed(grid_t* grid, int block_x, int block_y)
     {
       square_t* square = xy_real_square_get(grid, x, y);
 
-      if(!square) return false;
+      if (!square) return false;
 
-      if (square->type == SQUARE_BLOCK &&
-         (!square->is_prep || (square->is_prep && !nerby_prep)))
+      if (square->type != SQUARE_BLOCK) continue;
+
+      if (!square->is_prep)
       {
         block_amount++;
 
-        if(block_amount > MAX_CROWD_AMOUNT) return false;
-      }
+        if (block_amount > MAX_CROWD_AMOUNT) return false;
 
-      if(square->is_prep) nerby_prep = true;
+        if (nerby_block_is_crowded(grid, x, y)) return false;
+      }
+      else if (!nerby_prep)
+      {
+        block_amount++;
+
+        nerby_prep = true;
+
+        if (block_amount > MAX_CROWD_AMOUNT) return false;
+      }
     }
   }
 
