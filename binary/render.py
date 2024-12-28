@@ -8,9 +8,11 @@
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
 import os
+import string
+import random
 
-# result_dir = "korsord"
-result_dir = None
+result_dir = "korsord"
+# result_dir = None
 
 FONT_FILE = "/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf"
 RESULTS_DIR  = "results"
@@ -19,11 +21,14 @@ MAX_CLUE_LENGTH = 30
 WRAP_WIDTH = 10
 
 LETTER_FONT_SIZE = 100
+NUMBER_FONT_SIZE = 40
 CLUE_FONT_SIZE = 30
 
 LINE_MARGIN = 10
 SQUARE_SIZE = 200
 LINE_WIDTH = 2
+
+BLOCK_COLOR = "white"
 
 #
 # Square struct
@@ -253,6 +258,8 @@ try:
 
     letter_font = ImageFont.truetype(FONT_FILE, LETTER_FONT_SIZE)
 
+    number_font = ImageFont.truetype(FONT_FILE, NUMBER_FONT_SIZE)
+
     print(f"Loaded {FONT_FILE}")
 
 except IOError:
@@ -266,7 +273,7 @@ def square_draw(x, y, square_type, half=False):
     w = SQUARE_SIZE
     h = (SQUARE_SIZE // 2) if half else SQUARE_SIZE
 
-    color = "white" if square_type == "LETTER" else "lightgray"
+    color = "white" if square_type == "LETTER" else BLOCK_COLOR
 
     draw.rectangle([x, y, x + w, y + h], fill=color, outline='black', width=LINE_WIDTH)
 
@@ -398,7 +405,57 @@ if not os.path.exists(f"{RESULTS_DIR}/{result_dir}"):
     os.makedirs(f"{RESULTS_DIR}/{result_dir}")
 
 
-img.save(f"{RESULTS_DIR}/{result_dir}/korsord.png", "PNG")
+img.save(f"{RESULTS_DIR}/{result_dir}/normal.png", "PNG")
+
+#
+# Draw helping letter number
+#
+def number_draw(x, y, number):
+    text = number
+
+    text_x = x + 10
+    text_y = y + 10
+
+    draw.text((text_x, text_y), text, fill="gray", font=number_font)
+
+#
+# Create random numbers dictionary
+#
+def numbers_gen():
+    ordered_numbers = {}
+
+    for index, letter in enumerate(string.ascii_lowercase):
+        ordered_numbers[letter] = str(index + 1)
+
+    # Step 1: Extract the values and shuffle them
+    values = list(ordered_numbers.values())
+
+    random.shuffle(values)
+
+    # Step 2: Reassign the shuffled values back to the dictionary
+    return dict(zip(ordered_numbers.keys(), values))
+
+numbers = numbers_gen()
+
+#
+# Draw helping letter numbers
+#
+for x in range(grid.width):
+    for y in range(grid.height):
+        square = grid.squares[x][y]
+
+        if(square.type != "LETTER"):
+            continue
+
+        number = numbers[square.letter]
+
+        img_x = (x * SQUARE_SIZE)
+        img_y = (y * SQUARE_SIZE)
+
+        # Draw letter number
+        number_draw(img_x, img_y, number)
+
+img.save(f"{RESULTS_DIR}/{result_dir}/helping.png", "PNG")
 
 # Create solved crossword image
 for x in range(grid.width):
