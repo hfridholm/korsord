@@ -118,6 +118,8 @@ extern int       xy_index_get(grid_t* grid, int x, int y);
 extern bool block_is_allowed(grid_t* grid, int block_x, int block_y);
 
 
+extern bool xy_real_square_is_blocking(grid_t* grid, int x, int y);
+
 extern bool xy_square_is_blocking(grid_t* grid, int x, int y);
 
 extern bool xy_square_is_letter(grid_t* grid, int x, int y);

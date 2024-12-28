@@ -69,7 +69,7 @@ static bool patt_crowd_is_allowed(grid_t* grid, int block_x, int block_y)
       {
         block_amount++;
 
-        if(block_amount >= MAX_CROWD_AMOUNT) return false;
+        if(block_amount > MAX_CROWD_AMOUNT) return false;
       }
 
       if(square->is_prep) nerby_prep = true;
@@ -137,45 +137,124 @@ static bool patt_trap_is_allowed(grid_t* grid, int block_x, int block_y)
 
 /*
  * RETURN (bool is_allowed)
- *
- * This function will be obsolete in the future
  */
-static bool patt_edge_is_allowed(grid_t* grid, int block_x, int block_y)
+static bool patt_block_is_allowed(grid_t* grid, int block_x, int block_y)
 {
-  /*
-   * . . .
-   * # + #
-   * . X .
-   */
-  if(xy_real_square_is_border(grid, block_x + 3, block_y + 4))
-  {
-    if(xy_real_square_is_block(grid, block_x + 2, block_y + 3))
-    {
-      return false;
-    }
+  int real_x = block_x + 3;
+  int real_y = block_y + 3;
 
-    if(xy_real_square_is_block(grid, block_x + 4, block_y + 3))
-    {
-      return false;
-    }
+  /*
+   *  . . . . .
+   *  . . . . .
+   *  . . + a a
+   *  . . b . .
+   *  . . b . .
+   */
+  if ((xy_real_square_is_blocking(grid, real_x + 1, real_y    )  || // a
+       xy_real_square_is_blocking(grid, real_x + 2, real_y    )) &&
+
+      (xy_real_square_is_blocking(grid, real_x,     real_y + 1)  || // b
+       xy_real_square_is_blocking(grid, real_x,     real_y + 2)))
+  {
+    return false;
   }
 
   /*
-   * . # .
-   * . + X
-   * . # .
+   *  . . . . . .
+   *  . . . . . .
+   *  . . a + . .
+   *  . . b . . .
+   *  . . b . . .
+   *
+   * OBS: This case is legal:
+   *  . . . . . .
+   *  . X _ . . .
+   *  . . a + . .
+   *  . . b . . .
+   *  . . b . . .
    */
-  if(xy_real_square_is_border(grid, block_x + 4, block_y + 3))
-  {
-    if(xy_real_square_is_block(grid, block_x + 3, block_y + 2))
-    {
-      return false;
-    }
+  if (xy_real_square_is_block   (grid, real_x - 1, real_y    )  && // a
 
-    if(xy_real_square_is_block(grid, block_x + 3, block_y + 4))
-    {
-      return false;
-    }
+    !(xy_real_square_is_border  (grid, real_x - 2, real_y - 1)  && // X
+     !xy_real_square_is_blocking(grid, real_x - 1, real_y - 1)) && // _
+
+     (xy_real_square_is_blocking(grid, real_x - 1, real_y + 1)  || // b
+      xy_real_square_is_blocking(grid, real_x - 1, real_y + 2)))
+  {
+    return false;
+  }
+
+  /*
+   *  . . . . . .
+   *  . . . . . .
+   *  . a . + . .
+   *  . b . . . .
+   *  . b . . . .
+   *
+   * OBS: This case is legal:
+   *  . . . . . .
+   *  X _ . . . .
+   *  . a . + . .
+   *  . b . . . .
+   *  . b . . . .
+   */
+  if (xy_real_square_is_block   (grid, real_x - 2, real_y    )  && // a
+
+    !(xy_real_square_is_border  (grid, real_x - 3, real_y - 1)  && // X
+     !xy_real_square_is_blocking(grid, real_x - 2, real_y - 1)) && // _
+
+     (xy_real_square_is_blocking(grid, real_x - 2, real_y + 1)  || // b
+      xy_real_square_is_blocking(grid, real_x - 2, real_y + 2)))
+  {
+    return false;
+  }
+
+  /*
+   *  . . . . .
+   *  . . a b c
+   *  . . . . .
+   *  . . + . .
+   *  . . . . .
+   *
+   * OBS: This case is legal:
+   *  . . . X .
+   *  . . a _ c
+   *  . . . . .
+   *  . . + . .
+   *  . . . . .
+   */
+  if (xy_real_square_is_block   (grid, real_x,     real_y - 2) && // a
+
+     (xy_real_square_is_blocking(grid, real_x + 1, real_y - 2) || // b
+
+     (xy_real_square_is_blocking(grid, real_x + 2, real_y - 2) && // c
+     !xy_real_square_is_border  (grid, real_x + 1, real_y - 3)))) // X
+  {
+    return false;
+  }
+
+  /*
+   *  . . . . .
+   *  . . a b c
+   *  . . + . .
+   *  . . . . .
+   *  . . . . .
+   *
+   * OBS: This case is legal:
+   *  . . . X .
+   *  . . a _ c
+   *  . . + . .
+   *  . . . . .
+   *  . . . . .
+   */
+  if (xy_real_square_is_block   (grid, real_x,     real_y - 1) && // a
+
+     (xy_real_square_is_blocking(grid, real_x + 1, real_y - 1) || // b
+
+     (xy_real_square_is_blocking(grid, real_x + 2, real_y - 1) && // c
+     !xy_real_square_is_border  (grid, real_x + 1, real_y - 2)))) // X
+  {
+    return false;
   }
 
   /*
@@ -184,8 +263,8 @@ static bool patt_edge_is_allowed(grid_t* grid, int block_x, int block_y)
    * . + .
    * . . .
    */
-  if(!xy_real_square_is_block(grid, block_x + 3, block_y + 3) && 
-      xy_real_square_is_border(grid, block_x + 3, block_y + 2))
+  if(!xy_real_square_is_block (grid, real_x, real_y    ) && 
+      xy_real_square_is_border(grid, real_x, real_y - 1))
   {
     return false;
   }
@@ -196,33 +275,10 @@ static bool patt_edge_is_allowed(grid_t* grid, int block_x, int block_y)
    * X + .
    * . . .
    */
-  if(!xy_real_square_is_block(grid, block_x + 3, block_y + 3) && 
-      xy_real_square_is_border(grid, block_x + 2, block_y + 3))
+  if(!xy_real_square_is_block (grid, real_x    , real_y) && 
+      xy_real_square_is_border(grid, real_x - 1, real_y))
   {
     return false;
-  }
-
-  return true;
-}
-
-/*
- * RETURN (bool is_allowed)
- *
- * This function will be obsolete in the future
- */
-static bool patt_corner_is_allowed(grid_t* grid, int block_x, int block_y)
-{
-  /*
-   * . . .
-   * . + X
-   * . X .
-   */
-  if(xy_real_square_is_border(grid, block_x + 4, block_y + 3))
-  {
-    if(xy_real_square_is_border(grid, block_x + 3, block_y + 4))
-    {
-      return false;
-    }
   }
 
   return true;
@@ -245,6 +301,14 @@ static bool patt_corner_is_allowed(grid_t* grid, int block_x, int block_y)
  */
 bool block_is_allowed(grid_t* grid, int block_x, int block_y)
 {
+  // An already blocking square is of course allowed
+  if(xy_square_is_blocking(grid, block_x, block_y))
+  {
+    stats_patt_done_incr();
+
+    return true;
+  }
+
   // 1. Check if block would overwrite a letter
   if(xy_square_is_letter(grid, block_x, block_y))
   {
@@ -253,18 +317,10 @@ bool block_is_allowed(grid_t* grid, int block_x, int block_y)
     return false;
   }
 
-  // An already blocking square is of course allowed
-  if(xy_square_is_blocking(grid, block_x, block_y))
+  // 2. Check if block would block other blocks
+  if(!patt_block_is_allowed(grid, block_x, block_y))
   {
     stats_patt_block_incr();
-
-    return true;
-  }
-
-  // 2. Check if block makes for a good edge
-  if(!patt_edge_is_allowed(grid, block_x, block_y))
-  {
-    stats_patt_edge_incr();
 
     return false;
   }
@@ -277,15 +333,7 @@ bool block_is_allowed(grid_t* grid, int block_x, int block_y)
     return false;
   }
 
-  // 4. Check if block is at the bottom right corner
-  if(!patt_corner_is_allowed(grid, block_x, block_y))
-  {
-    stats_patt_corner_incr();
-
-    return false;
-  }
-
-  // 5. Check if block makes the grid to crowded
+  // 4. Check if block makes the grid to crowded
   if(!patt_crowd_is_allowed(grid, block_x, block_y))
   {
     stats_patt_crowd_incr();

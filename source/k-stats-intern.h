@@ -17,8 +17,7 @@ typedef struct stats_patt_t
   size_t letter;
   size_t trap;
   size_t crowd;
-  size_t edge;
-  size_t corner;
+  size_t done;
   size_t block;
   size_t none;
 } stats_patt_t;

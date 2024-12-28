@@ -488,6 +488,8 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
     }
   }
 
+  is_generating = false;
+
   curr_grid_set(grid);
 
   return grid;

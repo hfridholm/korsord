@@ -189,6 +189,17 @@ void xy_real_square_set_block(grid_t* grid, int x, int y)
 /*
  * Both SQUARE_BORDER and SQUARE_BLOCK is blocking
  */
+bool xy_real_square_is_blocking(grid_t* grid, int x, int y)
+{
+  square_t* square = xy_real_square_get(grid, x, y);
+
+  return (!square || square->type == SQUARE_BLOCK
+                  || square->type == SQUARE_BORDER);
+}
+
+/*
+ * Both SQUARE_BORDER and SQUARE_BLOCK is blocking
+ */
 bool xy_square_is_blocking(grid_t* grid, int x, int y)
 {
   square_t* square = xy_square_get(grid, x, y);

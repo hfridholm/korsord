@@ -3,6 +3,8 @@
 If a letter fails, try removing the letters that is not _crossed and call _gen again for the same direction from _embed.
 This keeps the progress that the other letters achieved. Something like this is what caused the bug erlier with blank stripes in grid. But if done correctly, that is not an issue.
 
+- in patt_crowd_is_allowed, also check so surrounding blocks don't excede limit
+
 - maybe add flags to makefile to silent output
 - maybe: move lock inside stats struct and lock inside grid struct
 - write comments explaining things in more detail
@@ -40,88 +42,12 @@ hus        : i ett sådant kan man bo
 skateboard : platta med fyra hjul
 ...
 
-maybe (this is highly recommended)
-- remove outer border from anything to the user (model and print)
-
-. . . . . .
-. . . . . .
-. . . . . .
-. . . + . .
-. . . . . .
-. . . . . .
-
-By being able to check 3 squares to the left and top,
-start blocks can be properly handled.
-The blocks at the left and top edge don't need either 2 blocks to the right or at bottom
-
-These cases are legal
-
-```
-. . . . X .
-. . . # _ #
-. . . . . .
-. . . + . .
-. . . . . .
-. . . . . .
-
-. . . . . .
-. # . . . .
-X _ . . . .
-. # . + . .
-. . . . . .
-. . . . . .
-```
-
-- SQUARE_BLOCK med endast 1 bokstav under och till höger (utan start) ska inte få finnas
-. . . . .
-. . . . .
-. . + . # Om båda blocks är här får en block i mitten inte finnas
-. . . . .
-. . # . .
-
-. . . . .
-. . . . . Om SQUARE_BLOCK eller SQUARE_BORDER är både i område a och b,
-. . + a a får inte en block placeras i mitten
-. . b . .
-. . b . . Detta gör patt_corner_is_allowed obsolete och den kan tas bort
-
-
-. . . . .
-. . . . . Om SQUARE_BLOCK är i a och SQUARE_BLOCK eller SQUARE_BORDER är i område c,
-a b + . . eller
-c d . . . Om SQUARE_BLOCK är i b och SQUARE_BLOCK eller SQUARE_BORDER är i område d,
-c d . . . får inte en block placeras i mitten
-
-. . a c c
-. . b d d
-. . + . . --||--
-. . . . .
-. . . . .
-
-Detta gör dessa obsoleta:
-patt_corner_is_allowed
-patt_edge_is_allowed
-
-
-maybe in future:
-- extract the squares of 5x5 box into a new mini grid,
-  that then can be checked mirrored by switching x and y:
-
-  patt_block_is_allowed(5x5, x, y)
-  patt_block_is_allowed(5x5, y, x)
-
 
 new idea:
 - squares that are not _crossed should be able to be changed by new words,
   if the words are still valid and available.
   These kinds of small adjustments prevents unnecessary recursion backtracking.
 
-- maybe: Change start and stop in gword_t to
-union
-{
-  int start_x;
-  int start_y;
-};
 
 - maybe: store gwords in lookup table with grid hash keys
 this way, if the algorithm has to go back,
