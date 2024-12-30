@@ -1,4 +1,9 @@
 *
 !.gitignore
-!words
-!models
+!README.md
+
+!words/
+!words/*
+
+!models/
+!models/*

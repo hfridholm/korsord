@@ -460,8 +460,6 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
   // 2. Prepare the grid for generation
   grid_prep(wbase, grid);
 
-  best_grid_set(grid);
-
   is_generating = true;
 
   for(int x = 0; (x < grid->width) && is_generating; x++)
@@ -489,8 +487,6 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
   }
 
   is_generating = false;
-
-  curr_grid_set(grid);
 
   return grid;
 }

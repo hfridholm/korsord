@@ -2,6 +2,8 @@
 !.gitignore
 !makefile
 
+!README.md
+
 # Shell scripts for korsord
 !debug.sh
 !valgrind.sh

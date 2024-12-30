@@ -374,27 +374,35 @@ static void ncurses_free(void)
  */
 static void* gen_routine(void* wbase)
 {
-  info_print("Generating grid");
-
   // 1. Un-using every word in word base
   wbase_reset(wbase);
+
+  curr_grid_set(NULL);
+  best_grid_set(NULL);
+
+
+  // 2. Generate grid
+  info_print("Generating grid");
 
   grid_t* grid = grid_gen(wbase, args.model);
 
   curr_grid_set(grid);
+  best_grid_set(grid);
 
   info_print("Generated grid");
 
 
-  info_print("Saving result");
+  // 3. Export result to file
+  info_print("Exporting results");
 
   grid_export(grid);
 
   grid_words_export(grid);
 
-  info_print("Saved result");
+  info_print("Exported results");
 
 
+  // 4. Free grid
   grid_free(&grid);
 
   return NULL;

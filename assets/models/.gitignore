@@ -1,2 +1,10 @@
 *
 !.gitignore
+!README.md
+
+# Models
+!standard/
+!standard/*
+
+!kvartretten/
+!kvartretten/*

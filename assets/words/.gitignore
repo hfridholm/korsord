@@ -1,6 +1,8 @@
 *
 !.gitignore
 !ordlista.py
-!svenska150k.words
-!svenska270k.words
-!svenska870k.words
+!README.md
+
+# Words
+!svenska/
+!svenska/*
