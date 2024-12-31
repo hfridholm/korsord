@@ -148,10 +148,15 @@ static void grid_corner_indexes_get(int** indexes, int* count, grid_t* grid)
  */
 static void grid_prep_top_blocks(grid_t* grid, int start_x, int start_y)
 {
-  // The square to the right of the top left block must be empty
+  // The square to the right of the top left block can't be block
   if(start_x < grid->width)
   {
-    xy_real_square_set_empty(grid, start_x + 1, start_y);
+    square_t* square = xy_real_square_get(grid, start_x + 1, start_y);
+
+    if(square && square->type == SQUARE_BLOCK)
+    {
+      square->type = SQUARE_EMPTY;
+    }
   }
 
   bool last_is_block = false;

@@ -6,7 +6,6 @@
 
 ## Quick Fixes
 - README.md in source/ explain the algorithm and refrence function names
-- don't set right square to SQUARE_EMPTY in prep, but just skip it
 - only extract and save to result.grid when successful
 - remove set_core function in korsord.c
 - try using different font, and strive to add multiple fonts to assets/fonts/
