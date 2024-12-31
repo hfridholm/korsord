@@ -6,8 +6,6 @@
 
 ## Quick Fixes
 - README.md in source/ explain the algorithm and refrence function names
-- only extract and save to result.grid when successful
-- remove set_core function in korsord.c
 - try using different font, and strive to add multiple fonts to assets/fonts/
 - write about the default models
 - write about makefile and scripts in binary

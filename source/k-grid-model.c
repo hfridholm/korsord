@@ -27,6 +27,8 @@ grid_t* grid_model_load(const char* model)
 
   if(dir_file_read(buffer, file_size, MODEL_DIR, model) == 0)
   {
+    free(buffer);
+
     return NULL;
   }
 

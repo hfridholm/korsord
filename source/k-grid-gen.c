@@ -448,7 +448,7 @@ static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cros
 }
 
 /*
- *
+ * Generate crossword grid
  */
 grid_t* grid_gen(wbase_t* wbase, const char* filepath)
 {
@@ -472,16 +472,16 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
 
       if(gen_status == GEN_STOP)
       {
-        error_print("Generation stopped");
+        grid_free(&grid);
 
-        is_generating = false;
+        return NULL;
       }
 
       if(gen_status == GEN_FAIL)
       {
-        error_print("Generation failed");
+        grid_free(&grid);
 
-        is_generating = false;
+        return NULL;
       }
     }
   }

@@ -4,10 +4,6 @@
  * Written by Hampus Fridholm
  */
 
-#define _GNU_SOURCE
-#include <sched.h>
-#include <pthread.h>
-
 #define DEBUG_IMPLEMENT
 #include "debug.h"
 
@@ -22,6 +18,7 @@
 #include <unistd.h>
 #include <argp.h>
 #include <ncurses.h>
+#include <pthread.h>
 
 #include "k-grid.h"
 #include "k-wbase.h"
@@ -233,29 +230,6 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
 }
 
 /*
- * core_id = 0, 1, ... n-1, where n is the system's number of cores
- *
- * https://stackoverflow.com/questions/1407786/how-to-set-cpu-affinity-of-a-particular-pthread
- *
- * Maybe use this function in the future
- */
-static int stick_this_thread_to_core(int core_id) 
-{
-  int num_cores = sysconf(_SC_NPROCESSORS_ONLN);
-
-  if (core_id < 0 || core_id >= num_cores)
-  {
-    return EINVAL;
-  }
-
-  cpu_set_t cpuset;
-  CPU_ZERO(&cpuset);
-  CPU_SET(core_id, &cpuset);
-
-  return pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
-}
-
-/*
  * Routine for async printing of grid
  */
 static void* print_routine(void* arg)
@@ -386,24 +360,31 @@ static void* gen_routine(void* wbase)
 
   grid_t* grid = grid_gen(wbase, args.model);
 
-  curr_grid_set(grid);
-  best_grid_set(grid);
+  if(grid)
+  {
+    curr_grid_set(grid);
+    best_grid_set(grid);
 
-  info_print("Generated grid");
-
-
-  // 3. Export result to file
-  info_print("Exporting results");
-
-  grid_export(grid);
-
-  grid_words_export(grid);
-
-  info_print("Exported results");
+    info_print("Generated grid");
 
 
-  // 4. Free grid
-  grid_free(&grid);
+    // 3. Export result to file
+    info_print("Exporting results");
+
+    grid_export(grid);
+
+    grid_words_export(grid);
+
+    info_print("Exported results");
+
+
+    // 4. Free grid
+    grid_free(&grid);
+  }
+  else
+  {
+    error_print("Generation failed");
+  }
 
   return NULL;
 }
@@ -573,8 +554,6 @@ int main(int argc, char* argv[])
   }
 
   info_print("Created word base");
-
-  info_print("wbase count: %d", wbase->count);
 
 
   curr_grid_init();

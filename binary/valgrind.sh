@@ -20,8 +20,10 @@ if [ ! -f ./korsord ]; then
 fi
 
 # Step 2: Run the program with supplied arguments
-echo "valgrind --leak-check=no --track-origins=no --leak-resolution=med ./korsord $@"
-valgrind --leak-check=no --track-origins=no --leak-resolution=med ./korsord "$@"
+valgrind_flags="--leak-check=full --track-origins=no --leak-resolution=med"
+
+echo "valgrind $valgrind_flags ./korsord $@"
+valgrind $valgrind_flags ./korsord "$@"
 
 # Check the exit code of the program
 if [ $? -ne 0 ]; then
