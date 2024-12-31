@@ -1,9 +1,0 @@
-*
-!.gitignore
-!README.md
-
-!words/
-!words/*
-
-!models/
-!models/*

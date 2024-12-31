@@ -1,15 +1,12 @@
 *
 !.gitignore
+!README.md
 !makefile
 
-!README.md
-
-# Shell scripts for korsord
+# Shell scripts
 !debug.sh
 !valgrind.sh
-!interact.sh
 
 # Python scripts
 !render.py
 !clues.py
-!generate.sh

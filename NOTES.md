@@ -5,16 +5,38 @@
 - write in README.md
 
 ## Quick Fixes
-- remove generate.sh
+- don't set right square to SQUARE_EMPTY in prep, but just skip it
+- only extract and save to result.grid when successful
+- show rendered crosswords in README.md
+- in README.md next to rendered crossword, explain features (ex no arrows needed)
+- remove set_core function in korsord.c
+- try using different font, and strive to add multiple fonts to assets/fonts/
+- create README.md in source/ that explain the algorithm and refrence function names
+- add step in creating crossword: photoshoping in your own image
+- write about the default models
+- write about makefile and scripts in binary
 - add argp to clues.py
 - change if-statements to switch statements when checking _status in -gen.c
 - Fix problem with "new best grid" skyrocketing
   (I have a fealing that the problem is that singles (1 letter words) don't get restored)
+- don't check start/stop xs/ys longer than max_length
 
 ## Potential Quick Fixes
 - add flags to makefile to silent output
 - move lock inside stats struct and lock inside grid struct
 - remove old_grid from _reset, instead set is_crossed on SQUARE_BLOCK and from that _reset
+
+## Word Files
+- only read first word of each line in model_load in korsord
+- make it possible to read word files with existing clues (word : clue)
+- make it possible to store multiple clues in one words file
+* collect clues in large words file, where old clues can be reused
+  (when rendering, it doesn't matter that other not used words and clues are in the file)
+
+## Grid Prep
+- maybe: add a few words from the first word list to the grid in different places
+  (this ensures that at least these words from the first word list are in the solution)
+  (it maybe also make the generation easier, or harder, I don't know)
 
 ## Used Trie
 - create new variable (trie_t* used_words) that is being passed on in _gen functions
