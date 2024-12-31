@@ -2,7 +2,7 @@
 
 This project is a **swedish crossword generator**. The word *korsord* means crossword in swedish. A swedish style crossword differs a lot from other kinds of crosswords. In the swedish style, all the words are more dependent of each other. The clues are written directly in the grid in front of the word. Words are both written from left to right or from top to bottom. In the crosswords that this program generates, no squares are left blank, every square is either a clue or a letter of a word.
 
-<img src="assets/examples/korsord.png" alt="korsord.png" />
+![korsord.png](assets/example/korsord.png)
 
 Crosswords made with this generator don't need arrows showing where the word should go. Vertical words starting from an edge go to the right of the clue square. Horizontal words starting from an edge go right over the clue square. No words are only one letter, they are at least two letters.
 
@@ -70,21 +70,8 @@ The rendered images of the crossword will by default be stored in a new folder i
 
 `solved.png`  Finally, all the correct letters are filled, showing the solution
 
-<div style="display: flex; justify-content: space-between; flex-direction: row; gap: 20px;">
-    <div style="flex-direction: row; text-align: center;">
-        <img src="assets/examples/normal.png" alt="normal.png" />
-        <span class="caption">normal.png</span>
-    </div>
-    <div style="flex-direction: row; text-align: center;">
-        <img src="assets/examples/helping.png" alt="helping.png" />
-        <span class="caption">helping.png</span>
-    </div>
-    <div style="flex-direction: row; text-align: center; ">
-        <img src="assets/examples/solved.png" alt="solved.png"  />
-        <span class="caption">solved.png</span>
-    </div>
-</div>
+![images.png](assets/example/images.png)
 
 ### 6. Finish the crossword by pasting your image
 
-<img src="assets/examples/korsord.png" alt="korsord.png" />
+![korsord.png](assets/example/korsord.png)
