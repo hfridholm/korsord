@@ -12,8 +12,6 @@ import string
 import random
 import argparse
 
-FONT_FILE = "/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf"
-
 MAX_LENGTH = 30
 WRAP_WIDTH = 10
 
@@ -33,10 +31,16 @@ parser = argparse.ArgumentParser(description="render exported crossword to image
 parser.add_argument("--results-dir", type=str, help="Directory to store crosswords")
 parser.add_argument("--result-dir",  type=str, help="Directory name of saved images")
 
+parser.add_argument("--font-dir",    type=str, help="Directory to font")
+parser.add_argument("--font-file",   type=str, help="File name of font")
+
 args = parser.parse_args()
 
 RESULTS_DIR = args.results_dir if args.results_dir else "results"
 RESULT_DIR  = args.result_dir  if args.result_dir  else "korsord"
+
+FONT_DIR  = args.font_dir  if args.font_dir  else "../assets/fonts"
+FONT_FILE = args.font_file if args.font_file else "Ubuntu-B.ttf"
 
 #
 # Square struct
@@ -273,20 +277,22 @@ img_h = grid.height * SQUARE_SIZE
 img = Image.new('RGBA', (img_w, img_h), color=(0, 0, 0, 0))
 draw = ImageDraw.Draw(img)
 
-print(f"Loading fonts")
+FONT_PATH = f"{FONT_DIR}/{FONT_FILE}"
+
+print(f"Loading font {FONT_PATH}")
 
 try:
-    clue_font = ImageFont.truetype(FONT_FILE, CLUE_FONT_SIZE)
+    clue_font = ImageFont.truetype(FONT_PATH, CLUE_FONT_SIZE)
 
-    letter_font = ImageFont.truetype(FONT_FILE, LETTER_FONT_SIZE)
+    letter_font = ImageFont.truetype(FONT_PATH, LETTER_FONT_SIZE)
 
-    number_font = ImageFont.truetype(FONT_FILE, NUMBER_FONT_SIZE)
+    number_font = ImageFont.truetype(FONT_PATH, NUMBER_FONT_SIZE)
 
 except IOError:
     print(f"Failed to load font")
     exit(1)
 
-print(f"Loaded fonts")
+print(f"Loaded font {FONT_PATH}")
 
 #
 # Draw the outline for a square
