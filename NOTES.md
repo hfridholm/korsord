@@ -6,14 +6,12 @@
 
 ## Quick Fixes
 - README.md in source/ explain the algorithm and refrence function names
-- try using different font, and strive to add multiple fonts to assets/fonts/
 - write about the default models
 - write about makefile and scripts in binary
 - add argp to clues.py
 - change if-statements to switch statements when checking _status in -gen.c
 - Fix problem with "new best grid" skyrocketing
   (I have a fealing that the problem is that singles (1 letter words) don't get restored)
-- don't check start/stop xs/ys longer than max_length
 
 ## Potential Quick Fixes
 - add flags to makefile to silent output

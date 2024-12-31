@@ -7,6 +7,8 @@
 
 #include "file.h"
 
+extern int MAX_WORD_LENGTH;
+
 #define WORDS_DIR "../assets/words"
 
 /*
@@ -88,12 +90,11 @@ static char* string_lower(char* string)
  *
  * PARAMS
  * - const char* wfile | Word file
- * - int max_length    | Max length of words
  *
  * RETURN (trie_t* trie)
  * - NULL | Failed to read file
  */
-trie_t* trie_create(const char* wfile, int max_length)
+trie_t* trie_create(const char* wfile)
 {
   if(!wfile) return NULL;
 
@@ -117,7 +118,7 @@ trie_t* trie_create(const char* wfile, int max_length)
   {
     char* word = string_lower(strdup(token));
 
-    if(strlen(word) <= max_length)
+    if(strlen(word) <= MAX_WORD_LENGTH)
     {
       trie_word_insert(trie, word);
     }

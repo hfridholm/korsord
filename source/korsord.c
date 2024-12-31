@@ -32,6 +32,7 @@ bool is_running = false;
 #define INPUT_DELAY 100000
 
 extern int MAX_CROWD_AMOUNT;
+extern int MAX_WORD_LENGTH;
 extern int MAX_EXIST_AMOUNT;
 extern int HALF_WORD_AMOUNT;
 extern int PREP_EMPTY_CHANCE;
@@ -63,7 +64,6 @@ struct args
   bool   visual;
   bool   ncurses;
   int    fps;
-  int    max_length;
   char*  output;
 };
 
@@ -76,7 +76,6 @@ struct args args =
   .visual      = false,
   .ncurses     = false,
   .fps         = 1,
-  .max_length  = 40,
   .output      = NULL
 };
 
@@ -185,7 +184,7 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
 
       if(number >= 1)
       {
-        args->max_length = number;
+        MAX_WORD_LENGTH = number;
       }
       else argp_usage(state);
 
@@ -542,7 +541,7 @@ int main(int argc, char* argv[])
   info_print("Creating word base");
 
   // 1. Load the word bases
-  wbase_t* wbase = wbase_create(args.wfiles, args.wfile_count, args.max_length);
+  wbase_t* wbase = wbase_create(args.wfiles, args.wfile_count);
 
   if(!wbase)
   {

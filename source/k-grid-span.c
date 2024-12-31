@@ -5,6 +5,8 @@
 #include "k-grid.h"
 #include "k-grid-intern.h"
 
+int MAX_WORD_LENGTH = 40;
+
 /*
  * Get start xs of horizontal words
  *
@@ -17,6 +19,10 @@ bool horiz_start_xs_get(int* start_xs, int* count, grid_t* grid, int cross_x, in
 
   for(int start_x = (cross_x + 1); start_x-- > 0;)
   {
+    // Only check words that are within max length
+    if(cross_x - start_x >= MAX_WORD_LENGTH) break;
+
+
     if(xy_square_is_blocking(grid, start_x, cross_y)) break;
 
     if(start_x < cross_x) is_blocked = false;
@@ -45,6 +51,10 @@ bool horiz_stop_xs_get(int* stop_xs, int* count, grid_t* grid, int cross_x, int 
 
   for(int stop_x = cross_x; stop_x < grid->width; stop_x++)
   {
+    // Only check words that are within max length
+    if(stop_x - cross_x >= MAX_WORD_LENGTH) break;
+
+
     if(xy_square_is_blocking(grid, stop_x, cross_y)) break;
 
     if(stop_x > cross_x) is_blocked = false;
@@ -152,6 +162,10 @@ bool vert_start_ys_get(int* start_ys, int* count, grid_t* grid, int cross_x, int
 
   for(int start_y = (cross_y + 1); start_y-- > 0;)
   {
+    // Only check words that are within max length
+    if(cross_y - start_y >= MAX_WORD_LENGTH) break;
+
+
     if(xy_square_is_blocking(grid, cross_x, start_y)) break;
 
     if(start_y < cross_y) is_blocked = false;
@@ -178,6 +192,10 @@ bool vert_stop_ys_get(int* stop_ys, int* count, grid_t* grid, int cross_x, int c
 
   for(int stop_y = cross_y; stop_y < grid->height; stop_y++)
   {
+    // Only check words that are within max length
+    if(stop_y - cross_y >= MAX_WORD_LENGTH) break;
+
+
     if(xy_square_is_blocking(grid, cross_x, stop_y)) break;
 
     if(stop_y > cross_y) is_blocked = false;

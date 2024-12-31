@@ -22,7 +22,7 @@ extern int  letter_index_get(char letter);
 extern char index_letter_get(int index);
 
 
-extern wbase_t* wbase_create(char** wfiles, size_t count, int max_length);
+extern wbase_t* wbase_create(char** wfiles, size_t count);
 
 extern void     wbase_reset(wbase_t* wbase);
 

@@ -42,12 +42,11 @@ int letter_index_get(char letter)
  * PARAMS
  * - char** wfiles  | Word files
  * - size_t count   | Number of word files
- * - int max_length | Max length of words
  *
  * RETURN (wbase_t* wbase)
  * - NULL | Failed to create wbase
  */
-wbase_t* wbase_create(char** wfiles, size_t count, int max_length)
+wbase_t* wbase_create(char** wfiles, size_t count)
 {
   if(!wfiles || count == 0) return NULL;
 
@@ -70,7 +69,7 @@ wbase_t* wbase_create(char** wfiles, size_t count, int max_length)
 
   for(size_t index = 0; index < count; index++)
   {
-    wbase->tries[index] = trie_create(wfiles[index], max_length);
+    wbase->tries[index] = trie_create(wfiles[index]);
   }
 
   return wbase;
