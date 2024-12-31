@@ -40,16 +40,16 @@ The rendered images of the crossword will by default be stored in a new folder i
 
 `solved.png`  Finally, all the correct letters are filled, showing the solution
 
-<div style="display: flex; justify-content: space-between;">
-    <div style="flex-direction: row; width: 30%; text-align: center;">
+<div style="display: flex; justify-content: space-between; flex-direction: row; gap: 20px;">
+    <div style="flex-direction: row; text-align: center;">
         <img src="../assets/examples/normal.png" alt="normal.png" />
         <span class="caption">normal.png</span>
     </div>
-    <div style="flex-direction: row; width: 30%; text-align: center;">
+    <div style="flex-direction: row; text-align: center;">
         <img src="../assets/examples/helping.png" alt="helping.png" />
         <span class="caption">helping.png</span>
     </div>
-    <div style="flex-direction: row; width: 30%; text-align: center; ">
+    <div style="flex-direction: row; text-align: center; ">
         <img src="../assets/examples/solved.png" alt="solved.png"  />
         <span class="caption">solved.png</span>
     </div>
