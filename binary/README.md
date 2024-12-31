@@ -10,7 +10,7 @@ You can only generate a grid from one model at a time, but you can tell the prog
 korsord my.model my.words other.words
 ```
 
-## clues.py
+## <span>clues.py</span>
 
 The clues should be written after the clue-seperator `:` after each word on each line. If you want help with ideas to clues, or just don't bother, you can let ChatGPT write them for you.
 
@@ -26,7 +26,7 @@ Paste OpenAI api key in this file:
 binary/api.key
 ```
 
-## render.py
+## <span>render.py</span>
 
 ```bash
 python render.py [OPTION]
@@ -39,3 +39,18 @@ The rendered images of the crossword will by default be stored in a new folder i
 `helping.png` Additional random numbers are written in each letter square, grouping equal letters
 
 `solved.png`  Finally, all the correct letters are filled, showing the solution
+
+<div style="display: flex; justify-content: space-between;">
+    <div style="flex-direction: row; width: 30%; text-align: center;">
+        <img src="../assets/examples/normal.png" alt="normal.png" />
+        <span class="caption">normal.png</span>
+    </div>
+    <div style="flex-direction: row; width: 30%; text-align: center;">
+        <img src="../assets/examples/helping.png" alt="helping.png" />
+        <span class="caption">helping.png</span>
+    </div>
+    <div style="flex-direction: row; width: 30%; text-align: center; ">
+        <img src="../assets/examples/solved.png" alt="solved.png"  />
+        <span class="caption">solved.png</span>
+    </div>
+</div>

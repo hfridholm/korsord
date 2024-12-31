@@ -5,14 +5,11 @@
 - write in README.md
 
 ## Quick Fixes
+- README.md in source/ explain the algorithm and refrence function names
 - don't set right square to SQUARE_EMPTY in prep, but just skip it
 - only extract and save to result.grid when successful
-- show rendered crosswords in README.md
-- in README.md next to rendered crossword, explain features (ex no arrows needed)
 - remove set_core function in korsord.c
 - try using different font, and strive to add multiple fonts to assets/fonts/
-- create README.md in source/ that explain the algorithm and refrence function names
-- add step in creating crossword: photoshoping in your own image
 - write about the default models
 - write about makefile and scripts in binary
 - add argp to clues.py
