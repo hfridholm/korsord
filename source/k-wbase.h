@@ -22,6 +22,19 @@ extern int  letter_index_get(char letter);
 extern char index_letter_get(int index);
 
 
+extern trie_t* trie_create(void);
+
+extern trie_t* trie_load(const char* wfile);
+
+extern void    trie_reset(trie_t* trie);
+
+extern void    trie_free(trie_t** trie);
+
+extern trie_t* trie_dup(trie_t* trie);
+
+extern trie_t* trie_copy(trie_t* copy, trie_t* trie);
+
+
 extern wbase_t* wbase_create(char** wfiles, size_t count);
 
 extern void     wbase_reset(wbase_t* wbase);

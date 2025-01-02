@@ -47,6 +47,7 @@ static struct argp_option options[] =
   { "visual",   'v', 0,        0, "Visualize generation" },
   { "interact", 'i', 0,        0, "Enter interactive mode" },
   { "output",   'o', "FILE",   0, "Output debug to file" },
+  { "used",     'u', "FILE",   0, "Disregard used words" },
   { "fps",      'f', "AMOUNT", 0, "Frames per second" },
   { "length",   'l', "LENGTH", 0, "Max length of words" },
   { "crowd",    'c', "AMOUNT", 0, "Max amount of nerby blocks" },
@@ -61,6 +62,7 @@ struct args
   char*  model;
   char** wfiles;
   size_t wfile_count;
+  char*  used_wfile;
   bool   visual;
   bool   ncurses;
   int    fps;
@@ -204,6 +206,12 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
       if(!arg || *arg == '-') argp_usage(state);
 
       args->output = arg;
+      break;
+
+    case 'u':
+      if(!arg || *arg == '-') argp_usage(state);
+
+      args->used_wfile = arg;
       break;
 
     case ARGP_KEY_ARG:
@@ -374,6 +382,8 @@ static void* gen_routine(void* wbase)
 
     grid_words_export(grid);
 
+    used_words_export(grid);
+
     info_print("Exported results");
 
 
@@ -501,6 +511,9 @@ static struct argp argp = { options, opt_parse, args_doc, doc };
 /*
  * RETURN (int status)
  * - 0 | Success
+ *
+ * Note: Refactor this into step functions
+ * (now the freeing at error is crazy)
  */
 int main(int argc, char* argv[])
 {
@@ -549,10 +562,23 @@ int main(int argc, char* argv[])
 
     ncurses_free();
     
-    return 2;
+    debug_file_close();
+
+    free(args.wfiles);
+
+    return 3;
   }
 
   info_print("Created word base");
+
+
+  info_print("Loading used words");
+
+  trie_t* used_words = trie_load(args.used_wfile);
+
+  if(!used_words) used_words = trie_create();
+
+  info_print("Loaded used words");
 
 
   curr_grid_init();
@@ -600,6 +626,8 @@ int main(int argc, char* argv[])
 
   pthread_join(thread, NULL);
 
+
+  trie_free(&used_words);
 
   wbase_free(&wbase);
 

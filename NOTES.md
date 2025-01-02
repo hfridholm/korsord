@@ -5,7 +5,6 @@
 - write in README.md
 
 ## Quick Fixes
-- export used words (same as result.words), but append to used.words file
 - README.md in source/ explain the algorithm and refrence function names
 - write about the default models
 - write about makefile and scripts in binary
@@ -22,6 +21,7 @@
 ## Word Files
 - only read first word of each line in model_load in korsord
 - make it possible to read word files with existing clues (word : clue)
+### Maybe
 - make it possible to store multiple clues in one words file
 * collect clues in large words file, where old clues can be reused
   (when rendering, it doesn't matter that other not used words and clues are in the file)

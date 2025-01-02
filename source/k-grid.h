@@ -28,6 +28,8 @@ extern void    grid_free(grid_t** grid);
 
 extern int grid_words_export(grid_t* grid);
 
+extern int used_words_export(grid_t* grid);
+
 extern int grid_export(grid_t* grid);
 
 #endif // K_GRID_H

@@ -26,6 +26,8 @@ static node_t* node_create(void)
   return node;
 }
 
+trie_t* trie_create(void) { return node_create(); }
+
 /*
  * Free memory of trie node
  */
@@ -86,7 +88,7 @@ static char* string_lower(char* string)
 }
 
 /*
- * Create trie struct by loading words from file
+ * Load words from file and create trie struct
  *
  * PARAMS
  * - const char* wfile | Word file
@@ -94,7 +96,7 @@ static char* string_lower(char* string)
  * RETURN (trie_t* trie)
  * - NULL | Failed to read file
  */
-trie_t* trie_create(const char* wfile)
+trie_t* trie_load(const char* wfile)
 {
   if(!wfile) return NULL;
 
@@ -110,7 +112,7 @@ trie_t* trie_create(const char* wfile)
   buffer[file_size] = '\0';
 
 
-  trie_t* trie = node_create();
+  trie_t* trie = trie_create();
 
   char* token = strtok(buffer, "\n");
 

@@ -69,7 +69,7 @@ wbase_t* wbase_create(char** wfiles, size_t count)
 
   for(size_t index = 0; index < count; index++)
   {
-    wbase->tries[index] = trie_create(wfiles[index]);
+    wbase->tries[index] = trie_load(wfiles[index]);
   }
 
   return wbase;
