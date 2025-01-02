@@ -25,3 +25,15 @@ X X . i       X X . i
 # . . s  -->  # . . s
 . .           . . X X
 ```
+
+## Default Models
+
+* `kvartetten.model` Four small 9x11 grids around a small image in the middle
+
+* `large1.model` Large 18x23 grid with an image in the top left corner
+
+* `large2.model` Large 18x23 grid with an image in the top right corner
+
+* `small1.model` Small 18x11 grid with an image in the top left corner
+
+* `small2.model` Small 18x11 grid with an image in the top center

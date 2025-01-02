@@ -3,8 +3,8 @@
 !README.md
 
 # Models
-!standard/
-!standard/*
-
-!kvartetten/
-!kvartetten/*
+!kvartetten.model
+!large1.model
+!large2.model
+!small1.model
+!small2.model

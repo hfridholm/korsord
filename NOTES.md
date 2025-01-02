@@ -5,6 +5,7 @@
 - write in README.md
 
 ## Quick Fixes
+- export used words (same as result.words), but append to used.words file
 - README.md in source/ explain the algorithm and refrence function names
 - write about the default models
 - write about makefile and scripts in binary
