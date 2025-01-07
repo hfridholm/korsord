@@ -53,7 +53,7 @@ DEBUG_FILES := vgcore* gmon.out profile.txt debug.log
 BINARY_FILES := $(addprefix $(BINARY_DIR)/, $(DEBUG_FILES) $(PROGRAM)) 
 
 $(CLEAN_TARGET):
-	truncate -s 0 $(BINARY_DIR)/output.txt
+	truncate -s 0 $(BINARY_DIR)/output.log
 	$(DELETE_CMD) $(OBJECT_DIR)/*.o $(BINARY_FILES)
 
 $(HELP_TARGET):

@@ -525,7 +525,7 @@ int main(int argc, char* argv[])
   
   if(args.ncurses)
   {
-    args.output = "output.txt";
+    args.output = "output.log";
   }
 
   if(args.output)
