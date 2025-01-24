@@ -1,7 +1,5 @@
 /*
  * k-grid-curr.h - declarations of current grid functions
- *
- * Written by Hampus Fridholm
  */
 
 #ifndef K_GRID_CURR_H

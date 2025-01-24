@@ -1,15 +1,21 @@
 /*
- *
+ * k-wbase-words.c - search for words in trie
  */
 
 #include "k-wbase.h"
 #include "k-wbase-intern.h"
 
+#include "k-grid-intern.h"
+
 // __builtin_clz counts the leading zeros, so the bit length is:
 #define CAPACITY(n) (1 << (sizeof(n) * 8 - __builtin_clz(n)))
 
 /*
+ * Append word in word array
  *
+ * RETURN (int status)
+ * - 0 | Success
+ * - 1 | Failed to allocate memory
  */
 static int word_append(char*** words, size_t* count, char* word)
 {
@@ -28,7 +34,7 @@ static int word_append(char*** words, size_t* count, char* word)
 }
 
 /*
- *
+ * Free memory of allocated word array
  */
 void words_free(char*** words, size_t count)
 {
@@ -45,7 +51,7 @@ void words_free(char*** words, size_t count)
 }
 
 /*
- *
+ * Shuffle word array
  */
 void words_shuffle(char** words, size_t count)
 {
@@ -62,6 +68,88 @@ void words_shuffle(char** words, size_t count)
 }
 
 /*
+ * Get the words in grid
+ *
+ * The function allocates an array of words, which has to be freed
+ *
+ * RETURN (int status)
+ * - 0 | Success
+ * - 1 | Bad input
+ */
+int grid_words_get(char*** words, size_t* count, grid_t* grid)
+{
+  if(!words || !count || !grid) return 1;
+
+  // Identify vertical words and remember them
+  for(int x = 3; x < (grid->width + 4); x++)
+  {
+    char word[grid->height + 1];
+    int  length = 0;
+
+    for(int y = 3; y < (grid->height + 4); y++)
+    {
+      square_t* square = xy_real_square_get(grid, x, y);
+
+      if(square->type == SQUARE_EMPTY)
+      {
+        length = 0;
+      }
+      else if(square->type == SQUARE_BLOCK || square->type == SQUARE_BORDER)
+      {
+        if(length > 1)
+        {
+          word[length++] = '\0';
+
+          word_append(words, count, word);
+        }
+
+        length = 0;
+      }
+      else if(square->type == SQUARE_LETTER)
+      {
+        word[length++] = square->letter;
+      }
+    }
+  }
+
+  // Identify horizontal words and remember them
+  for(int y = 2; y < (grid->height + 4); y++)
+  {
+    char word[grid->width + 1];
+    int  length = 0;
+
+    for(int x = 2; x < (grid->width + 4); x++)
+    {
+      square_t* square = xy_real_square_get(grid, x, y);
+
+      if(square->type == SQUARE_EMPTY)
+      {
+        length = 0;
+      }
+      else if(square->type == SQUARE_BLOCK || square->type == SQUARE_BORDER)
+      {
+        if(length > 1)
+        {
+          word[length++] = '\0';
+
+          word_append(words, count, word);
+        }
+
+        length = 0;
+      }
+      else if(square->type == SQUARE_LETTER)
+      {
+        word[length++] = square->letter;
+      }
+    }
+  }
+
+  return 0;
+}
+
+/*
+ * Recursive word search function
+ *
  * EXPECTS:
  * - words are either allocated or NULL
  * - count is defined as an integer
@@ -122,7 +210,9 @@ static void _words_search(char*** words, size_t* count, node_t* node, const char
 }
 
 /*
+ * Search words that matches specific pattern
  *
+ * Maybe: remove args checking and add EXPECTS
  */
 int words_search(char*** words, size_t* count, trie_t* trie, const char* pattern)
 {
@@ -134,6 +224,8 @@ int words_search(char*** words, size_t* count, trie_t* trie, const char* pattern
 }
 
 /*
+ * Recursive function for counting existing words
+ *
  * RETURN (int amount)
  */
 static int _words_exist_for_pattern(node_t* node, const char* pattern, int index, char* word, int max_amount)
@@ -195,7 +287,11 @@ static int _words_exist_for_pattern(node_t* node, const char* pattern, int index
 }
 
 /*
+ * Count how many words exist for pattern
+ *
  * RETURN (int amount)
+ * - min | 0
+ * - max | max_amount
  */
 static int words_exist_for_pattern(trie_t* trie, const char* pattern, int max_amount)
 {
@@ -205,22 +301,29 @@ static int words_exist_for_pattern(trie_t* trie, const char* pattern, int max_am
 }
 
 /*
+ * Count how many words in word base exist for pattern
+ *
  * RETURN (int amount)
+ * - min | 0
+ * - max | max_amount
  */
 int wbase_words_exist_for_pattern(wbase_t* wbase, const char* pattern, int max_amount)
 {
   int amount = 0;
 
-  amount += words_exist_for_pattern(wbase->primary, pattern, max_amount - amount);
+  for(size_t index = 0; index < wbase->count; index++)
+  {
+    amount += words_exist_for_pattern(wbase->tries[index], pattern, max_amount - amount);
 
-  if(amount >= max_amount) return max_amount;
+    if(amount >= max_amount) return max_amount;
+  }
 
-  amount += words_exist_for_pattern(wbase->backup,  pattern, max_amount - amount);
-
-  return MIN(amount, max_amount);
+  return amount;
 }
 
 /*
+ * Recursive function for checking if a word exists for pattern
+ *
  * RETURN (bool does_exist)
  */
 static bool _word_exists_for_pattern(node_t* node, const char* pattern, int index, char* word)
@@ -228,7 +331,6 @@ static bool _word_exists_for_pattern(node_t* node, const char* pattern, int inde
   // Base case - the end of the word
   if(pattern[index] == '\0')
   {
-    // return (node->is_end_of_word && !node->is_used);
     return node->is_end_of_word;
   }
 
@@ -277,6 +379,8 @@ static bool _word_exists_for_pattern(node_t* node, const char* pattern, int inde
 }
 
 /*
+ * Check if a word exists for pattern
+ *
  * RETURN (bool does_exist)
  */
 static bool word_exists_for_pattern(trie_t* trie, const char* pattern)
@@ -287,18 +391,18 @@ static bool word_exists_for_pattern(trie_t* trie, const char* pattern)
 }
 
 /*
+ * Check if a word in word base exists for pattern
+ *
  * RETURN (bool does_exist)
  */
 bool wbase_word_exists_for_pattern(wbase_t* wbase, const char* pattern)
 {
-  if(word_exists_for_pattern(wbase->primary, pattern))
+  for(size_t index = 0; index < wbase->count; index++)
   {
-    return true;
-  }
-
-  if(word_exists_for_pattern(wbase->backup, pattern))
-  {
-    return true;
+    if(word_exists_for_pattern(wbase->tries[index], pattern))
+    {
+      return true;
+    }
   }
 
   return false;

@@ -1,7 +1,5 @@
 /*
  * k-wbase-intern.h - intern declarations in k-wbase
- *
- * Written by Hampus Fridholm
  */
 
 #ifndef K_WBASE_INTERN_H
@@ -18,7 +16,7 @@
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
-#define ALPHABET_SIZE 29
+#define ALPHABET_SIZE 26
 
 typedef struct node_t node_t;
 
@@ -30,13 +28,6 @@ typedef struct node_t
   bool    is_end_of_word;
   bool    is_used;
 } node_t;
-
-
-extern trie_t* trie_create(const char* filepath, int max_length);
-
-extern void    trie_reset(trie_t* trie);
-
-extern void    trie_free(trie_t** trie);
 
 
 extern void trie_word_use(trie_t* trie, const char* word);

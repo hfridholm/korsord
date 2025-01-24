@@ -1,0 +1,8 @@
+*
+!.gitignore
+!ordlista.py
+!README.md
+
+# Words
+!svenska/
+!svenska/*

@@ -1,11 +1,11 @@
 /*
- * k-grid-gword.c - grid word
- *
- * Written by Hampus Fridholm
+ * k-grid-gword.c - grid word functions
  */
 
 #include "k-grid.h"
 #include "k-grid-intern.h"
+
+#include "k-grid-span.h"
 
 #include "k-wbase.h"
 
@@ -106,7 +106,7 @@ static int gwords_search(gword_t** gwords, size_t* count, trie_t* trie, const ch
 }
 
 /*
- *
+ * Get the full pattern of a horizontal line
  */
 int horiz_full_pattern_get(char* pattern, grid_t* grid, int y)
 {
@@ -125,133 +125,89 @@ int horiz_full_pattern_get(char* pattern, grid_t* grid, int y)
 }
 
 /*
- *
+ * This struct is only used by these internal functions
  */
-bool horiz_start_xs_get(int* start_xs, int* count, grid_t* grid, int cross_x, int cross_y)
+typedef struct gwords_t
 {
-  bool is_blocked = true;
+  gword_t* gwords;
+  size_t   count;
+} gwords_t;
 
-  for(int start_x = (cross_x + 1); start_x-- > 0;)
+/*
+ * Search grid words from an array of word bases
+ */
+static void gwords_array_search(size_t* total_count, gwords_t* gwords_array, wbase_t* wbase, const char* pattern, int start, int stop)
+{
+  for(size_t index = 0; index < wbase->count; index++)
   {
-    if(xy_square_is_blocking(grid, start_x, cross_y)) break;
+    gword_t** curr_gwords = &gwords_array[index].gwords;
+    size_t*   curr_count  = &gwords_array[index].count;
 
-    if(start_x < cross_x) is_blocked = false;
+    size_t old_count = *curr_count;
 
+    trie_t* curr_trie = wbase->tries[index];
 
-    if(start_x > 0)
-    {
-      if(!block_is_allowed(grid, start_x - 1, cross_y)) continue;
-    }
+    gwords_search(curr_gwords, curr_count, curr_trie, pattern, start, stop);
 
-    start_xs[(*count)++] = start_x;
+    // Increase total_count by how many gwords was added
+    *total_count += (*curr_count - old_count);
   }
-
-  return is_blocked;
 }
 
 /*
- *
+ * Shuffle an array of grid words
  */
-bool horiz_stop_xs_get(int* stop_xs, int* count, grid_t* grid, int cross_x, int cross_y)
+static void gwords_array_shuffle(gwords_t* gwords_array, size_t count)
 {
-  bool is_blocked = true;
-
-  for(int stop_x = cross_x; stop_x < grid->width; stop_x++)
+  for(size_t index = 0; index < count; index++)
   {
-    if(xy_square_is_blocking(grid, stop_x, cross_y)) break;
+    gword_t* curr_gwords = gwords_array[index].gwords;
+    size_t   curr_count  = gwords_array[index].count;
 
-    if(stop_x > cross_x) is_blocked = false;
-
-
-    if(stop_x < (grid->width - 1))
-    {
-      if(!block_is_allowed(grid, stop_x + 1, cross_y)) continue;
-    }
-
-    stop_xs[(*count)++] = stop_x;
+    gwords_shuffle(curr_gwords, curr_count);
   }
-
-  return is_blocked;
 }
 
 /*
- * Get horizontal start xs which don't break vertical words
+ * Merge array of grid words together to one array of grid words
  *
- * These start xs are ONLY used for horiz_gwords_get,
- * otherwise a loop would occour, because
- * horiz_block_brakes_words uses horiz_start_xs_get
+ * Only free the pointer to the merged grid words arrays,
+ * as the actual words is still being used
  */
-static bool horiz_non_break_start_xs_get(int* start_xs, int* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
+static void gwords_array_merge(gword_t* gwords, gwords_t* gwords_array, size_t count)
 {
-  int temp_start_xs[cross_x + 1];
-  int temp_count = 0;
+  gword_t* pointer = gwords;
 
-  // 1. Get start xs
-  if(horiz_start_xs_get(temp_start_xs, &temp_count, grid, cross_x, cross_y))
+  for(size_t index = 0; index < count; index++)
   {
-    memcpy(start_xs, temp_start_xs, sizeof(int) * temp_count);
+    gword_t* curr_gwords = gwords_array[index].gwords;
+    size_t   curr_count  = gwords_array[index].count;
 
-    *count = temp_count;
+    memcpy(pointer, curr_gwords, sizeof(gword_t) * curr_count);
 
-    return true; // Is blocked
+    pointer += curr_count;
+
+    free(curr_gwords);
   }
-
-  // 2. Only keep the start ys that don't break words in two
-  for(int index = 0; index < temp_count; index++)
-  {
-    int start_x = temp_start_xs[index];
-
-    if ((start_x == 0) ||
-        !horiz_start_block_brakes_words(wbase, grid, start_x - 1, cross_y))
-    {
-      start_xs[(*count)++] = start_x;
-    }
-  }
-
-  return false; // Is not blocked
 }
 
 /*
- * Get horizontal stop xs which don't break vertical words
+ * Free the grid words array and all the words
  *
- * These stop xs are ONLY used for horiz_gwords_get,
- * otherwise a loop would occour, because
- * horiz_block_brakes_words uses horiz_stop_xs_get
+ * in case of the memory allocation to gwords failed
  */
-static bool horiz_non_break_stop_xs_get(int* stop_xs, int* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
+static void gwords_array_free(gwords_t* gwords_array, size_t count)
 {
-  int temp_stop_xs[grid->width - cross_x];
-  int temp_count = 0;
-
-  // 1. Get stop xs
-  if(horiz_stop_xs_get(temp_stop_xs, &temp_count, grid, cross_x, cross_y))
+  for(size_t index = 0; index < count; index++)
   {
-    memcpy(stop_xs, temp_stop_xs, sizeof(int) * temp_count);
+    gwords_t gwords = gwords_array[index];
 
-    *count = temp_count;
-
-    return true; // Is blocked
+    gwords_free(&gwords.gwords, gwords.count);
   }
-
-  // 2. Only keep the stop xs that don't break words in two
-  *count = 0;
-
-  for(int index = 0; index < temp_count; index++)
-  {
-    int stop_x = temp_stop_xs[index];
-
-    if ((stop_x == (grid->width - 1)) ||
-        !horiz_stop_block_brakes_words(wbase, grid, stop_x + 1, cross_y))
-    {
-      stop_xs[(*count)++] = stop_x;
-    }
-  }
-
-  return false; // Is not blocked
 }
 
 /*
- *
+ * Get the horizontal grid words through cross x, y
  */
 int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 {
@@ -281,11 +237,11 @@ int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gr
   }
 
 
-  gword_t* primary_gwords = NULL;
-  size_t primary_count = 0;
+  gwords_t gwords_array[wbase->count];
+  memset(gwords_array, 0, sizeof(gwords_t) * wbase->count);
 
-  gword_t* backup_gwords = NULL;
-  size_t backup_count = 0;
+
+  size_t total_count = 0;
 
   char pattern[grid->width + 1];
 
@@ -304,44 +260,38 @@ int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gr
       // Create current pattern
       sprintf(pattern, "%.*s", length, full_pattern + start_x);
 
-      gwords_search(&primary_gwords, &primary_count, wbase->primary, pattern, start_x, stop_x);
-
-      gwords_search(&backup_gwords, &backup_count, wbase->backup, pattern, start_x, stop_x);
+      gwords_array_search(&total_count, gwords_array, wbase, pattern, start_x, stop_x);
     }
   }
 
-  if(primary_count == 0 && backup_count == 0)
+  if(total_count == 0)
   {
-    // No words was found
     return GWORDS_NO_WORDS;
   }
 
+  // 2. Suffle word lists seperately
+  gwords_array_shuffle(gwords_array, wbase->count);
 
-  // 2. Shuffle the two word lists seperately
-  gwords_shuffle(primary_gwords, primary_count);
+  // 3. Concatonate shuffled lists
+  gword_t* new_gwords = malloc(sizeof(gword_t) * total_count);
 
-  gwords_shuffle(backup_gwords,  backup_count);
+  if(!new_gwords)
+  {
+    gwords_array_free(gwords_array, wbase->count);
 
-  // 3. Concatonate the two shuffled lists
-  *count = (primary_count + backup_count);
+    return GWORDS_FAIL;
+  }
 
-  *gwords = malloc(sizeof(gword_t) * *count);
+  *gwords = new_gwords;
+  *count  = total_count;
 
-  memcpy(*gwords, primary_gwords, sizeof(gword_t) * primary_count);
-
-  memcpy(*gwords + primary_count, backup_gwords, sizeof(gword_t) * backup_count);
-
-  // Only free the pointer to the arrays,
-  // because the conntent pointers is being reused by gwords
-  free(primary_gwords);
-
-  free(backup_gwords);
+  gwords_array_merge(*gwords, gwords_array, wbase->count);
 
   return GWORDS_DONE;
 }
 
 /*
- *
+ * Get the full pattern of a vertical line
  */
 int vert_full_pattern_get(char* pattern, grid_t* grid, int x)
 {
@@ -360,134 +310,7 @@ int vert_full_pattern_get(char* pattern, grid_t* grid, int x)
 }
 
 /*
- *
- */
-bool vert_start_ys_get(int* start_ys, int* count, grid_t* grid, int cross_x, int cross_y)
-{
-  bool is_blocked = true;
-
-  for(int start_y = (cross_y + 1); start_y-- > 0;)
-  {
-    if(xy_square_is_blocking(grid, cross_x, start_y)) break;
-
-    if(start_y < cross_y) is_blocked = false;
-
-
-    if(start_y > 0)
-    {
-      if(!block_is_allowed(grid, cross_x, start_y - 1)) continue;
-    }
-
-    start_ys[(*count)++] = start_y;
-  }
-
-  return is_blocked;
-}
-
-/*
- * RETURN (bool is_blocked)
- * - true | It is blocked downwards
- */
-bool vert_stop_ys_get(int* stop_ys, int* count, grid_t* grid, int cross_x, int cross_y)
-{
-  bool is_blocked = true;
-
-  for(int stop_y = cross_y; stop_y < grid->height; stop_y++)
-  {
-    if(xy_square_is_blocking(grid, cross_x, stop_y)) break;
-
-    if(stop_y > cross_y) is_blocked = false;
-
-
-    if(stop_y < (grid->height - 1))
-    {
-      if(!block_is_allowed(grid, cross_x, stop_y + 1)) continue;
-    }
-
-    stop_ys[(*count)++] = stop_y;
-  }
-
-  return is_blocked;
-}
-
-/*
- * Get vertical start ys which don't break horizontal words
- *
- * These start ys are ONLY used for vert_gwords_get,
- * otherwise a loop would occour, because
- * vert_block_brakes_words uses vert_start_ys_get
- */
-static bool vert_non_break_start_ys_get(int* start_ys, int* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
-{
-  int temp_start_ys[cross_y + 1];
-  int temp_count = 0;
-
-  // 1. Get start ys
-  if(vert_start_ys_get(temp_start_ys, &temp_count, grid, cross_x, cross_y))
-  {
-    memcpy(start_ys, temp_start_ys, sizeof(int) * temp_count);
-
-    *count = temp_count;
-
-    return true; // Is blocked
-  }
-
-  // 2. Only keep the start ys that don't break words in two
-  for(int index = 0; index < temp_count; index++)
-  {
-    int start_y = temp_start_ys[index];
-
-    if ((start_y == 0) ||
-        !vert_start_block_brakes_words(wbase, grid, cross_x, start_y - 1))
-    {
-      start_ys[(*count)++] = start_y;
-    }
-  }
-
-  return false; // Is not blocked
-}
-
-/*
- * Get vertical stop ys which don't break horizontal words
- *
- * These stop ys are ONLY used for vert_gwords_get,
- * otherwise a loop would occour, because
- * vert_block_brakes_words uses vert_stop_ys_get
- */
-static bool vert_non_break_stop_ys_get(int* stop_ys, int* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
-{
-  int temp_stop_ys[grid->height - cross_y];
-  int temp_count = 0;
-
-  // 1. Get stop ys
-  if(vert_stop_ys_get(temp_stop_ys, &temp_count, grid, cross_x, cross_y))
-  {
-    memcpy(stop_ys, temp_stop_ys, sizeof(int) * temp_count);
-
-    *count = temp_count;
-
-    return true; // Is blocked
-  }
-
-  // 2. Only keep the stop ys that don't break words in two
-  *count = 0;
-
-  for(int index = 0; index < temp_count; index++)
-  {
-    int stop_y = temp_stop_ys[index];
-
-    if ((stop_y == (grid->height - 1)) ||
-        !vert_stop_block_brakes_words(wbase, grid, cross_x, stop_y + 1))
-    {
-      stop_ys[(*count)++] = stop_y;
-    }
-  }
-
-  return false; // Is not blocked
-}
-
-/*
- *
+ * Get the vertical grid words through cross x, y
  */
 int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 {
@@ -517,11 +340,11 @@ int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gri
   }
 
 
-  gword_t* primary_gwords = NULL;
-  size_t primary_count = 0;
+  gwords_t gwords_array[wbase->count];
+  memset(gwords_array, 0, sizeof(gwords_t) * wbase->count);
 
-  gword_t* backup_gwords = NULL;
-  size_t backup_count = 0;
+
+  size_t total_count = 0;
 
   char pattern[grid->height + 1];
 
@@ -540,38 +363,32 @@ int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gri
       // Create current pattern
       sprintf(pattern, "%.*s", length, full_pattern + start_y);
 
-      gwords_search(&primary_gwords, &primary_count, wbase->primary, pattern, start_y, stop_y);
-
-      gwords_search(&backup_gwords, &backup_count, wbase->backup, pattern, start_y, stop_y);
+      gwords_array_search(&total_count, gwords_array, wbase, pattern, start_y, stop_y);
     }
   }
 
-  if(primary_count == 0 && backup_count == 0)
+  if(total_count == 0)
   {
-    // No words was found
     return GWORDS_NO_WORDS;
   }
 
-  // The following could be extracted to a function:
+  // 2. Suffle word lists seperately
+  gwords_array_shuffle(gwords_array, wbase->count);
 
+  // 3. Concatonate shuffled lists
+  gword_t* new_gwords = malloc(sizeof(gword_t) * total_count);
 
-  // 2. Shuffle the two word lists seperately
-  gwords_shuffle(primary_gwords, primary_count);
+  if(!new_gwords)
+  {
+    gwords_array_free(gwords_array, wbase->count);
 
-  gwords_shuffle(backup_gwords,  backup_count);
+    return GWORDS_FAIL;
+  }
 
-  // 3. Concatonate the two shuffled lists
-  *count = (primary_count + backup_count);
+  *gwords = new_gwords;
+  *count  = total_count;
 
-  *gwords = malloc(sizeof(gword_t) * *count);
-
-  memcpy(*gwords, primary_gwords, sizeof(gword_t) * primary_count);
-
-  memcpy(*gwords + primary_count, backup_gwords, sizeof(gword_t) * backup_count);
-
-  free(primary_gwords);
-
-  free(backup_gwords);
+  gwords_array_merge(*gwords, gwords_array, wbase->count);
 
   return GWORDS_DONE;
 }

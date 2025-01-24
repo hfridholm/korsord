@@ -4,12 +4,11 @@
  * Written by Hampus Fridholm
  */
 
-#define _GNU_SOURCE
-#include <sched.h>
-#include <pthread.h>
-
 #define DEBUG_IMPLEMENT
 #include "debug.h"
+
+#define FILE_IMPLEMENT
+#include "file.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -19,11 +18,11 @@
 #include <unistd.h>
 #include <argp.h>
 #include <ncurses.h>
+#include <pthread.h>
 
 #include "k-grid.h"
 #include "k-wbase.h"
 #include "k-stats.h"
-#include "k-file.h"
 
 #include "k-grid-curr.h"
 #include "k-grid-best.h"
@@ -33,56 +32,76 @@ bool is_running = false;
 #define INPUT_DELAY 100000
 
 extern int MAX_CROWD_AMOUNT;
-
+extern int MAX_WORD_LENGTH;
 extern int MAX_EXIST_AMOUNT;
+extern int HALF_WORD_AMOUNT;
+extern int PREP_EMPTY_CHANCE;
 
 
 static char doc[] = "korsord - swedish crossword generator";
 
-static char args_doc[] = "[MODEL]";
+static char args_doc[] = "[MODEL] [WORDS...]";
 
 static struct argp_option options[] =
 {
-  { "primary",  'p', "FILE",   0, "Primary words file" },
-  { "backup",   'b', "FILE",   0, "Backup words file" },
   { "visual",   'v', 0,        0, "Visualize generation" },
   { "interact", 'i', 0,        0, "Enter interactive mode" },
-  { "debug",    'd', 0,        0, "Print debug messages" },
   { "output",   'o', "FILE",   0, "Output debug to file" },
-  { "result",   'r', "FILE",   0, "Save result to file" },
+  { "used",     'u', "FILE",   0, "Disregard used words" },
   { "fps",      'f', "AMOUNT", 0, "Frames per second" },
   { "length",   'l', "LENGTH", 0, "Max length of words" },
   { "crowd",    'c', "AMOUNT", 0, "Max amount of nerby blocks" },
   { "exist",    'e', "AMOUNT", 0, "Amount of precission" },
+  { "half",     'h', "AMOUNT", 0, "Progress preserve amount" },
+  { "prep",     'p', "AMOUNT", 0, "Prepare empty procentage" },
   { 0 }
 };
 
 struct args
 {
-  char* model;
-  char* primary;
-  char* backup;
-  bool  visual;
-  bool  ncurses;
-  int   fps;
-  int   length;
-  char* output;
-  char* result;
+  char*  model;
+  char** wfiles;
+  size_t wfile_count;
+  char*  used_wfile;
+  bool   visual;
+  bool   ncurses;
+  int    fps;
+  char*  output;
 };
 
 // Default values of korsord arguments
 struct args args =
 {
-  .model   = NULL,
-  .primary = NULL,
-  .backup  = "../assets/backup.words",
-  .visual  = false,
-  .ncurses = false,
-  .fps     = 1,
-  .length  = 10,
-  .output  = NULL,
-  .result  = NULL
+  .model       = NULL,
+  .wfiles      = NULL,
+  .wfile_count = 0,
+  .visual      = false,
+  .ncurses     = false,
+  .fps         = 1,
+  .output      = NULL
 };
+
+// __builtin_clz counts the leading zeros, so the bit length is:
+#define CAPACITY(n) (1 << (sizeof(n) * 8 - __builtin_clz(n)))
+
+/*
+ * Append word file to array of word files
+ */
+static int wfile_append(char*** wfiles, size_t* count, char* wfile)
+{
+  if(*count == 0 || ((*count) + 1) >= CAPACITY(*count))
+  {
+    char** new_wfiles = realloc(*wfiles, sizeof(char*) * CAPACITY((*count) + 1));
+
+    if(!new_wfiles) return 1;
+
+    *wfiles = new_wfiles;
+  }
+
+  (*wfiles)[(*count)++] = wfile;
+
+  return 0;
+}
 
 /*
  * This is the option parsing function used by argp
@@ -108,6 +127,19 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
 
       break;
 
+    case 'p':
+      if(!arg || *arg == '-') argp_usage(state);
+
+      number = atoi(arg);
+
+      if(number >= 0 && number <= 100)
+      {
+        PREP_EMPTY_CHANCE = number;
+      }
+      else argp_usage(state);
+
+      break;
+
     case 'c':
       if(!arg || *arg == '-') argp_usage(state);
 
@@ -116,6 +148,19 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
       if(number >= 1 && number <= 7)
       {
         MAX_CROWD_AMOUNT = number;
+      }
+      else argp_usage(state);
+
+      break;
+
+    case 'h':
+      if(!arg || *arg == '-') argp_usage(state);
+
+      number = atoi(arg);
+
+      if(number >= 1)
+      {
+        HALF_WORD_AMOUNT = number;
       }
       else argp_usage(state);
 
@@ -141,7 +186,7 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
 
       if(number >= 1)
       {
-        args->length = number;
+        MAX_WORD_LENGTH = number;
       }
       else argp_usage(state);
 
@@ -151,20 +196,10 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
       args->visual = true;
       break;
 
-    case 'd':
-      args->ncurses = false;
-      break;
-
     case 'i':
       args->ncurses = true;
 
       args->visual = true;
-      break;
-
-    case 'p':
-      if(!arg || *arg == '-') argp_usage(state);
-
-      args->primary = arg;
       break;
 
     case 'o':
@@ -173,26 +208,25 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
       args->output = arg;
       break;
 
-    case 'r':
+    case 'u':
       if(!arg || *arg == '-') argp_usage(state);
 
-      args->result = arg;
-      break;
-
-    case 'b':
-      if(!arg || *arg == '-') argp_usage(state);
-
-      args->backup = arg;
+      args->used_wfile = arg;
       break;
 
     case ARGP_KEY_ARG:
-      if(state->arg_num >= 1) argp_usage(state);
-
-      args->model = arg;
+      if(state->arg_num > 0)
+      {
+        wfile_append(&args->wfiles, &args->wfile_count, arg);
+      }
+      else
+      {
+        args->model = arg;
+      }
       break;
 
     case ARGP_KEY_END:
-      if(state->arg_num < 1) argp_usage(state);
+      if(state->arg_num < 2) argp_usage(state);
       break;
 
     default:
@@ -203,30 +237,7 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
 }
 
 /*
- * core_id = 0, 1, ... n-1, where n is the system's number of cores
- *
- * https://stackoverflow.com/questions/1407786/how-to-set-cpu-affinity-of-a-particular-pthread
- *
- * Maybe use this function in the future
- */
-static int stick_this_thread_to_core(int core_id) 
-{
-  int num_cores = sysconf(_SC_NPROCESSORS_ONLN);
-
-  if (core_id < 0 || core_id >= num_cores)
-  {
-    return EINVAL;
-  }
-
-  cpu_set_t cpuset;
-  CPU_ZERO(&cpuset);
-  CPU_SET(core_id, &cpuset);
-
-  return pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
-}
-
-/*
- *
+ * Routine for async printing of grid
  */
 static void* print_routine(void* arg)
 {
@@ -240,7 +251,7 @@ static void* print_routine(void* arg)
   {
     if(args.ncurses)
     {
-      clear();
+      erase();
 
       best_grid_ncurses_print();
       curr_grid_ncurses_print();
@@ -307,9 +318,9 @@ static int ncurses_init(void)
   init_pair(2, COLOR_WHITE, COLOR_BLACK);
   init_pair(3, COLOR_BLUE,  COLOR_BLACK);
   init_pair(4, COLOR_RED,   COLOR_BLACK);
-  init_pair(5, COLOR_RED,  COLOR_BLACK);
+  init_pair(5, COLOR_RED,   COLOR_BLACK);
 
-  clear();
+  erase();
   refresh();
 
   info_print("Initialized ncurses");
@@ -344,34 +355,51 @@ static void ncurses_free(void)
  */
 static void* gen_routine(void* wbase)
 {
-  info_print("Generating grid");
-
   // 1. Un-using every word in word base
   wbase_reset(wbase);
 
+  curr_grid_set(NULL);
+  best_grid_set(NULL);
+
+
+  // 2. Generate grid
+  info_print("Generating grid");
+
   grid_t* grid = grid_gen(wbase, args.model);
 
-  curr_grid_set(grid);
-
-  grid_free(&grid);
-
-  info_print("Generated grid");
-
-
-  if(args.result)
+  if(grid)
   {
-    info_print("Saving result");
+    curr_grid_set(grid);
+    best_grid_set(grid);
 
-    // Call saving code here
+    info_print("Generated grid");
 
-    info_print("Saved result");
+
+    // 3. Export result to file
+    info_print("Exporting results");
+
+    grid_export(grid);
+
+    grid_words_export(grid);
+
+    used_words_export(grid);
+
+    info_print("Exported results");
+
+
+    // 4. Free grid
+    grid_free(&grid);
+  }
+  else
+  {
+    error_print("Generation failed");
   }
 
   return NULL;
 }
 
 /*
- *
+ * Routine for interactivly generating crossword grids using ncurses
  */
 static void interact_routine(wbase_t* wbase)
 {
@@ -483,6 +511,9 @@ static struct argp argp = { options, opt_parse, args_doc, doc };
 /*
  * RETURN (int status)
  * - 0 | Success
+ *
+ * Note: Refactor this into step functions
+ * (now the freeing at error is crazy)
  */
 int main(int argc, char* argv[])
 {
@@ -491,8 +522,11 @@ int main(int argc, char* argv[])
   signal(SIGINT, stop_handler);
 
   // srand(time(NULL));
-
-  if(args.ncurses) args.output = "output.txt";
+  
+  if(args.ncurses)
+  {
+    args.output = "output.log";
+  }
 
   if(args.output)
   {
@@ -517,6 +551,36 @@ int main(int argc, char* argv[])
   }
 
 
+  info_print("Creating word base");
+
+  // 1. Load the word bases
+  wbase_t* wbase = wbase_create(args.wfiles, args.wfile_count);
+
+  if(!wbase)
+  {
+    perror("Failed to create word base");
+
+    ncurses_free();
+    
+    debug_file_close();
+
+    free(args.wfiles);
+
+    return 3;
+  }
+
+  info_print("Created word base");
+
+
+  info_print("Loading used words");
+
+  trie_t* used_words = trie_load(args.used_wfile);
+
+  if(!used_words) used_words = trie_create();
+
+  info_print("Loaded used words");
+
+
   curr_grid_init();
   best_grid_init();
 
@@ -533,24 +597,15 @@ int main(int argc, char* argv[])
 
     ncurses_free();
 
+    wbase_free(&wbase);
+
+    curr_grid_free();
+    best_grid_free();
+    
+    stats_free();
+
     return 1;
   }
-
-  info_print("Creating word base");
-
-  // 1. Load the word bases
-  wbase_t* wbase = wbase_create(args.primary, args.backup, args.length);
-
-  if(!wbase)
-  {
-    perror("Failed to create word base");
-
-    ncurses_free();
-    
-    return 2;
-  }
-
-  info_print("Created word base");
 
 
   // Enter the main routine (main loop)
@@ -572,6 +627,8 @@ int main(int argc, char* argv[])
   pthread_join(thread, NULL);
 
 
+  trie_free(&used_words);
+
   wbase_free(&wbase);
 
 
@@ -589,6 +646,8 @@ int main(int argc, char* argv[])
   info_print("Stop main");
 
   debug_file_close();
+
+  free(args.wfiles);
 
   return 0;
 }

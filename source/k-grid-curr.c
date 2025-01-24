@@ -1,7 +1,5 @@
 /*
  * k-grid-curr.c - manipulate current grid
- *
- * Written by Hampus Fridholm
  */
 
 #include "k-grid.h"
@@ -82,8 +80,8 @@ void curr_grid_ncurses_print(void)
     int h = getmaxy(stdscr);
     int w = getmaxx(stdscr);
 
-    int start_x = (w / 2) + MAX(0, ((w / 2) - (curr_grid->width  + 2) * 2) / 2);
-    int start_y = MAX(0, (h - (curr_grid->height + 2)) / 2);
+    int start_x = (w / 2) + MAX(0, ((w / 2) - curr_grid->width * 2) / 2);
+    int start_y =           MAX(0, (h -       curr_grid->height   ) / 2);
 
     grid_ncurses_print(curr_grid, start_x, start_y);
   }

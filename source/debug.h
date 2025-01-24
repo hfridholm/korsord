@@ -93,7 +93,7 @@ static inline char* dbg_timestr_create(char* buffer)
 
   strftime(buffer, 10, "%H:%M:%S", timeinfo);
 
-  sprintf(buffer + 8, ".%ld", timeval.tv_usec / 10000);
+  sprintf(buffer + 8, ".%02ld", timeval.tv_usec / 10000);
 
   return buffer;
 }

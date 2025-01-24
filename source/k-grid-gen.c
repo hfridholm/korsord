@@ -1,7 +1,5 @@
 /*
  * k-grid-gen.c - generate words in grid
- *
- * Written by Hampus Fridholm
  */
 
 #include "k-grid.h"
@@ -11,6 +9,8 @@
 #include "k-grid-best.h"
 
 bool is_generating = false;
+
+int HALF_WORD_AMOUNT = 10;
 
 #define GEN_DONE 0
 #define GEN_FAIL 1
@@ -28,6 +28,8 @@ bool is_generating = false;
  */
 
 static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cross_y);
+
+static int horiz_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cross_y);
 
 /*
  * When embeding a word, new words perpendicular to it is generated
@@ -99,7 +101,9 @@ static int horiz_word_embed(wbase_t* wbase, grid_t* old_grid, const char* word, 
 static int horiz_word_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, const char* word, int x, int y)
 {
   // 1. Insert the word in the grid
-  if(horiz_word_insert(wbase, new_grid, word, x, y) == INSERT_PERFECT)
+  int insert_status = horiz_word_insert(wbase, new_grid, word, x, y);
+
+  if(insert_status == INSERT_PERFECT)
   {
     // If the word fits perfect, the crossword is solved?
     return GEN_DONE;
@@ -202,12 +206,13 @@ static int horiz_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cro
 
   int gwords_status = horiz_gwords_get(&gwords, &word_count, wbase, old_grid, cross_x, cross_y);
 
+  // info_print("horiz_gwords_get count: %d status: %d", word_count, gwords_status);
+
+
   // If the length is 1, it should be marked as crossed
   if(gwords_status == GWORDS_SINGLE)
   {
     xy_square_set_crossed(old_grid, cross_x, cross_y);
-
-    old_grid->cross_count++;
 
     return GEN_DONE;
   }
@@ -301,7 +306,9 @@ static int vert_word_embed(wbase_t* wbase, grid_t* old_grid, const char* word, i
 static int vert_word_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, const char* word, int x, int y)
 {
   // 1. Insert the word in the grid
-  if(vert_word_insert(wbase, new_grid, word, x, y) == INSERT_PERFECT)
+  int insert_status = vert_word_insert(wbase, new_grid, word, x, y);
+
+  if(insert_status == INSERT_PERFECT)
   {
     // If the word fits perfect, the crossword is solved?
     return GEN_DONE;
@@ -382,7 +389,6 @@ static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cros
 
 
   curr_grid_set(old_grid);
-
   // curr_grid_print();
   // usleep(1000000);
 
@@ -404,14 +410,13 @@ static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cros
 
   int gwords_status = vert_gwords_get(&gwords, &word_count, wbase, old_grid, cross_x, cross_y);
 
-  // info_print("vert_gwords_get count: %d", word_count);
+  // info_print("vert_gwords_get count: %d status: %d", word_count, gwords_status);
+
 
   // If the length is 1, it should be marked as crossed
   if(gwords_status == GWORDS_SINGLE)
   {
     xy_square_set_crossed(old_grid, cross_x, cross_y);
-
-    old_grid->cross_count++;
 
     return GEN_DONE;
   }
@@ -443,7 +448,7 @@ static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cros
 }
 
 /*
- *
+ * Generate crossword grid
  */
 grid_t* grid_gen(wbase_t* wbase, const char* filepath)
 {
@@ -453,37 +458,35 @@ grid_t* grid_gen(wbase_t* wbase, const char* filepath)
   if(!grid) return NULL;
 
   // 2. Prepare the grid for generation
-  grid_prep(grid);
-
-  best_grid_set(grid);
+  grid_prep(wbase, grid);
 
   is_generating = true;
 
-  for(int index = 0; index < grid->square_count; index++)
+  for(int x = 0; (x < grid->width) && is_generating; x++)
   {
-    int x = (index % grid->width);
-    int y = (index / grid->width);
-
-    if(xy_square_is_done(grid, x, y)) continue;
-      
-    int gen_status = vert_word_gen(wbase, grid, x, y);
-
-    if(gen_status == GEN_STOP)
+    for(int y = 0; (y < grid->height) && is_generating; y++)
     {
-      error_print("Generation stopped");
-      break;
-    }
+      if(xy_square_is_done(grid, x, y)) continue;
+        
+      int gen_status = vert_word_gen(wbase, grid, x, y);
 
-    if(gen_status == GEN_FAIL)
-    {
-      error_print("Generation failed");
-      break;
+      if(gen_status == GEN_STOP)
+      {
+        grid_free(&grid);
+
+        return NULL;
+      }
+
+      if(gen_status == GEN_FAIL)
+      {
+        grid_free(&grid);
+
+        return NULL;
+      }
     }
   }
 
   is_generating = false;
-
-  curr_grid_set(grid);
 
   return grid;
 }

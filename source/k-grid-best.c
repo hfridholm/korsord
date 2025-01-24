@@ -1,7 +1,5 @@
 /*
  * k-grid-best.c - manipulate best grid
- *
- * Written by Hampus Fridholm
  */
 
 #include "k-grid.h"
@@ -15,6 +13,8 @@ grid_t* best_grid = NULL;
 
 /*
  * Get the cross_count of best grid
+ *
+ * RETURN (int cross_count)
  */
 int best_grid_cross_count_get(void)
 {
@@ -37,7 +37,7 @@ int best_grid_cross_count_get(void)
 }
 
 /*
- * Set the bestent grid equal to grid
+ * Set the best grid equal to grid
  *
  * The function just copies the content, not the variable
  */
@@ -105,8 +105,8 @@ void best_grid_ncurses_print(void)
     int h = getmaxy(stdscr);
     int w = getmaxx(stdscr);
 
-    int start_x = MAX(0, ((w / 2) - (best_grid->width  + 2) * 2) / 2);
-    int start_y = MAX(0, (h - (best_grid->height + 2)) / 2);
+    int start_x = MAX(0, ((w / 2) - best_grid->width * 2) / 2);
+    int start_y = MAX(0, (h       - best_grid->height   ) / 2);
 
     grid_ncurses_print(best_grid, start_x, start_y);
   }

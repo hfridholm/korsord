@@ -1,8 +1,12 @@
 *
 !.gitignore
+!README.md
 !makefile
-!models
-!words
+
+# Shell scripts
 !debug.sh
 !valgrind.sh
-!interact.sh
+
+# Python scripts
+!render.py
+!clues.py

@@ -1,22 +1,18 @@
 /*
  * k-wbase-trie.c - get words that matches a pattern
- *
- * Written by Hampus Fridholm
- *
- * FUNCTIONS:
- *
- * trie_t* trie_create(const char* filepath, int max_length)
- *
- * void    trie_free(trie_t** trie)
  */
 
 #include "k-wbase.h"
 #include "k-wbase-intern.h"
 
-#include "k-file.h"
+#include "file.h"
+
+extern int MAX_WORD_LENGTH;
+
+#define WORDS_DIR "../assets/words"
 
 /*
- *
+ * Create blank trie node
  */
 static node_t* node_create(void)
 {
@@ -25,16 +21,15 @@ static node_t* node_create(void)
   node->is_end_of_word = false;
   node->is_used = false;
 
-  for(int index = 0; index < ALPHABET_SIZE; index++)
-  {
-    node->children[index] = NULL;
-  }
+  memset(node->children, 0, sizeof(node_t*) * ALPHABET_SIZE);
 
   return node;
 }
 
+trie_t* trie_create(void) { return node_create(); }
+
 /*
- *
+ * Free memory of trie node
  */
 static void node_free(node_t** node)
 {
@@ -53,7 +48,7 @@ static void node_free(node_t** node)
 void trie_free(trie_t** trie) { node_free((node_t**) trie); }
 
 /*
- *
+ * Insert word in trie
  */
 static void trie_word_insert(trie_t* trie, const char* word)
 {
@@ -78,7 +73,7 @@ static void trie_word_insert(trie_t* trie, const char* word)
 }
 
 /*
- *
+ * Convert string to lowercase
  */
 static char* string_lower(char* string)
 {
@@ -93,20 +88,23 @@ static char* string_lower(char* string)
 }
 
 /*
- * Create trie struct
+ * Load words from file and create trie struct
+ *
+ * PARAMS
+ * - const char* wfile | Word file
  *
  * RETURN (trie_t* trie)
  * - NULL | Failed to read file
  */
-trie_t* trie_create(const char* filepath, int max_length)
+trie_t* trie_load(const char* wfile)
 {
-  if(!filepath) return NULL;
+  if(!wfile) return NULL;
 
-  size_t file_size = file_size_get(filepath);
+  size_t file_size = dir_file_size_get(WORDS_DIR, wfile);
 
   char* buffer = malloc(sizeof(char) * (file_size + 1));
 
-  if(file_read(buffer, file_size, filepath) == 0)
+  if(dir_file_read(buffer, file_size, WORDS_DIR, wfile) == 0)
   {
     return NULL;
   }
@@ -114,7 +112,7 @@ trie_t* trie_create(const char* filepath, int max_length)
   buffer[file_size] = '\0';
 
 
-  trie_t* trie = node_create();
+  trie_t* trie = trie_create();
 
   char* token = strtok(buffer, "\n");
 
@@ -122,7 +120,7 @@ trie_t* trie_create(const char* filepath, int max_length)
   {
     char* word = string_lower(strdup(token));
 
-    if(strlen(word) <= max_length)
+    if(strlen(word) <= MAX_WORD_LENGTH)
     {
       trie_word_insert(trie, word);
     }
@@ -138,7 +136,7 @@ trie_t* trie_create(const char* filepath, int max_length)
 }
 
 /*
- *
+ * Mark word in trie as used
  */
 void trie_word_use(trie_t* trie, const char* word)
 {
@@ -164,7 +162,7 @@ void trie_word_use(trie_t* trie, const char* word)
 }
 
 /*
- *
+ * Remove used mark of word in trie
  */
 void trie_word_unuse(trie_t* trie, const char* word)
 {
@@ -190,7 +188,7 @@ void trie_word_unuse(trie_t* trie, const char* word)
 }
 
 /*
- *
+ * Reset trie node, by removing the used mark
  */
 static void node_reset(node_t* node)
 {
@@ -205,3 +203,51 @@ static void node_reset(node_t* node)
 }
 
 void trie_reset(trie_t* trie) { node_reset((node_t*) trie); }
+
+/*
+ * Duplicate trie node
+ *
+ * RETURN (node_t* dup)
+ * - allocated node_t struct
+ */
+static node_t* node_dup(node_t* node)
+{
+  if(!node) return NULL;
+
+  node_t* dup = malloc(sizeof(node_t));
+
+  dup->is_end_of_word = node->is_end_of_word;
+  dup->is_used        = node->is_used;
+
+  for(int index = 0; index < ALPHABET_SIZE; index++)
+  {
+    dup->children[index] = node_dup(node->children[index]);
+  }
+
+  return dup;
+}
+
+trie_t* trie_dup(trie_t* trie) { return node_dup((node_t*) trie); }
+
+/*
+ * Copy trie node
+ *
+ * EXPECTS:
+ * - copy and node have the same structure
+ */
+static node_t* node_copy(node_t* copy, node_t* node)
+{
+  if(!node || !copy) return NULL;
+
+  copy->is_end_of_word = node->is_end_of_word;
+  copy->is_used        = node->is_used;
+
+  for(int index = 0; index < ALPHABET_SIZE; index++)
+  {
+    node_copy(copy->children[index], node->children[index]);
+  }
+
+  return copy;
+}
+
+trie_t* trie_copy(trie_t* copy, trie_t* trie) { return node_copy((node_t*) copy, (node_t*) trie); }

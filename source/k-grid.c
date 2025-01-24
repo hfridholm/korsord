@@ -1,11 +1,22 @@
 /*
  * k-grid.c - basic grid functions
- *
- * Written by Hampus Fridholm
  */
 
 #include "k-grid.h"
 #include "k-grid-intern.h"
+
+/*
+ * Extra SQUARE_BORDER squares are added around the grid
+ *
+ * X X X X X X X X
+ * X X X X X X X X
+ * X X X X X X X X
+ * X X X . . . X X
+ * X X X . . . X X
+ * X X X . . . X X
+ * X X X X X X X X
+ * X X X X X X X X
+ */
 
 /*
  * Create crossword grid struct
@@ -22,9 +33,7 @@ grid_t* grid_create(int width, int height)
   grid->width  = width;
   grid->height = height;
 
-  grid->square_count = (width * height);
-
-  int real_count = (width + 2) * (height + 2);
+  int real_count = (width + 5) * (height + 5);
 
   grid->squares = malloc(sizeof(square_t) * real_count);
 
@@ -38,14 +47,30 @@ grid_t* grid_create(int width, int height)
   grid->cross_count = 0;
   grid->word_count = 0;
 
-  for(int index = 0; index < real_count; index++)
+  // Initialize empty squares and border squares
+  for(int x = 0; x < (width + 5); x++)
   {
-    grid->squares[index] = (square_t)
+    for(int y = 0; y < (height + 5); y++)
     {
-      .type = SQUARE_EMPTY,
-      .letter = '\0',
-      .is_crossed = false
-    };
+      square_t* square = xy_real_square_get(grid, x, y);
+
+      *square = (square_t)
+      {
+        .letter     = '\0',
+        .is_crossed = false,
+        .is_prep    = false
+      };
+
+      if ((x >= 3) && (x < (width  + 3)) &&
+          (y >= 3) && (y < (height + 3)))
+      {
+        square->type = SQUARE_EMPTY;
+      }
+      else
+      {
+        square->type = SQUARE_BORDER;
+      }
+    }
   }
 
   return grid;
@@ -61,16 +86,19 @@ grid_t* grid_clear(grid_t* grid)
 {
   if(!grid) return NULL;
 
-  int real_count = (grid->width + 2) * (grid->height + 2);
-
-  for(int index = 0; index < real_count; index++)
+  for(int x = 0; x < grid->width; x++)
   {
-    grid->squares[index] = (square_t)
+    for(int y = 0; y < grid->height; y++)
     {
-      .type = SQUARE_EMPTY,
-      .letter = '\0',
-      .is_crossed = false
-    };
+      square_t* square = xy_square_get(grid, x, y);
+
+      *square = (square_t)
+      {
+        .type = SQUARE_EMPTY,
+        .letter = '\0',
+        .is_crossed = false
+      };
+    }
   }
 
   grid->cross_count = 0;
@@ -81,8 +109,11 @@ grid_t* grid_clear(grid_t* grid)
 
 /*
  * Copy crossword grid struct
+ * 
+ * If grid is NULL copy just gets cleared
  *
- * The copy and the grid have to be same size
+ * EXPECT:
+ * - copy and grid have the same size
  *
  * RETURN (grid_t* copy)
  * - NULL | Bad input
@@ -91,15 +122,15 @@ grid_t* grid_copy(grid_t* copy, grid_t* grid)
 {
   if(!copy) return NULL;
 
-  // If the grid is NULL, that means clearing copy
   if(!grid) return grid_clear(copy);
 
-  if(copy->square_count != grid->square_count)
+  if ((copy->width  != grid->width) ||
+      (copy->height != grid->height))
   {
     return NULL;
   }
 
-  int real_count = (grid->width + 2) * (grid->height + 2);
+  int real_count = (grid->width + 5) * (grid->height + 5);
 
   memcpy(copy->squares, grid->squares, sizeof(square_t) * real_count);
 
@@ -126,9 +157,7 @@ grid_t* grid_dup(grid_t* grid)
   dup->width  = grid->width;
   dup->height = grid->height;
 
-  dup->square_count = grid->square_count;
-
-  int real_count = (grid->width + 2) * (grid->height + 2);
+  int real_count = (grid->width + 5) * (grid->height + 5);
 
   dup->squares = malloc(sizeof(square_t) * real_count);
 

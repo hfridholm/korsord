@@ -1,12 +1,14 @@
 /*
- *
+ * k-wbase.c - word base manipulation functions
  */
 
 #include "k-wbase.h"
 #include "k-wbase-intern.h"
 
 /*
- *
+ * RETURN (char letter)
+ * - '_' | Index out of range
+ * - 'a' - 'z'
  */
 char index_letter_get(int index)
 {
@@ -19,7 +21,10 @@ char index_letter_get(int index)
 }
 
 /*
- *
+ * RETURN (int index)
+ * - -1  | Letter doesn't exist
+ * - min | 0
+ * - max | ALPHABET_SIZE - 1
  */
 int letter_index_get(char letter)
 {
@@ -34,34 +39,55 @@ int letter_index_get(char letter)
 /*
  * Create word base structure wbase
  *
+ * PARAMS
+ * - char** wfiles  | Word files
+ * - size_t count   | Number of word files
+ *
  * RETURN (wbase_t* wbase)
  * - NULL | Failed to create wbase
  */
-wbase_t* wbase_create(const char* primary_filepath, const char* backup_filepath, int max_length)
+wbase_t* wbase_create(char** wfiles, size_t count)
 {
+  if(!wfiles || count == 0) return NULL;
+
   // 1. Allocate memory for wbase
   wbase_t* wbase = malloc(sizeof(wbase_t));
 
   if(!wbase) return NULL;
 
-  // 2. Create primary and backup trie
-  wbase->primary = trie_create(primary_filepath, max_length);
+  trie_t** tries = malloc(sizeof(trie_t*) * count);
 
-  wbase->backup = trie_create(backup_filepath, max_length);
+  if(!tries)
+  {
+    free(wbase);
+
+    return NULL;
+  }
+
+  wbase->tries = tries;
+  wbase->count = count;
+
+  for(size_t index = 0; index < count; index++)
+  {
+    wbase->tries[index] = trie_load(wfiles[index]);
+  }
 
   return wbase;
 }
 
 /*
- * Free word base structure wbase
+ * Free word base struct
  */
 void wbase_free(wbase_t** wbase)
 {
   if(!wbase || !(*wbase)) return;
 
-  trie_free(&(*wbase)->primary);
+  for(size_t index = 0; index < (*wbase)->count; index++)
+  {
+    trie_free(&(*wbase)->tries[index]);
+  }
 
-  trie_free(&(*wbase)->backup);
+  free((*wbase)->tries);
 
   free(*wbase);
 
@@ -69,49 +95,34 @@ void wbase_free(wbase_t** wbase)
 }
 
 /*
- *
+ * Reset word base - remove _used mark from words
  */
 void wbase_reset(wbase_t* wbase)
 {
-  if(wbase->primary)
+  for(size_t index = 0; index < wbase->count; index++)
   {
-    trie_reset(wbase->primary);
-  }
-
-  if(wbase->backup)
-  {
-    trie_reset(wbase->backup);
+    trie_reset(wbase->tries[index]);
   }
 }
 
 /*
- *
+ * Mark word in word base as _used
  */
 void wbase_word_use(wbase_t* wbase, const char* word)
 {
-  if(wbase->primary)
+  for(size_t index = 0; index < wbase->count; index++)
   {
-    trie_word_use(wbase->primary, word);
-  }
-
-  if(wbase->backup)
-  {
-    trie_word_use(wbase->backup, word);
+    trie_word_use(wbase->tries[index], word);
   }
 }
 
 /*
- *
+ * Remove _used mark from word in word base
  */
 void wbase_word_unuse(wbase_t* wbase, const char* word)
 {
-  if(wbase->primary)
+  for(size_t index = 0; index < wbase->count; index++)
   {
-    trie_word_unuse(wbase->primary, word);
-  }
-
-  if(wbase->backup)
-  {
-    trie_word_unuse(wbase->backup, word);
+    trie_word_unuse(wbase->tries[index], word);
   }
 }

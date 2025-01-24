@@ -1,7 +1,5 @@
 /*
  * k-grid-insert.c - insert and reset words in grid
- *
- * Written by Hampus Fridholm
  */
 
 #include "k-grid.h"
@@ -10,9 +8,11 @@
 #include "k-wbase.h"
 
 /*
+ * Insert vertical word
+ *
  * When inserting, the function:
  * - pastes the letters from the word
- * - pastes a block square at the end
+ * - pastes blocks before and after word
  */
 int vert_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int x, int start_y)
 {
@@ -72,6 +72,8 @@ int vert_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int x, int 
     }
   }
 
+  grid->word_count++;
+
   // Mark the word as used
   wbase_word_use(wbase, word);
 
@@ -79,7 +81,11 @@ int vert_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int x, int 
 }
 
 /*
+ * Insert horizontal word
  *
+ * When inserting, the function:
+ * - pastes the letters from the word
+ * - pastes blocks before and after word
  */
 int horiz_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_x, int y)
 {
@@ -138,6 +144,8 @@ int horiz_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_
     }
   }
 
+  grid->word_count++;
+
   // Mark the word as used
   wbase_word_use(wbase, word);
 
@@ -145,7 +153,7 @@ int horiz_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_
 }
 
 /*
- *
+ * Reset horizontal word
  */
 void horiz_word_reset(wbase_t* wbase, grid_t* old_grid, grid_t* grid, const char* word, int start_x, int y)
 {
@@ -185,12 +193,14 @@ void horiz_word_reset(wbase_t* wbase, grid_t* old_grid, grid_t* grid, const char
     grid->squares[square_index] = old_grid->squares[square_index];
   }
 
+  grid->word_count--;
+
   // Unmark the word as used, so it can be used somewhere else
   wbase_word_unuse(wbase, word);
 }
 
 /*
- *
+ * Reset vertical word
  */
 void vert_word_reset(wbase_t* wbase, grid_t* old_grid, grid_t* grid, const char* word, int x, int start_y)
 {
@@ -229,6 +239,8 @@ void vert_word_reset(wbase_t* wbase, grid_t* old_grid, grid_t* grid, const char*
 
     grid->squares[square_index] = old_grid->squares[square_index];
   }
+
+  grid->word_count--;
 
   // Unmark the word as used, so it can be used somewhere else
   wbase_word_unuse(wbase, word);

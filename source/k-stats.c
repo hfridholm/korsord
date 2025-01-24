@@ -1,16 +1,37 @@
 /*
- *
+ * k-stats.c - stats management
  */
 
-#include "k-stats.h"
-#include "k-stats-intern.h"
+#include <stddef.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <ncurses.h>
+
+#include "debug.h"
+
+typedef struct stats_patt_t
+{
+  size_t letter;
+  size_t trap;
+  size_t crowd;
+  size_t done;
+  size_t block;
+  size_t none;
+} stats_patt_t;
+
+typedef struct stats_t
+{
+  stats_patt_t patt;
+  size_t test;
+} stats_t;
+
 
 pthread_mutex_t stats_lock;
 
 stats_t stats;
 
 /*
- *
+ * Init stats object
  */
 void stats_init(void)
 {
@@ -20,7 +41,7 @@ void stats_init(void)
 }
 
 /*
- *
+ * Free stats object
  */
 void stats_free(void)
 {
@@ -30,7 +51,7 @@ void stats_free(void)
 }
 
 /*
- *
+ * Clear stats object - zero all stats
  */
 void stats_clear(void)
 {
@@ -42,7 +63,7 @@ void stats_clear(void)
 }
 
 /*
- *
+ * Increment stats pattern letter count
  */
 void stats_patt_letter_incr(void)
 {
@@ -54,7 +75,7 @@ void stats_patt_letter_incr(void)
 }
 
 /*
- *
+ * Increment stats pattern trap count
  */
 void stats_patt_trap_incr(void)
 {
@@ -66,7 +87,7 @@ void stats_patt_trap_incr(void)
 }
 
 /*
- *
+ * Increment stats pattern crowd count
  */
 void stats_patt_crowd_incr(void)
 {
@@ -78,31 +99,19 @@ void stats_patt_crowd_incr(void)
 }
 
 /*
- *
+ * Increment stats pattern done count
  */
-void stats_patt_edge_incr(void)
+void stats_patt_done_incr(void)
 {
   pthread_mutex_lock(&stats_lock);
 
-  stats.patt.edge++;
+  stats.patt.done++;
 
   pthread_mutex_unlock(&stats_lock);
 }
 
 /*
- *
- */
-void stats_patt_corner_incr(void)
-{
-  pthread_mutex_lock(&stats_lock);
-
-  stats.patt.corner++;
-
-  pthread_mutex_unlock(&stats_lock);
-}
-
-/*
- *
+ * Increment stats pattern block count
  */
 void stats_patt_block_incr(void)
 {
@@ -114,7 +123,7 @@ void stats_patt_block_incr(void)
 }
 
 /*
- *
+ * Increment stats pattern none count
  */
 void stats_patt_none_incr(void)
 {
@@ -126,9 +135,9 @@ void stats_patt_none_incr(void)
 }
 
 /*
- *
+ * Increment stats test count
  */
-void stats_patt_test_incr(void)
+void stats_test_incr(void)
 {
   pthread_mutex_lock(&stats_lock);
 
@@ -138,7 +147,7 @@ void stats_patt_test_incr(void)
 }
 
 /*
- *
+ * Print stats object with ncurses
  */
 void stats_ncurses_print(void)
 {
@@ -147,17 +156,16 @@ void stats_ncurses_print(void)
   mvprintw(1, 1, "letter: %ld", stats.patt.letter);
   mvprintw(2, 1, "trap  : %ld", stats.patt.trap);
   mvprintw(3, 1, "crowd : %ld", stats.patt.crowd);
-  mvprintw(4, 1, "edge  : %ld", stats.patt.edge);
-  mvprintw(5, 1, "corner: %ld", stats.patt.corner);
-  mvprintw(6, 1, "block : %ld", stats.patt.block);
-  mvprintw(7, 1, "none  : %ld", stats.patt.none);
-  mvprintw(8, 1, "test  : %ld", stats.test);
+  mvprintw(4, 1, "done  : %ld", stats.patt.done);
+  mvprintw(5, 1, "block : %ld", stats.patt.block);
+  mvprintw(6, 1, "none  : %ld", stats.patt.none);
+  mvprintw(7, 1, "test  : %ld", stats.test);
 
   pthread_mutex_unlock(&stats_lock);
 }
 
 /*
- *
+ * Print stats object in terminal
  */
 void stats_print(void)
 {
@@ -166,8 +174,7 @@ void stats_print(void)
   printf("letter: %ld\n", stats.patt.letter);
   printf("trap  : %ld\n", stats.patt.trap);
   printf("crowd : %ld\n", stats.patt.crowd);
-  printf("edge  : %ld\n", stats.patt.edge);
-  printf("corner: %ld\n", stats.patt.corner);
+  printf("done  : %ld\n", stats.patt.done);
   printf("block : %ld\n", stats.patt.block);
   printf("none  : %ld\n", stats.patt.none);
   printf("test  : %ld\n", stats.test);
