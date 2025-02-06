@@ -42,3 +42,18 @@ The rendered images of the crossword will by default be stored in a new folder i
 
 ![images.png](../assets/example/images.png)
 
+## cython
+
+[stackoverflow](https://stackoverflow.com/questions/39913847/is-there-a-way-to-compile-a-python-application-into-static-binary)
+
+```bash
+pip3 install cython
+```
+
+```bash
+cython korsord.py --embed
+```
+
+```bash
+gcc -Os $(python3-config --includes) korsord.c -o korsord $(python3-config --ldflags --embed)
+```

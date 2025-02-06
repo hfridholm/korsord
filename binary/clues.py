@@ -13,7 +13,9 @@ MAX_WORD_AMOUNT = 4
 
 api_key_file = "api.key"
 
+#
 # Function to read the API key from a local file
+#
 def api_key_get(filepath):
     try:
         with open(filepath, 'r') as file:

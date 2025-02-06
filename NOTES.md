@@ -5,6 +5,8 @@
 - write in README.md
 
 ## Quick Fixes
+- Rename korsord.c to gen.c
+- rewrite makefile to also compile korsord.py
 - README.md in source/ explain the algorithm and refrence function names
 - write about the default models
 - write about makefile and scripts in binary
