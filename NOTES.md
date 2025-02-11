@@ -5,6 +5,8 @@
 - write in README.md
 
 ## Quick Fixes
+- Add messages in makefile
+- Write code to create ~/.korsord/ directory at default make
 - Rename korsord.c to gen.c
 - rewrite makefile to also compile korsord.py
 - README.md in source/ explain the algorithm and refrence function names
@@ -23,6 +25,7 @@
 ## Word Files
 - only read first word of each line in model_load in korsord
 - make it possible to read word files with existing clues (word : clue)
+
 ### Maybe
 - make it possible to store multiple clues in one words file
 * collect clues in large words file, where old clues can be reused
@@ -48,3 +51,17 @@ When GEN_HALF is returned by _word_embed:
 2. Call _word_gen for the same direction
 
 This tries to keep the progress that the other successful letters achieved.
+
+## Files
+- add capability for abspath to model, words, grid in gen, clues, render
+- create ./.korsord/ directory and store temporary files there
+- --global flag tells scripts to look in ~/.korsord/. Otherwise ./.korsord/
+- no files should be stored in repo directory
+- word and model files from repo directory should be copied to ~/.korsord/ at setup
+
+## words.py images.py
+- let chatgpt come up with words for a specific subject
+- let ai generate images of the same subject
+
+## korsord
+- create python script for viewing crossword models (GUI)

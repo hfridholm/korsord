@@ -1,11 +1,42 @@
-PROGRAM := korsord
+#
+# makefile
+#
+# Written by Hampus Fridholm
+#
 
-CLEAN_TARGET := clean
-HELP_TARGET  := help
+.PHONY: korsord apt-packages pip-packages
 
-DELETE_CMD := rm
+default: apt-packages pip-packages korsord
 
-COMPILER := gcc
+# Define required apt packages
+APT_PACKAGES = gcc
+
+# Define required pip packages
+PIP_PACKAGES = cython
+
+# Define the target for installing packages
+apt-packages:
+	@echo "Checking and installing missing packages..."
+	@for package in $(PAPT_PACKAGES); do \
+		if ! dpkg -l | grep -q $$package; then \
+			echo "Package $$package not found. Installing..."; \
+			sudo apt-get update && sudo apt-get install -y $$package; \
+		else \
+			echo "Package $$package already installed."; \
+		fi \
+	done
+
+# Target for checking and installing packages
+pip-packages:
+	@echo "Checking if required packages are installed..."
+	@for package in $(PIP_PACKAGES); do \
+		if ! pip show $$package > /dev/null 2>&1; then \
+			echo "$$package is not installed. Installing..."; \
+			pip install $$package; \
+		else \
+			echo "$$package is already installed."; \
+		fi \
+	done
 
 # AddressSanitizer
 # -fsanitize=address
@@ -20,41 +51,41 @@ SPEED_COMPILE_FLAGS := -O3 -pthread -oFast -Wno-unused-function
 
 SPEED_LINKER_FLAGS := -lncurses -lpthread
 
+BASE_DIR := ..
 
-SOURCE_DIR := ../source
-OBJECT_DIR := ../object
-BINARY_DIR := ../binary
+SOURCE_DIR := $(BASE_DIR)/source
+OBJECT_DIR := $(BASE_DIR)/object
+BINARY_DIR := $(BASE_DIR)/binary
 
 SOURCE_FILES := $(wildcard $(SOURCE_DIR)/*/*.c $(SOURCE_DIR)/*.c)
 HEADER_FILES := $(wildcard $(SOURCE_DIR)/*/*.h $(SOURCE_DIR)/*.h)
 
 OBJECT_FILES := $(addprefix $(OBJECT_DIR)/, $(notdir $(SOURCE_FILES:.c=.o)))
 
-all: debug
+korsord: $(addprefix $(BINARY_DIR)/, gen clues.py render.py korsord.py) 
+	cython $(BINARY_DIR)/korsord.py --embed -o $(BINARY_DIR)/korsord.c
+	gcc -Os $$(python3-config --includes) $(BINARY_DIR)/korsord.c -o $(BINARY_DIR)/korsord $$(python3-config --ldflags --embed)
 
-speed: COMPILE_FLAGS := $(SPEED_COMPILE_FLAGS)
-speed: $(OBJECT_FILES) $(SOURCE_FILES) $(HEADER_FILES)
-	$(COMPILER) $(OBJECT_FILES) $(SPEED_LINKER_FLAGS) -o $(BINARY_DIR)/$(PROGRAM)
+$(BINARY_DIR)/gen: COMPILE_FLAGS := $(SPEED_COMPILE_FLAGS)
+$(BINARY_DIR)/gen: $(OBJECT_FILES) $(SOURCE_FILES) $(HEADER_FILES)
+	gcc $(OBJECT_FILES) $(SPEED_LINKER_FLAGS) -o $(BINARY_DIR)/gen
 
 debug: COMPILE_FLAGS := $(DEBUG_COMPILE_FLAGS)
 debug: $(OBJECT_FILES) $(SOURCE_FILES) $(HEADER_FILES)
-	$(COMPILER) $(OBJECT_FILES) $(DEBUG_LINKER_FLAGS) -o $(BINARY_DIR)/$(PROGRAM)
+	gcc $(OBJECT_FILES) $(DEBUG_LINKER_FLAGS) -o $(BINARY_DIR)/gen
 
 $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/*/%.c
-	$(COMPILER) $< -c $(COMPILE_FLAGS) -o $@
+	gcc $< -c $(COMPILE_FLAGS) -o $@
 
 $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.c
-	$(COMPILER) $< -c $(COMPILE_FLAGS) -o $@
+	gcc $< -c $(COMPILE_FLAGS) -o $@
 
-.PRECIOUS: $(OBJECT_DIR)/%.o $(PROGRAM)
+DEBUG_FILES := $(addprefix $(BINARY_DIR)/, vgcore* gmon.out profile.txt debug.log)
 
-DEBUG_FILES := vgcore* gmon.out profile.txt debug.log
+BINARY_FILES := $(addprefix $(BINARY_DIR)/, gen korsord)
 
-BINARY_FILES := $(addprefix $(BINARY_DIR)/, $(DEBUG_FILES) $(PROGRAM)) 
+.PRECIOUS: $(OBJECT_FILES) $(BINARY_FILES)
 
-$(CLEAN_TARGET):
-	truncate -s 0 $(BINARY_DIR)/output.log
-	$(DELETE_CMD) $(OBJECT_DIR)/*.o $(BINARY_FILES)
-
-$(HELP_TARGET):
-	@echo $(PROGRAM) $(CLEAN_TARGET)
+clean:
+	-truncate -s 0 $(BINARY_DIR)/output.log
+	-rm 2>/dev/null $(OBJECT_DIR)/*.o $(BINARY_FILES) $(DEBUG_FILES)
