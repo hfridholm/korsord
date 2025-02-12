@@ -19,6 +19,7 @@
   (I have a fealing that the problem is that singles (1 letter words) don't get restored)
 
 ## Potential Quick Fixes
+- set temp. as the default file for all commands
 - Rename global to config in makefile
 - add flags to makefile to silent output
 - move lock inside stats struct and lock inside grid struct
@@ -73,7 +74,7 @@ korsord clues gen  my.clues | Generates words with AI
 korsord clues edit my.clues | Opens my.clues in vim
 korsord clues list
 
-korsord grid gen  my.grid
+korsord grid gen  my.model my.grid
 korsord grid edit my.grid
 korsord grid show my.grid
 korsord grid save copy.grid
@@ -88,21 +89,16 @@ korsord model gen --name gen.model <width> <height> --image <image>
 korsord model gen --name gen.model 17 15 --image "top right corner"
 
 korsord render <grid> <clues> --image <image>
-korsord render my.grid my.clues
+korsord render my.grid my.clues --image my.png
 
 gen.py
+image.py
 render.py
-render-gen.py
 words.py
 words-gen.py
 clues.py
 clues-gen.py
 grid.py
 grid-gen.c
-
-## words.py images.py
-- let chatgpt come up with words for a specific subject
-- let ai generate images of the same subject
-
-## korsord
-- create python script for viewing crossword models (GUI)
+model.py
+model-gen.py

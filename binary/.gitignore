@@ -1,14 +1,17 @@
 *
 !.gitignore
+!korsord.py
 !README.md
 !makefile
-
-# Shell scripts
-!debug.sh
-!valgrind.sh
 
 # Python scripts
 !render.py
 !clues.py
 !words.py
-!korsord.py
+!model.py
+!gen.py
+!image.py
+
+# Shell scripts
+!debug.sh
+!valgrind.sh
