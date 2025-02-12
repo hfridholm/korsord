@@ -6,13 +6,63 @@
 
 .PHONY: korsord apt-packages pip-packages
 
-default: apt-packages pip-packages korsord
+default: apt-packages pip-packages global-init
 
 # Define required apt packages
-APT_PACKAGES = gcc
+APT_PACKAGES := gcc pip
 
 # Define required pip packages
-PIP_PACKAGES = cython
+PIP_PACKAGES := cython
+
+GLOBAL_DIR := $(HOME)/.korsord
+
+BASE_DIR := ..
+
+SOURCE_DIR := $(BASE_DIR)/source
+OBJECT_DIR := $(BASE_DIR)/object
+BINARY_DIR := $(BASE_DIR)/binary
+ASSETS_DIR := $(BASE_DIR)/assets
+
+words-copy:
+	@echo "Copying .words files from $(ASSETS_DIR)/words to $(GLOBAL_DIR)/words..."
+	@find "$(ASSETS_DIR)/words" -type f -name "*.words" | \
+		while read file; do \
+			relative_path=$$(echo $$file | sed 's|$(ASSETS_DIR)/||'); \
+			dest="$(GLOBAL_DIR)/$$relative_path"; \
+      dest_dir=$$(dirname "$$dest"); \
+			mkdir -p "$$dest_dir"; \
+			cp "$$file" "$$dest"; \
+		done
+	@echo "Files copied to $(GLOBAL_DIR)/words."
+
+models-copy:
+	@echo "Copying .model files from $(ASSETS_DIR)/models to $(GLOBAL_DIR)/models..."
+	@find "$(ASSETS_DIR)/models" -type f -name "*.model" | \
+		while read file; do \
+			relative_path=$$(echo $$file | sed 's|$(ASSETS_DIR)/||'); \
+			dest="$(GLOBAL_DIR)/$$relative_path"; \
+      dest_dir=$$(dirname "$$dest"); \
+			mkdir -p "$$dest_dir"; \
+			cp "$$file" "$$dest"; \
+		done
+	@echo "Files copied to $(GLOBAL_DIR)/models."
+
+global-copy:
+	@echo "Copying files to $(GLOBAL_DIR)...";
+	@$(MAKE) --no-print-directory words-copy;
+	@$(MAKE) --no-print-directory models-copy;
+	@echo "Copied files to $(GLOBAL_DIR).";
+
+# Target to check if directory exists, create if not, and copy files
+global-init:
+	@echo "Checking if directory $(GLOBAL_DIR) exists..."
+	@if [ ! -d "$(GLOBAL_DIR)" ]; then \
+		echo "Directory $(GLOBAL_DIR) does not exist. Creating it..."; \
+		mkdir -p "$(GLOBAL_DIR)"; \
+		$(MAKE) --no-print-directory global-copy; \
+	else \
+		echo "Directory $(GLOBAL_DIR) already exists."; \
+	fi
 
 # Define the target for installing packages
 apt-packages:
@@ -51,12 +101,6 @@ SPEED_COMPILE_FLAGS := -O3 -pthread -oFast -Wno-unused-function
 
 SPEED_LINKER_FLAGS := -lncurses -lpthread
 
-BASE_DIR := ..
-
-SOURCE_DIR := $(BASE_DIR)/source
-OBJECT_DIR := $(BASE_DIR)/object
-BINARY_DIR := $(BASE_DIR)/binary
-
 SOURCE_FILES := $(wildcard $(SOURCE_DIR)/*/*.c $(SOURCE_DIR)/*.c)
 HEADER_FILES := $(wildcard $(SOURCE_DIR)/*/*.h $(SOURCE_DIR)/*.h)
 
@@ -89,3 +133,14 @@ BINARY_FILES := $(addprefix $(BINARY_DIR)/, gen korsord)
 clean:
 	-truncate -s 0 $(BINARY_DIR)/output.log
 	-rm 2>/dev/null $(OBJECT_DIR)/*.o $(BINARY_FILES) $(DEBUG_FILES)
+
+global-remove:
+	@echo "Checking if directory $(GLOBAL_DIR) exists..."
+	@if [ ! -d "$(GLOBAL_DIR)" ]; then \
+		echo "Directory $(GLOBAL_DIR) does not exist. Do nothing..."; \
+	else \
+		echo "Directory $(GLOBAL_DIR) exists. Removing it..."; \
+		rm -r $(GLOBAL_DIR); \
+	fi
+
+remove: global-remove

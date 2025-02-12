@@ -5,6 +5,7 @@
 - write in README.md
 
 ## Quick Fixes
+- Add theme to clues.py (for context)
 - Add messages in makefile
 - Write code to create ~/.korsord/ directory at default make
 - Rename korsord.c to gen.c
@@ -18,6 +19,7 @@
   (I have a fealing that the problem is that singles (1 letter words) don't get restored)
 
 ## Potential Quick Fixes
+- Rename global to config in makefile
 - add flags to makefile to silent output
 - move lock inside stats struct and lock inside grid struct
 - remove old_grid from _reset, instead set is_crossed on SQUARE_BLOCK and from that _reset
@@ -53,11 +55,50 @@ When GEN_HALF is returned by _word_embed:
 This tries to keep the progress that the other successful letters achieved.
 
 ## Files
-- add capability for abspath to model, words, grid in gen, clues, render
-- create ./.korsord/ directory and store temporary files there
+- open files with vim through korsord
 - --global flag tells scripts to look in ~/.korsord/. Otherwise ./.korsord/
 - no files should be stored in repo directory
 - word and model files from repo directory should be copied to ~/.korsord/ at setup
+
+Example:
+korsord gen <theme> <width> <height> --image <image>
+korsord gen "Julafton" 15 17 --image "stor bild på en vit ren i högra hörnet"
+
+korsord words gen  my.words | Generates words with AI
+korsord words edit my.words | Opens my.words in vim
+korsord words list
+
+korsord clues gen  my.clues --words "tomte ren" | Geenrate clue for specific words
+korsord clues gen  my.clues | Generates words with AI
+korsord clues edit my.clues | Opens my.clues in vim
+korsord clues list
+
+korsord grid gen  my.grid
+korsord grid edit my.grid
+korsord grid show my.grid
+korsord grid save copy.grid
+korsord grid new  new.grid
+korsord grid list
+
+korsord model edit my.model
+korsord model show my.model
+korsord model new  new.model
+korsord model list
+korsord model gen --name gen.model <width> <height> --image <image>
+korsord model gen --name gen.model 17 15 --image "top right corner"
+
+korsord render <grid> <clues> --image <image>
+korsord render my.grid my.clues
+
+gen.py
+render.py
+render-gen.py
+words.py
+words-gen.py
+clues.py
+clues-gen.py
+grid.py
+grid-gen.c
 
 ## words.py images.py
 - let chatgpt come up with words for a specific subject
