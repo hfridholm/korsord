@@ -103,11 +103,11 @@ def words_load(filepath):
                 words.append(word);
 
     except FileNotFoundError:
-        print(f"Words file not found")
+        print(f"korsord: Words file not found")
         return None
 
     except Exception as exception:
-        print(f"Failed to read words file")
+        print(f"korsord: Failed to read words file")
         return None
 
     return words
@@ -189,9 +189,14 @@ if __name__ == "__main__":
         help="Max length of words"
     )
 
-    parser.add_argument("--force",
+    parser.add_argument("--append",
         action='store_true',
-        help="Modify existing words"
+        help="Append to existing words"
+    )
+
+    parser.add_argument("--new",
+        action='store_true',
+        help="Remove existing words"
     )
 
     args = parser.parse_args()
@@ -201,11 +206,16 @@ if __name__ == "__main__":
 
     existing_words = words_load(words_file);
 
-    if existing_words and not args.force:
-        print(f"Words already exist")
-        exit(0)
+    if existing_words:
+        if args.new:
+            existing_words = []
 
-    existing_words = existing_words if existing_words else []
+        elif not args.append:
+            print(f"korsord: Words already exist")
+            exit(0)
+
+    else: # if no words exist
+        existing_words = []
 
     new_words = []
 

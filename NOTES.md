@@ -5,6 +5,7 @@
 - write in README.md
 
 ## Quick Fixes
+- fix file paths in grid-gen (korsord.c)
 - fix image position and size in model-gen.py
 - get gen.py working
 - Add messages in makefile
@@ -18,6 +19,7 @@
   (multiple .clues files to extract and fill the requirement from .grid)
 
 ## Potential Quick Fixes
+- maybe hard code BASE_DIR in scripts
 - rename 'show' command to 'view'
 - rename temp. files to maybe 'default' or something similar
 - add flags to makefile to silent output
