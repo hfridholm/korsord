@@ -15,6 +15,16 @@ import os
 
 api_key_file = "api.key"
 
+CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
+
+IMAGES_DIR = os.path.join(CONFIG_DIR, "images")
+
+#
+# Get the file path of a image by name
+#
+def image_file_get(name):
+    return os.path.join(IMAGES_DIR, f"{name}.png")
+
 #
 # Function to read the API key from a local file
 #
@@ -39,8 +49,13 @@ if __name__ == "__main__":
     )
 
     parser.add_argument("prompt",
-        nargs="?",
+        type=str,
         help="Prompt for image"
+    )
+
+    parser.add_argument('--name',
+        type=str, default="temp",
+        help="Name of image"
     )
 
     args = parser.parse_args()
@@ -59,4 +74,6 @@ if __name__ == "__main__":
     image_response = requests.get(image_url)
     img = Image.open(BytesIO(image_response.content))
 
-    img.save('image.png')
+    image_file = image_file_get(args.name)
+
+    img.save(image_file)

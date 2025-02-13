@@ -5,18 +5,23 @@
 - write in README.md
 
 ## Quick Fixes
+- create new words command 'new --from file.txt' from ordlista.py and remove ordlista.py
+- fix image position and size in model-gen.py
+- get gen.py working
+- set temp. as the default file for all commands
+- add argp to clues.py
+- Modify words.py and clues.py to show word count on 'list' command
 - Add theme to clues.py (for context)
 - Add messages in makefile
 - README.md in source/ explain the algorithm and refrence function names
 - write about the default models
 - write about makefile and scripts in binary
-- add argp to clues.py
 - change if-statements to switch statements when checking _status in -gen.c
 - Fix problem with "new best grid" skyrocketing
   (I have a fealing that the problem is that singles (1 letter words) don't get restored)
 
 ## Potential Quick Fixes
-- set temp. as the default file for all commands
+- rename 'show' command to 'view'
 - don't show temp. on 'list' command, becuase it is internal and default
 - add flags to makefile to silent output
 - move lock inside stats struct and lock inside grid struct
@@ -52,50 +57,17 @@ When GEN_HALF is returned by _word_embed:
 
 This tries to keep the progress that the other successful letters achieved.
 
-## Files
-- open files with vim through korsord
-- --global flag tells scripts to look in ~/.korsord/. Otherwise ./.korsord/
-- no files should be stored in repo directory
-- word and model files from repo directory should be copied to ~/.korsord/ at setup
+## Commands
 
-Example:
-korsord gen <theme> <width> <height> --image <image>
 korsord gen "Julafton" 15 17 --image "stor bild på en vit ren i högra hörnet"
 
-korsord words gen  my.words | Generates words with AI
-korsord words edit my.words | Opens my.words in vim
-korsord words list
+korsord words gen  my.words
 
-korsord clues gen  my.clues --words "tomte ren" | Geenrate clue for specific words
-korsord clues gen  my.clues | Generates words with AI
-korsord clues edit my.clues | Opens my.clues in vim
-korsord clues list
+korsord clues gen  my.clues --words "tomte ren"
+korsord clues gen  my.clues
 
-korsord grid gen  my.model my.grid
-korsord grid edit my.grid
-korsord grid show my.grid
-korsord grid save copy.grid
-korsord grid new  new.grid
-korsord grid list
+korsord grid  gen  my.model my.grid
 
-korsord model edit my.model
-korsord model show my.model
-korsord model new  new.model
-korsord model list
-korsord model gen --name gen.model <width> <height> --image <image>
 korsord model gen --name gen.model 17 15 --image "top right corner"
 
-korsord render <grid> <clues> --image <image>
 korsord render my.grid my.clues --image my.png
-
-gen.py
-image.py
-render.py
-words.py
-words-gen.py
-clues.py
-clues-gen.py
-grid.py
-grid-gen.c
-model.py
-model-gen.py

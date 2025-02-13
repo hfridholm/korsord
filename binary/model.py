@@ -70,10 +70,10 @@ def model_new(extra_args):
 # Handling the 'del' command
 #
 def model_del(extra_args):
-    del_parser = argparse.ArgumentParser(description="Show model")
+    del_parser = argparse.ArgumentParser(description="Delete model")
 
     del_parser.add_argument('name',
-        type=str, default="temp.model",
+        type=str, default="temp",
         help="Name of model"
     )
 
@@ -94,7 +94,7 @@ def model_show(extra_args):
     show_parser = argparse.ArgumentParser(description="Show model")
 
     show_parser.add_argument('name',
-        type=str, default="temp.model",
+        type=str, default="temp",
         help="Name of model"
     )
 
@@ -115,7 +115,7 @@ def model_edit(extra_args):
     edit_parser = argparse.ArgumentParser(description="Edit model")
 
     edit_parser.add_argument('name',
-        type=str, default="temp.model",
+        type=str, default="temp",
         help="Name of model"
     )
 

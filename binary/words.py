@@ -70,10 +70,10 @@ def words_new(extra_args):
 # Handling the 'del' command
 #
 def words_del(extra_args):
-    del_parser = argparse.ArgumentParser(description="Show words")
+    del_parser = argparse.ArgumentParser(description="Delete words")
 
     del_parser.add_argument('name',
-        type=str, default="temp.words",
+        type=str, default="temp",
         help="Name of words"
     )
 
@@ -94,7 +94,7 @@ def words_edit(extra_args):
     edit_parser = argparse.ArgumentParser(description="Edit words")
 
     edit_parser.add_argument('name',
-        type=str, default="temp.words",
+        type=str, default="temp",
         help="Name of words"
     )
 

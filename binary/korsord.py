@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     parser.add_argument("command",
         nargs="?",
-        help="gen, render, words, clues, model, grid"
+        help="gen, render, image, words, clues, model, grid"
     )
 
     parser.add_argument("args",
@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
 
     # Handling the 'render' script
-    elif args.command == "render":
+    if args.command == "render":
         render_script = os.path.join(BASE_DIR, "render.py")
 
         if not os.path.isfile(render_script):
@@ -50,6 +50,17 @@ if __name__ == "__main__":
             sys.exit(1)
 
         subprocess.run(["python", render_script] + args.args)
+
+
+    # Handling the 'image' script
+    elif args.command == "image":
+        image_script = os.path.join(BASE_DIR, "image.py")
+
+        if not os.path.isfile(image_script):
+            print(f"korsord: {image_script}: File not found")
+            sys.exit(1)
+
+        subprocess.run(["python", image_script] + args.args)
 
 
     # Handling the 'words' script

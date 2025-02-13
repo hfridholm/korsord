@@ -6,7 +6,7 @@
 
 .PHONY: korsord apt-packages pip-packages
 
-default: apt-packages pip-packages config-init
+default: apt-packages pip-packages config-init korsord
 
 # Define required apt packages
 APT_PACKAGES := gcc pip
@@ -63,6 +63,7 @@ config-init:
 		mkdir -p "$(CONFIG_DIR)/clues"; \
 		mkdir -p "$(CONFIG_DIR)/models"; \
 		mkdir -p "$(CONFIG_DIR)/grids"; \
+		mkdir -p "$(CONFIG_DIR)/images"; \
 		$(MAKE) --no-print-directory config-copy; \
 	else \
 		echo "Directory $(CONFIG_DIR) already exists."; \

@@ -44,10 +44,10 @@ def clues_gen(extra_args):
 # Handling the 'del' command
 #
 def clues_del(extra_args):
-    del_parser = argparse.ArgumentParser(description="Show clues")
+    del_parser = argparse.ArgumentParser(description="Delete clues")
 
     del_parser.add_argument('name',
-        type=str, default="temp.clues",
+        type=str, default="temp",
         help="Name of clues"
     )
 
@@ -68,7 +68,7 @@ def clues_edit(extra_args):
     edit_parser = argparse.ArgumentParser(description="Edit clues")
 
     edit_parser.add_argument('name',
-        type=str, default="temp.clues",
+        type=str, default="temp",
         help="Name of clues"
     )
 
