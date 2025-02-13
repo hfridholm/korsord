@@ -29,6 +29,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    # Print help menu if no command was supplied
+    if not args.command:
+        parser.print_help()
+        sys.exit(0)
+
 
     # Ensure that BASE_DIR is set correctly and exists
     if not os.path.exists(BASE_DIR):

@@ -1,5 +1,5 @@
 #
-# clues.py - generate crossword clues using AI
+# clues.py - generate crossword clues using openai
 #
 # Written by Hampus Fridholm
 #

@@ -1,5 +1,5 @@
 #
-# words-gen.py - generate crossword words using AI
+# words-gen.py - generate crossword words using openai
 #
 # Written by Hampus Fridholm
 #

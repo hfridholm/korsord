@@ -107,7 +107,10 @@ def grid_list(extra_args):
         for file in files:
             if file.endswith('.grid'):
                 files_exist = True
-                print(file)
+
+                grid_file = os.path.join(root, file)
+
+                print(f"{grid_name_get(grid_file)}")
 
     if not files_exist:
         print(f"No grids exist")

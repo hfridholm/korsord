@@ -148,7 +148,10 @@ def model_list(extra_args):
         for file in files:
             if file.endswith('.model'):
                 files_exist = True
-                print(f"{model_name_get(file)}")
+
+                model_file = os.path.join(root, file)
+
+                print(f"{model_name_get(model_file)}")
 
     if not files_exist:
         print(f"No models exist")
