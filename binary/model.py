@@ -6,6 +6,27 @@
 # https://github.com/openai/openai-python
 #
 
+# Real model.py
+# # Handling the 'new' command
+# elif args.command == "new":
+#     new_parser = argparse.ArgumentParser(description="New grid")
+# 
+#     new_parser.add_argument('name',
+#         type=str,
+#         help="Name of new grid"
+#     )
+# 
+#     new_parser.add_argument('--force',
+#         action='store_true',
+#         help="Overwrite the file if it exists"
+#     )
+# 
+#     new_args = new_parser.parse_args(extra_args)
+# 
+#     new_file = grid_file_get(new_args.name)
+# 
+#     subprocess.run(["touch", new_file])
+
 from openai import OpenAI
 import argparse
 

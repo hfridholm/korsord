@@ -7,9 +7,6 @@
 ## Quick Fixes
 - Add theme to clues.py (for context)
 - Add messages in makefile
-- Write code to create ~/.korsord/ directory at default make
-- Rename korsord.c to gen.c
-- rewrite makefile to also compile korsord.py
 - README.md in source/ explain the algorithm and refrence function names
 - write about the default models
 - write about makefile and scripts in binary
@@ -20,7 +17,6 @@
 
 ## Potential Quick Fixes
 - set temp. as the default file for all commands
-- Rename global to config in makefile
 - add flags to makefile to silent output
 - move lock inside stats struct and lock inside grid struct
 - remove old_grid from _reset, instead set is_crossed on SQUARE_BLOCK and from that _reset

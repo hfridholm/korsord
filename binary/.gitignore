@@ -11,6 +11,7 @@
 !model.py
 !gen.py
 !image.py
+!grid.py
 
 # Shell scripts
 !debug.sh
