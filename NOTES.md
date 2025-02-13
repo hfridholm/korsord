@@ -7,7 +7,6 @@
 ## Quick Fixes
 - fix image position and size in model-gen.py
 - get gen.py working
-- Modify words.py and clues.py to show word count on 'list' command
 - Add messages in makefile
 - README.md in source/ explain the algorithm and refrence function names
 - write about the default models
@@ -15,10 +14,12 @@
 - change if-statements to switch statements when checking _status in -gen.c
 - Fix problem with "new best grid" skyrocketing
   (I have a fealing that the problem is that singles (1 letter words) don't get restored)
+- modify render.py to accept multiple ranked .clues files
+  (multiple .clues files to extract and fill the requirement from .grid)
 
 ## Potential Quick Fixes
 - rename 'show' command to 'view'
-- don't show temp. on 'list' command, becuase it is internal and default
+- rename temp. files to maybe 'default' or something similar
 - add flags to makefile to silent output
 - move lock inside stats struct and lock inside grid struct
 - remove old_grid from _reset, instead set is_crossed on SQUARE_BLOCK and from that _reset

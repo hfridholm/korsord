@@ -29,6 +29,17 @@ def clues_name_get(file):
     return os.path.splitext(file.replace(CLUES_DIR, ''))[0].strip('/')
 
 #
+# Get number of lines in file
+#
+def line_count_get(path):
+    try:
+        with open(path, 'r') as file:
+            return len(file.readlines())
+
+    except Exception as exception:
+        return 0
+
+#
 # Handling the 'gen' command
 #
 def clues_gen(extra_args):
@@ -88,22 +99,45 @@ def clues_edit(extra_args):
     subprocess.run(["vim", clues_file])
 
 #
-# Handling the 'list' command
+# Get all clues files
 #
-def clues_list(extra_args):
-    files_exist = False
+def clues_files_get():
+    clues_files = []
 
     for root, dirs, files in os.walk(CLUES_DIR):
         for file in files:
             if file.endswith('.clues'):
-                files_exist = True
-
                 clues_file = os.path.join(root, file)
 
-                print(f"{clues_name_get(clues_file)}")
+                clues_files.append(clues_file)
 
-    if not files_exist:
+    return clues_files
+
+#
+# Handling the 'list' command
+#
+def clues_list(extra_args):
+    clues_files = clues_files_get()
+
+    if len(clues_files) == 0:
         print(f"No clues exist")
+        exit(0)
+
+    max_width = 0
+
+    for file in clues_files:
+        name = clues_name_get(file)
+
+        max_width = max(max_width, len(name) + 1)
+
+    for file in clues_files:
+        name = clues_name_get(file)
+
+        line_count = line_count_get(file)
+
+        curr_width = max_width - len(name)
+
+        print(f"{name}{' ' * curr_width}: {line_count}")
 
 #
 # Handling the 'copy' command

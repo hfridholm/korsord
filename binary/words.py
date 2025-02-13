@@ -29,6 +29,17 @@ def words_name_get(file):
     return os.path.splitext(file.replace(WORDS_DIR, ''))[0].strip('/')
 
 #
+# Get number of lines in file
+#
+def line_count_get(path):
+    try:
+        with open(path, 'r') as file:
+            return len(file.readlines())
+
+    except Exception as exception:
+        return 0
+
+#
 # Handling the 'gen' command
 #
 def words_gen(extra_args):
@@ -143,22 +154,45 @@ def words_edit(extra_args):
     subprocess.run(["vim", words_file])
 
 #
-# Handling the 'list' command
+# Get all words files
 #
-def words_list(extra_args):
-    files_exist = False
+def words_files_get():
+    words_files = []
 
     for root, dirs, files in os.walk(WORDS_DIR):
         for file in files:
             if file.endswith('.words'):
-                files_exist = True
-
                 words_file = os.path.join(root, file)
 
-                print(f"{words_name_get(words_file)}")
+                words_files.append(words_file)
 
-    if not files_exist:
+    return words_files
+
+#
+# Handling the 'list' command
+#
+def words_list(extra_args):
+    words_files = words_files_get()
+
+    if len(words_files) == 0:
         print(f"No words exist")
+        exit(0)
+
+    max_width = 0
+
+    for file in words_files:
+        name = words_name_get(file)
+
+        max_width = max(max_width, len(name) + 1)
+
+    for file in words_files:
+        name = words_name_get(file)
+
+        line_count = line_count_get(file)
+
+        curr_width = max_width - len(name)
+
+        print(f"{name}{' ' * curr_width}: {line_count}")
 
 #
 # Handling the 'copy' command
