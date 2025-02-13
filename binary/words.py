@@ -73,7 +73,7 @@ def words_del(extra_args):
     del_parser = argparse.ArgumentParser(description="Delete words")
 
     del_parser.add_argument('name',
-        type=str, default="temp",
+        type=str,
         help="Name of words"
     )
 
@@ -93,7 +93,7 @@ def words_del(extra_args):
 def words_edit(extra_args):
     edit_parser = argparse.ArgumentParser(description="Edit words")
 
-    edit_parser.add_argument('name',
+    edit_parser.add_argument('--name',
         type=str, default="temp",
         help="Name of words"
     )
@@ -109,7 +109,12 @@ def words_edit(extra_args):
 
     if not os.path.exists(words_file):
         if not edit_args.new:
-            print(f"korsord: {edit_args.name}: Words not found")
+            if edit_args.name == "temp":
+                print(f"korsord: Words not found")
+
+            else:
+                print(f"korsord: {edit_args.name}: Words not found")
+
             exit(0)
 
         else:
@@ -141,8 +146,8 @@ def words_list(extra_args):
 def words_copy(extra_args):
     copy_parser = argparse.ArgumentParser(description="Save copy of words")
 
-    copy_parser.add_argument('name',
-        type=str,
+    copy_parser.add_argument('--name',
+        type=str, default="temp",
         help="Name of words"
     )
 

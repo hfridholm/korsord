@@ -5,11 +5,10 @@
 - write in README.md
 
 ## Quick Fixes
+- fix clues-gen.py
 - create new words command 'new --from file.txt' from ordlista.py and remove ordlista.py
 - fix image position and size in model-gen.py
 - get gen.py working
-- set temp. as the default file for all commands
-- add argp to clues.py
 - Modify words.py and clues.py to show word count on 'list' command
 - Add theme to clues.py (for context)
 - Add messages in makefile

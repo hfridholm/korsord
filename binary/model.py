@@ -73,7 +73,7 @@ def model_del(extra_args):
     del_parser = argparse.ArgumentParser(description="Delete model")
 
     del_parser.add_argument('name',
-        type=str, default="temp",
+        type=str,
         help="Name of model"
     )
 
@@ -93,7 +93,7 @@ def model_del(extra_args):
 def model_show(extra_args):
     show_parser = argparse.ArgumentParser(description="Show model")
 
-    show_parser.add_argument('name',
+    show_parser.add_argument('--name',
         type=str, default="temp",
         help="Name of model"
     )
@@ -114,7 +114,7 @@ def model_show(extra_args):
 def model_edit(extra_args):
     edit_parser = argparse.ArgumentParser(description="Edit model")
 
-    edit_parser.add_argument('name',
+    edit_parser.add_argument('--name',
         type=str, default="temp",
         help="Name of model"
     )
@@ -130,7 +130,12 @@ def model_edit(extra_args):
 
     if not os.path.exists(model_file):
         if not edit_args.new:
-            print(f"korsord: {edit_args.name}: Model not found")
+            if edit_args.name == "temp":
+                print(f"korsord: Model not found")
+
+            else:
+                print(f"korsord: {edit_args.name}: Model not found")
+
             exit(0)
 
         else:
@@ -162,8 +167,8 @@ def model_list(extra_args):
 def model_copy(extra_args):
     copy_parser = argparse.ArgumentParser(description="Save copy of model")
 
-    copy_parser.add_argument('name',
-        type=str,
+    copy_parser.add_argument('--name',
+        type=str, default="temp",
         help="Name of model"
     )
 

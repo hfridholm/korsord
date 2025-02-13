@@ -8,45 +8,19 @@
 
 from openai import OpenAI
 import argparse
+import os
 
 api_key_file = "api.key"
 
+CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
+
+WORDS_DIR = os.path.join(CONFIG_DIR, "words")
+
 #
-# Parse command line arguments
+# Get the file path of a words by name
 #
-parser = argparse.ArgumentParser(description="generate crossword words using ai")
-
-parser.add_argument("theme",
-    nargs="?", default=None,
-    type=str, help="Theme of words"
-)
-
-parser.add_argument("--file",
-    type=str, default=None,
-    help="Store words in file"
-)
-
-parser.add_argument("--amount",
-    type=int, default=10,
-    help="Amount of words"
-)
-
-parser.add_argument("--min",
-    type=int, default=2,
-    help="Min length of words"
-)
-
-parser.add_argument("--max",
-    type=int, default=20,
-    help="Max length of words"
-)
-
-parser.add_argument("--force",
-    action='store_true',
-    help="Modify existing file"
-)
-
-args = parser.parse_args()
+def words_file_get(name):
+    return os.path.join(WORDS_DIR, f"{name}.words")
 
 #
 # Function to read the API key from a local file
@@ -192,10 +166,45 @@ def words_filter(words):
 # Main function
 #
 if __name__ == "__main__":
-    if not args.file:
-        args.file = f"{args.theme.split(' ')[0].lower()}.words"
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description="generate crossword words using ai")
 
-    existing_words = words_load(args.file);
+    parser.add_argument("theme",
+        type=str,
+        help="Theme of words"
+    )
+
+    parser.add_argument("--name",
+        type=str, default="temp",
+        help="Name of words"
+    )
+
+    parser.add_argument("--amount",
+        type=int, default=10,
+        help="Amount of words"
+    )
+
+    parser.add_argument("--min",
+        type=int, default=2,
+        help="Min length of words"
+    )
+
+    parser.add_argument("--max",
+        type=int, default=20,
+        help="Max length of words"
+    )
+
+    parser.add_argument("--force",
+        action='store_true',
+        help="Modify existing words"
+    )
+
+    args = parser.parse_args()
+
+
+    words_file = words_file_get(args.name)
+
+    existing_words = words_load(words_file);
 
     if existing_words and not args.force:
         print(f"Words already exist")
@@ -218,6 +227,6 @@ if __name__ == "__main__":
 
             print(f"#{count} Generated words: {len(new_words)}")
 
-    # print(new_words)
+    words_save(existing_words + new_words, words_file)
 
-    words_save(existing_words + new_words, args.file)
+    print(f"Generated words")

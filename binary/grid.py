@@ -41,7 +41,7 @@ def grid_del(extra_args):
     del_parser = argparse.ArgumentParser(description="Delete grid")
 
     del_parser.add_argument('name',
-        type=str, default="temp",
+        type=str,
         help="Name of grid"
     )
 
@@ -61,7 +61,7 @@ def grid_del(extra_args):
 def grid_show(extra_args):
     show_parser = argparse.ArgumentParser(description="Show grid")
 
-    show_parser.add_argument('name',
+    show_parser.add_argument('--name',
         type=str, default="temp",
         help="Name of grid"
     )
@@ -82,7 +82,7 @@ def grid_show(extra_args):
 def grid_edit(extra_args):
     edit_parser = argparse.ArgumentParser(description="Edit grid")
 
-    edit_parser.add_argument('name',
+    edit_parser.add_argument('--name',
         type=str, default="temp",
         help="Name of grid"
     )
@@ -92,7 +92,12 @@ def grid_edit(extra_args):
     grid_file = grid_file_get(edit_args.name)
 
     if not os.path.exists(grid_file):
-        print(f"korsord: {edit_args.name}: Grid not found")
+        if edit_args.name == "temp":
+            print(f"korsord: Grid not found")
+
+        else:
+            print(f"korsord: {edit_args.name}: Grid not found")
+
         exit(0)
 
     subprocess.run(["vim", grid_file])
@@ -121,8 +126,8 @@ def grid_list(extra_args):
 def grid_copy(extra_args):
     copy_parser = argparse.ArgumentParser(description="Save copy of grid")
 
-    copy_parser.add_argument('name',
-        type=str,
+    copy_parser.add_argument('--name',
+        type=str, default="temp",
         help="Name of grid"
     )
 
