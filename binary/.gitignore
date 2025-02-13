@@ -5,13 +5,23 @@
 !makefile
 
 # Python scripts
-!render.py
-!clues.py
-!words.py
-!model.py
 !gen.py
+!render.py
+
+!clues.py
+!clues-gen.py
+
+!words.py
+!words-gen.py
+
+!model.py
+!model-gen.py
+
 !image.py
+!image-gen.py
+
 !grid.py
+!grid-gen.py
 
 # Shell scripts
 !debug.sh

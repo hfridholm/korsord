@@ -1,5 +1,5 @@
 #
-# image.py - generate image using openai Dall E
+# image-gen.py - generate image using openai Dall E
 #
 # Written by Hampus Fridholm
 #

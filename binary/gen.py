@@ -17,7 +17,7 @@ CONFIG_DIR = "~/.korsord"
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description="Swedish crossword generator"
+        description="Generate crossword using openai"
     )
 
     parser.add_argument("theme",

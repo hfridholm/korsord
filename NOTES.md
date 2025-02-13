@@ -17,6 +17,7 @@
 
 ## Potential Quick Fixes
 - set temp. as the default file for all commands
+- don't show temp. on 'list' command, becuase it is internal and default
 - add flags to makefile to silent output
 - move lock inside stats struct and lock inside grid struct
 - remove old_grid from _reset, instead set is_crossed on SQUARE_BLOCK and from that _reset

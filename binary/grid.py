@@ -1,5 +1,5 @@
 #
-# grid.py - generate crossword completely with openai
+# grid.py - commands for managing grids
 #
 # Written by Hampus Fridholm
 #
@@ -23,7 +23,7 @@ def grid_file_get(name):
     return os.path.join(GRIDS_DIR, f"{name}.grid")
 
 #
-# Handling the 'gen' executable
+# Handling the 'gen' command
 #
 def grid_gen(extra_args):
     gen_program = os.path.join(BASE_DIR, "gen")
@@ -113,37 +113,37 @@ def grid_list(extra_args):
         print(f"No grids exist")
 
 #
-# Handling the 'save' command
+# Handling the 'copy' command
 #
-def grid_save(extra_args):
-    save_parser = argparse.ArgumentParser(description="Save the data")
+def grid_copy(extra_args):
+    copy_parser = argparse.ArgumentParser(description="Save copy of grid")
 
-    save_parser.add_argument('name',
+    copy_parser.add_argument('name',
         type=str,
         help="Name of grid"
     )
 
-    save_parser.add_argument('copy',
+    copy_parser.add_argument('copy',
         type=str,
-        help="Name of saved grid"
+        help="Name of copy"
     )
 
-    save_parser.add_argument('--force',
+    copy_parser.add_argument('--force',
         action='store_true',
-        help="Overwrite the file if it exists"
+        help="Overwrite existing grid"
     )
 
-    save_args = save_parser.parse_args(extra_args)
+    copy_args = copy_parser.parse_args(extra_args)
 
-    grid_file = grid_file_get(save_args.name)
-    copy_file = grid_file_get(save_args.copy)
+    grid_file = grid_file_get(copy_args.name)
+    copy_file = grid_file_get(copy_args.copy)
 
     if not os.path.exists(grid_file):
-        print(f"korsord: {save_args.name}: Grid not found")
+        print(f"korsord: {copy_args.name}: Grid not found")
         exit(0)
 
-    if os.path.exists(copy_file) and not save_args.force:
-        print(f"{save_args.copy} already exists.")
+    if os.path.exists(copy_file) and not copy_args.force:
+        print(f"korsord: {copy_args.copy}: Grid already exists")
         exit(0)
 
     subprocess.run(["cp", grid_file, copy_file])
@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
     parser.add_argument("command",
         nargs="?",
-        help="gen, show, edit, del, save, list"
+        help="gen, show, edit, del, copy, list"
     )
 
     args, extra_args = parser.parse_known_args()
@@ -197,8 +197,8 @@ if __name__ == "__main__":
     elif args.command == "list":
         grid_list(extra_args)
 
-    elif args.command == "save":
-        grid_save(extra_args)
+    elif args.command == "copy":
+        grid_copy(extra_args)
 
     else:
         print(f"korsord: {args.command}: Command not found")
