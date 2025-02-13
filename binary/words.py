@@ -46,8 +46,8 @@ def words_gen(extra_args):
 def words_new(extra_args):
     new_parser = argparse.ArgumentParser(description="New words")
 
-    new_parser.add_argument('name',
-        type=str,
+    new_parser.add_argument('--name',
+        type=str, default="temp",
         help="Name of new words"
     )
 
@@ -56,15 +56,35 @@ def words_new(extra_args):
         help="Overwrite existing words"
     )
 
+    new_parser.add_argument('--from',
+        type=str, dest="from_path", default=None,
+        help="Extract words from file"
+    )
+
     new_args = new_parser.parse_args(extra_args)
 
-    new_file = words_file_get(new_args.name)
 
-    if os.path.exists(new_file) and not new_args.force:
-        print(f"korsord: {new_args.name}: Words already exists")
-        exit(0)
+    if new_args.from_path:
+        from_script = os.path.join(BASE_DIR, "words-from.py")
 
-    subprocess.run(["touch", new_file])
+        if not os.path.isfile(from_script):
+            print(f"korsord: {from_script}: File not found")
+            sys.exit(1)
+
+        subprocess.run(["python", from_script, "--name", new_args.name, new_args.from_path])
+
+    else:
+        new_file = words_file_get(new_args.name)
+
+        if os.path.exists(new_file):
+            if new_args.force:
+                subprocess.run(["rm", new_file])
+
+            else:
+                print(f"korsord: {new_args.name}: Words already exists")
+                exit(0)
+
+        subprocess.run(["touch", new_file])
 
 #
 # Handling the 'del' command

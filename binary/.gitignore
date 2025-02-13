@@ -13,6 +13,7 @@
 
 !words.py
 !words-gen.py
+!words-from.py
 
 !model.py
 !model-gen.py

@@ -5,8 +5,8 @@
 - write in README.md
 
 ## Quick Fixes
+- only send last 10 words in words-gen.py
 - fix clues-gen.py
-- create new words command 'new --from file.txt' from ordlista.py and remove ordlista.py
 - fix image position and size in model-gen.py
 - get gen.py working
 - Modify words.py and clues.py to show word count on 'list' command
