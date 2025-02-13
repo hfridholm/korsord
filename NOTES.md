@@ -5,12 +5,9 @@
 - write in README.md
 
 ## Quick Fixes
-- only send last 10 words in words-gen.py
-- fix clues-gen.py
 - fix image position and size in model-gen.py
 - get gen.py working
 - Modify words.py and clues.py to show word count on 'list' command
-- Add theme to clues.py (for context)
 - Add messages in makefile
 - README.md in source/ explain the algorithm and refrence function names
 - write about the default models
@@ -59,14 +56,5 @@ This tries to keep the progress that the other successful letters achieved.
 ## Commands
 
 korsord gen "Julafton" 15 17 --image "stor bild på en vit ren i högra hörnet"
-
-korsord words gen  my.words
-
-korsord clues gen  my.clues --words "tomte ren"
-korsord clues gen  my.clues
-
-korsord grid  gen  my.model my.grid
-
-korsord model gen --name gen.model 17 15 --image "top right corner"
 
 korsord render my.grid my.clues --image my.png

@@ -65,7 +65,7 @@ Det är livsviktigt att du endast svarar med det ändrade rutnätet, ingen annan
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "system", "content": "Du är en logisk assistent"},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7

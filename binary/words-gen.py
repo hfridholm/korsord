@@ -44,23 +44,23 @@ client = OpenAI(api_key=api_key_get(api_key_file))
 #
 def words_gen(existing_words):
     prompt = f"""
-        Jag vill ha {args.amount} unika ord inom temat "{args.theme}" som ska användas i ett svenskt korsord. Det är livsviktigt att orden är minst {args.min} bokstäver korta och max {args.max} bokstäver långa. Det är livsviktigt att det är enskilda ord och inte sammansatta ord. Det är livsviktigt att orden inte innehåller bokstäverna: å, ä eller ö.
+        Jag vill ha {args.amount} unika ord inom temat "{args.theme}" som ska användas i ett svenskt korsord. Det är livsviktigt att orden är minst {2} bokstäver korta och max {args.length} bokstäver långa. Det är livsviktigt att det är enskilda ord och inte sammansatta ord. Det är livsviktigt att orden inte innehåller bokstäverna: å, ä eller ö.
 
         Det är livsviktigt att ditt svar endast innehåller varje ord på en separat rad utan numreringar eller andra markörer.
 
         Det är livsviktigt att du inte använder några av följande ord:
-        {', '.join(existing_words)}
+        {', '.join(existing_words[-10:])}
 
         Var kreativ och påhittig. Men det är livsviktigt att du följer intruktionerna.
     """
 
-    print(f"Prompt:\n{prompt}\n")
+    # print(f"Prompt:\n{prompt}\n")
 
     try:
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "system", "content": "Du har kunskap från svenska ordböcker"},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7
@@ -68,7 +68,7 @@ def words_gen(existing_words):
 
         message = completion.choices[0].message.content
 
-        print(f"Response:\n{message}\n")
+        # print(f"Response:\n{message}\n")
 
         gen_words = []
 
@@ -139,7 +139,7 @@ def word_is_allowed(word):
     if any(char in word for char in ['å', 'ä', 'ö']):
         return False
 
-    if len(word) > args.max or len(word) < args.min:
+    if len(word) > args.length or len(word) < 2:
         return False
 
     if not word.isalpha():
@@ -184,13 +184,8 @@ if __name__ == "__main__":
         help="Amount of words"
     )
 
-    parser.add_argument("--min",
-        type=int, default=2,
-        help="Min length of words"
-    )
-
-    parser.add_argument("--max",
-        type=int, default=20,
+    parser.add_argument("--length",
+        type=int, default=10,
         help="Max length of words"
     )
 

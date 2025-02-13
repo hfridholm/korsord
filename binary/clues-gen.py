@@ -7,11 +7,28 @@
 #
 
 from openai import OpenAI
-
-MAX_CLUE_LENGTH = 30
-MAX_WORD_AMOUNT = 4
+import argparse
+import os
 
 api_key_file = "api.key"
+
+CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
+
+WORDS_DIR = os.path.join(CONFIG_DIR, "words")
+
+#
+# Get the file path of a words by name
+#
+def words_file_get(name):
+    return os.path.join(WORDS_DIR, f"{name}.words")
+
+CLUES_DIR = os.path.join(CONFIG_DIR, "clues")
+
+#
+# Get the file path of a clues by name
+#
+def clues_file_get(name):
+    return os.path.join(CLUES_DIR, f"{name}.clues")
 
 #
 # Function to read the API key from a local file
@@ -35,23 +52,25 @@ client = OpenAI(api_key=api_key_get(api_key_file))
 #
 def word_clue_gen(word):
     prompt = f"""
-        Skriv en ledtråd till ordet '{word}'.
-        Ledtråden ska användas i ett korsord.
-        Ditt svar ska inte sluta med en punkt.
-        Ditt svar ska innehålla färre än {MAX_WORD_AMOUNT} ord.
-        Själva ordet får inte stå med i ledtråden.
-        Ordet 'ledtråd' får inte finnas med i ditt svar.
-        Inga långa ord får finnas med.
+Skriv en ledtråd till ordet '{word}'.
+Ledtråden ska användas i ett korsord.
+Ditt svar ska innehålla färre än {args.amount} ord.
+Själva ordet får inte stå med i ledtråden.
+Ordet 'ledtråd' får inte finnas med i ditt svar.
+Inga långa ord får finnas med.
     """
+
+    if args.theme:
+        prompt += f"Temat är: \'{args.theme}\'"
 
     try:
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "system", "content": "Du har en stor språkförståelse"},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=MAX_CLUE_LENGTH,
+            max_tokens=args.length,
             temperature=0.7
         )
 
@@ -76,11 +95,8 @@ def word_clues_load(filepath):
             for line in file.readlines():
                 split_line = line.split(":", 1)
 
-                if(len(split_line) < 2):
-                    return None
-
                 word = split_line[0].strip().lower()
-                clue = split_line[1].strip()
+                clue = split_line[1].strip() if len(split_line) == 2 else ""
 
                 word_clues[word] = clue;
 
@@ -118,24 +134,93 @@ def word_clues_save(word_clues, filepath):
 # Main function
 #
 if __name__ == "__main__":
-    # 1. Load word clues
-    word_clues = word_clues_load("result.words")
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description="generate crossword clues using openai")
 
-    if(word_clues == None):
-        print(f"Failed to load word clues")
+    parser.add_argument("--theme",
+        type=str, default=None,
+        help="Theme of words"
+    )
+
+    parser.add_argument("--name",
+        type=str, default="temp",
+        help="Name of clues"
+    )
+
+    parser.add_argument("--words",
+        type=str, default=None,
+        help="Name of words"
+    )
+
+    parser.add_argument("--amount",
+        type=int, default=4,
+        help="Amount of words in clue"
+    )
+
+    parser.add_argument("--length",
+        type=int, default=30,
+        help="Max length of clue"
+    )
+
+    parser.add_argument("--force",
+        action='store_true',
+        help="Modify existing clues"
+    )
+
+    args, words = parser.parse_known_args()
+
+
+    clues_file = clues_file_get(args.name)
+
+    if args.words:
+        words_file = words_file_get(args.words)
+
+        if not os.path.exists(words_file):
+            print(f"korsord: {args.words}: Words not found")
+            exit(0)
+
+        if os.path.exists(clues_file) and not args.force:
+            print(f"korsord: {args.name}: Clues already exist")
+            exit(0)
+
+        word_clues = word_clues_load(words_file)
+
+    elif not os.path.exists(clues_file):
+        print(f"korsord: {args.name}: Clues not found")
+        exit(0)
+
+    else:
+        word_clues = word_clues_load(clues_file)
+
+
+    if not word_clues:
+        print(f"korsord: {args.name}: Failed to load words")
         exit(1)
 
-    print(f"Loaded words")
 
-    # 2. Fill in missing clues using ChatGPT
+    # Get max width for alignment
+    max_width = 0
+
+    for word in word_clues:
+        max_width = max(max_width, len(word) + 1)
+
+
+    # Fill in missing clues using ChatGPT
     for word, clue in word_clues.items():
-        if(len(clue) == 0):
-            clue = word_clue_gen(word)
-            print(f"Generated ({word}): {clue}")
+
+        # Generate missing clues, or overwrite clues if specified
+        if (not words and len(clue) == 0) or (words and word in words):
+            for count in range(10):
+                clue = word_clue_gen(word)
+
+                if len(clue) <= args.length:
+                    break
+
+            curr_width = max_width - len(word)
+
+            print(f"{word}{' ' * curr_width}: {clue}")
 
         word_clues[word] = clue
 
-    # 3. Load word clues
-    word_clues_save(word_clues, "result.words")
-
-    print(f"Saved result")
+    # Save result
+    word_clues_save(word_clues, clues_file)
