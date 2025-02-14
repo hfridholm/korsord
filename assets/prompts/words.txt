@@ -1,0 +1,4 @@
+Jag vill ha {amount} unika ord inom temat "{theme}" som ska användas i ett svenskt korsord. Det är livsviktigt att orden är max {length} bokstäver långa. Det är livsviktigt att det är enskilda ord och inte sammansatta ord. Det är livsviktigt att orden inte innehåller bokstäverna: å, ä eller ö.
+
+Det är livsviktigt att du inte använder några av följande ord:
+{words}

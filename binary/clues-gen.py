@@ -9,40 +9,9 @@
 from openai import OpenAI
 import argparse
 import os
+from common import *
 
 api_key_file = "api.key"
-
-CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
-
-WORDS_DIR = os.path.join(CONFIG_DIR, "words")
-
-#
-# Get the file path of a words by name
-#
-def words_file_get(name):
-    return os.path.join(WORDS_DIR, f"{name}.words")
-
-CLUES_DIR = os.path.join(CONFIG_DIR, "clues")
-
-#
-# Get the file path of a clues by name
-#
-def clues_file_get(name):
-    return os.path.join(CLUES_DIR, f"{name}.clues")
-
-#
-# Function to read the API key from a local file
-#
-def api_key_get(filepath):
-    try:
-        with open(filepath, 'r') as file:
-            api_key = file.read().strip()
-
-        return api_key
-
-    except Exception as e:
-        print(f"Error reading API key: {e}")
-        return None
 
 # Start an openai client using API key
 client = OpenAI(api_key=api_key_get(api_key_file))
@@ -51,14 +20,16 @@ client = OpenAI(api_key=api_key_get(api_key_file))
 # Ask ChatGPT for a clue to a word
 #
 def word_clue_gen(word):
-    prompt = f"""
-Skriv en ledtråd till ordet '{word}'.
-Ledtråden ska användas i ett korsord.
-Ditt svar ska innehålla färre än {args.amount} ord.
-Själva ordet får inte stå med i ledtråden.
-Ordet 'ledtråd' får inte finnas med i ditt svar.
-Inga långa ord får finnas med.
-    """
+    values = {
+        "{amount}": args.amount,
+        "{word}": word,
+    }
+
+    prompt = prompt_load("clues", values)
+
+    if not prompt:
+        print(f"Failed to load prompt")
+        return None
 
     if args.theme:
         prompt += f"Temat är: \'{args.theme}\'"

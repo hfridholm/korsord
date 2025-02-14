@@ -8,25 +8,7 @@ import argparse
 import subprocess
 import sys
 import os
-
-# Base directory where the programs are located
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
-
-IMAGES_DIR = os.path.join(CONFIG_DIR, "images")
-
-#
-# Get the file path of a image by name
-#
-def image_file_get(name):
-    return os.path.join(IMAGES_DIR, f"{name}.png")
-
-#
-# Get the name of a image file
-#
-def image_name_get(file):
-    return os.path.splitext(file.replace(IMAGES_DIR, ''))[0].strip('/')
+from common import *
 
 #
 # Handling the 'gen' command
@@ -57,7 +39,7 @@ def image_view(extra_args):
 
     if not os.path.exists(image_file):
         print(f"korsord: {view_args.name}: Image not found")
-        exit(0)
+        sys.exit(0)
 
     subprocess.run(["feh", image_file])
 
@@ -78,7 +60,7 @@ def image_del(extra_args):
 
     if not os.path.exists(image_file):
         print(f"korsord: {del_args.name}: Image not found")
-        exit(0)
+        sys.exit(0)
 
     subprocess.run(["rm", image_file])
 
@@ -128,11 +110,11 @@ def image_copy(extra_args):
 
     if not os.path.exists(image_file):
         print(f"korsord: {copy_args.name}: Image not found")
-        exit(0)
+        sys.exit(0)
 
     if os.path.exists(copy_file) and not copy_args.force:
         print(f"korsord: {copy_args.copy}: Image already exists")
-        exit(0)
+        sys.exit(0)
 
     subprocess.run(["cp", image_file, copy_file])
 

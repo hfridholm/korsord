@@ -8,16 +8,7 @@ import argparse
 import subprocess
 import sys
 import os
-
-CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
-
-WORDS_DIR = os.path.join(CONFIG_DIR, "words")
-
-#
-# Get the file path of a words by name
-#
-def words_file_get(name):
-    return os.path.join(WORDS_DIR, f"{name}.words")
+from common import *
 
 #
 # Extract the first word of line
@@ -123,7 +114,7 @@ if __name__ == '__main__':
 
     if not words:
         print(f"No words to extract")
-        exit(0)
+        sys.exit(0)
 
     words = words_filter(words)
 

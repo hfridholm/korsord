@@ -8,11 +8,7 @@ import argparse
 import subprocess
 import sys
 import os
-
-# Base directory where the programs are located
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
+from common import *
 
 #
 # Generate temp.words
@@ -163,44 +159,44 @@ if __name__ == "__main__":
 
     except:
         print(f"korsord: {args.step}: Step not found")
-        exit(1)
+        sys.exit(1)
 
 
     if step_index <= 0 and not args.theme:
         print(f"korsord: Theme must be supplied for words")
-        exit(1)
+        sys.exit(1)
 
     if step_index <= 1 and not (args.width and args.height):
         print(f"korsord: Size must be supplied for model")
-        exit(1)
+        sys.exit(1)
 
 
     # 1. Generate words
     if step_index <= 0 and words_gen(args) != 0:
         print(f"Failed to generate words")
-        exit(2)
+        sys.exit(2)
 
     # 2. Generate model
     if step_index <= 1 and model_gen(args) != 0:
         print(f"Failed to generate model")
-        exit(3)
+        sys.exit(3)
 
     # 3. Generate grid
     if step_index <= 2 and grid_gen(args) != 0:
         print(f"Failed to generate grid")
-        exit(4)
+        sys.exit(4)
 
     # 4. Generate clues
     if step_index <= 3 and clues_gen(args) != 0:
         print(f"Failed to generate clues")
-        exit(5)
+        sys.exit(5)
 
     # 5. Generate image
     if step_index <= 4 and args.image and image_gen(args) != 0:
         print(f"Failed to generate image")
-        exit(6)
+        sys.exit(6)
 
     # 6. Render images
     if step_index <= 5 and render_images(args) != 0:
         print(f"Failed to render images")
-        exit(7)
+        sys.exit(7)

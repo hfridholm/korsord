@@ -10,33 +10,9 @@ from openai import OpenAI
 import argparse
 import os
 import subprocess
+from common import *
 
 api_key_file = "api.key"
-
-CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
-
-MODELS_DIR = os.path.join(CONFIG_DIR, "models")
-
-#
-# Get the file path of a model by name
-#
-def model_file_get(name):
-    return os.path.join(MODELS_DIR, f"{name}.model")
-
-
-#
-# Function to read the API key from a local file
-#
-def api_key_get(filepath):
-    try:
-        with open(filepath, 'r') as file:
-            api_key = file.read().strip()
-
-        return api_key
-
-    except Exception as e:
-        print(f"Error reading API key: {e}")
-        return None
 
 # Start an openai client using API key
 client = OpenAI(api_key=api_key_get(api_key_file))

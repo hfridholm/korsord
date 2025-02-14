@@ -8,25 +8,7 @@ import argparse
 import subprocess
 import sys
 import os
-
-# Base directory where the programs are located
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
-
-GRIDS_DIR = os.path.join(CONFIG_DIR, "grids")
-
-#
-# Get the file path of a grid by name
-#
-def grid_file_get(name):
-    return os.path.join(GRIDS_DIR, f"{name}.grid")
-
-#
-# Get the name of a grid file
-#
-def grid_name_get(file):
-    return os.path.splitext(file.replace(GRIDS_DIR, ''))[0].strip('/')
+from common import *
 
 #
 # Handling the 'gen' command
@@ -57,7 +39,7 @@ def grid_del(extra_args):
 
     if not os.path.exists(grid_file):
         print(f"korsord: {del_args.name}: Grid not found")
-        exit(0)
+        sys.exit(0)
 
     subprocess.run(["rm", grid_file])
 
@@ -78,7 +60,7 @@ def grid_show(extra_args):
 
     if not os.path.exists(grid_file):
         print(f"korsord: {show_args.name}: Grid not found")
-        exit(0)
+        sys.exit(0)
 
     subprocess.run(["cat", grid_file])
 
@@ -104,7 +86,7 @@ def grid_edit(extra_args):
         else:
             print(f"korsord: {edit_args.name}: Grid not found")
 
-        exit(0)
+        sys.exit(0)
 
     subprocess.run(["vim", grid_file])
 
@@ -154,11 +136,11 @@ def grid_copy(extra_args):
 
     if not os.path.exists(grid_file):
         print(f"korsord: {copy_args.name}: Grid not found")
-        exit(0)
+        sys.exit(0)
 
     if os.path.exists(copy_file) and not copy_args.force:
         print(f"korsord: {copy_args.copy}: Grid already exists")
-        exit(0)
+        sys.exit(0)
 
     subprocess.run(["cp", grid_file, copy_file])
 

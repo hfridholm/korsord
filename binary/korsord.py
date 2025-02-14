@@ -8,9 +8,7 @@ import argparse
 import subprocess
 import sys
 import os
-
-# Base directory where the programs are located
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+from common import *
 
 if __name__ == "__main__":
     # Parse command line arguments

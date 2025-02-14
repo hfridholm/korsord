@@ -11,27 +11,7 @@ import os
 import string
 import random
 import argparse
-
-# Base directory where the programs are located
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
-
-GRIDS_DIR = os.path.join(CONFIG_DIR, "grids")
-
-#
-# Get the file path of a grid by name
-#
-def grid_file_get(name):
-    return os.path.join(GRIDS_DIR, f"{name}.grid")
-
-CLUES_DIR = os.path.join(CONFIG_DIR, "clues")
-
-#
-# Get the file path of a clues by name
-#
-def clues_file_get(name):
-    return os.path.join(CLUES_DIR, f"{name}.clues")
+from common import *
 
 MAX_LENGTH = 30
 WRAP_WIDTH = 10
@@ -275,7 +255,7 @@ grid = grid_load(grid_file)
 
 if not grid:
     print(f"Failed to load grid")
-    exit(1)
+    sys.exit(1)
 
 print(f"Loaded grid {grid_file}")
 
@@ -286,7 +266,7 @@ block_words = block_words_find(grid)
 
 if not block_words:
     print(f"Failed to find block words")
-    exit(2)
+    sys.exit(2)
 
 print(f"Found words in grid")
 
@@ -299,7 +279,7 @@ word_clues = word_clues_load(clues_file)
 
 if not word_clues:
     print(f"Failed to load clues")
-    exit(3)
+    sys.exit(3)
 
 print(f"Loaded word clues {clues_file}")
 
@@ -323,7 +303,7 @@ try:
 
 except IOError:
     print(f"Failed to load font")
-    exit(1)
+    sys.exit(1)
 
 print(f"Loaded font {FONT_PATH}")
 

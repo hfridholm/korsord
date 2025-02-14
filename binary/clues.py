@@ -8,36 +8,7 @@ import argparse
 import subprocess
 import sys
 import os
-
-# Base directory where the programs are located
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
-
-CLUES_DIR = os.path.join(CONFIG_DIR, "clues")
-
-#
-# Get the file path of a clues by name
-#
-def clues_file_get(name):
-    return os.path.join(CLUES_DIR, f"{name}.clues")
-
-#
-# Get the name of a clues file
-#
-def clues_name_get(file):
-    return os.path.splitext(file.replace(CLUES_DIR, ''))[0].strip('/')
-
-#
-# Get number of lines in file
-#
-def line_count_get(path):
-    try:
-        with open(path, 'r') as file:
-            return len(file.readlines())
-
-    except Exception as exception:
-        return 0
+from common import *
 
 #
 # Handling the 'gen' command
@@ -68,7 +39,7 @@ def clues_del(extra_args):
 
     if not os.path.exists(clues_file):
         print(f"korsord: {del_args.name}: Clues not found")
-        exit(0)
+        sys.exit(0)
 
     subprocess.run(["rm", clues_file])
 
@@ -94,9 +65,36 @@ def clues_edit(extra_args):
         else:
             print(f"korsord: {edit_args.name}: Clues not found")
 
-        exit(0)
+        sys.exit(0)
 
     subprocess.run(["vim", clues_file])
+
+#
+# Handling the 'view' command
+#
+def clues_view(extra_args):
+    view_parser = argparse.ArgumentParser(description="View clues")
+
+    view_parser.add_argument('--name',
+        type=str, default="temp",
+        help="Name of clues"
+    )
+
+    view_args = view_parser.parse_args(extra_args)
+
+    clues_file = clues_file_get(view_args.name)
+
+    if not os.path.exists(clues_file):
+        if not view_args.new:
+            if view_args.name == "temp":
+                print(f"korsord: Words not found")
+
+            else:
+                print(f"korsord: {view_args.name}: Words not found")
+
+            sys.exit(0)
+
+    subprocess.run(["less", clues_file])
 
 #
 # Get all clues files
@@ -121,7 +119,7 @@ def clues_list(extra_args):
 
     if len(clues_files) == 0:
         print(f"No clues exist")
-        exit(0)
+        sys.exit(0)
 
     max_width = 0
 
@@ -167,11 +165,11 @@ def clues_copy(extra_args):
 
     if not os.path.exists(clues_file):
         print(f"korsord: {copy_args.name}: Clues not found")
-        exit(0)
+        sys.exit(0)
 
     if os.path.exists(copy_file) and not copy_args.force:
         print(f"korsord: {copy_args.copy}: Clues already exists")
-        exit(0)
+        sys.exit(0)
 
     subprocess.run(["cp", clues_file, copy_file])
 
@@ -187,7 +185,7 @@ if __name__ == "__main__":
 
     parser.add_argument("command",
         nargs="?",
-        help="gen, edit, del, copy, list"
+        help="gen, view, edit, del, copy, list"
     )
 
     args, extra_args = parser.parse_known_args()
@@ -214,6 +212,9 @@ if __name__ == "__main__":
 
     elif args.command == "edit":
         clues_edit(extra_args)
+
+    elif args.command == "view":
+        clues_view(extra_args)
 
     elif args.command == "del":
         clues_del(extra_args)

@@ -9,32 +9,10 @@
 from openai import OpenAI
 import argparse
 import os
+from common import *
+import re
 
 api_key_file = "api.key"
-
-CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
-
-WORDS_DIR = os.path.join(CONFIG_DIR, "words")
-
-#
-# Get the file path of a words by name
-#
-def words_file_get(name):
-    return os.path.join(WORDS_DIR, f"{name}.words")
-
-#
-# Function to read the API key from a local file
-#
-def api_key_get(filepath):
-    try:
-        with open(filepath, 'r') as file:
-            api_key = file.read().strip()
-
-        return api_key
-
-    except Exception as e:
-        print(f"Error reading API key: {e}")
-        return None
 
 # Start an openai client using API key
 client = OpenAI(api_key=api_key_get(api_key_file))
@@ -43,16 +21,20 @@ client = OpenAI(api_key=api_key_get(api_key_file))
 # Ask ChatGPT for a clue to a word
 #
 def words_gen(existing_words):
-    prompt = f"""
-        Jag vill ha {args.amount} unika ord inom temat "{args.theme}" som ska användas i ett svenskt korsord. Det är livsviktigt att orden är max {args.length} bokstäver långa. Det är livsviktigt att det är enskilda ord och inte sammansatta ord. Det är livsviktigt att orden inte innehåller bokstäverna: å, ä eller ö.
+    values = {
+        "{amount}": args.amount,
+        "{theme}": args.theme,
+        "{length}": args.length,
+        "{words}": '\n'.join(existing_words[-10:])
+    }
 
-        Det är livsviktigt att ditt svar endast innehåller varje ord på en separat rad utan numreringar eller andra markörer.
+    prompt = prompt_load("words", values)
 
-        Det är livsviktigt att du inte använder några av följande ord:
-        {', '.join(existing_words[-10:])}
-    """
+    if not prompt:
+        print(f"Failed to load prompt")
+        return None
 
-    # print(f"Prompt:\n{prompt}\n")
+    print(f"Prompt:\n{prompt}\n")
 
     try:
         completion = client.chat.completions.create(
@@ -70,8 +52,16 @@ def words_gen(existing_words):
 
         gen_words = []
 
-        for word in message.splitlines():
-            word = word.strip().lower()
+        for line in message.splitlines():
+            line_words = re.findall(r'[A-Za-zåäöÅÄÖ]+', line)
+
+            # If there are more than one word on line, or
+            # if there are no word on line,
+            # disregard line
+            if len(line_words) != 1:
+                continue
+
+            word = line_words[0].strip().lower()
 
             if word not in existing_words:
                 gen_words.append(word)
@@ -210,7 +200,7 @@ if __name__ == "__main__":
 
         elif not args.append:
             print(f"korsord: Words already exist")
-            exit(0)
+            sys.exit(0)
 
     else: # if no words exist
         existing_words = []

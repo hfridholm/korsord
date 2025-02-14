@@ -5,6 +5,7 @@
 !makefile
 
 # Python scripts
+!common.py
 !gen.py
 !render.py
 
