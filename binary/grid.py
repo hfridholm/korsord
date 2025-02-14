@@ -44,22 +44,22 @@ def grid_del(extra_args):
     subprocess.run(["rm", grid_file])
 
 #
-# Handling the 'show' command
+# Handling the 'view' command
 #
-def grid_show(extra_args):
-    show_parser = argparse.ArgumentParser(description="Show grid")
+def grid_view(extra_args):
+    view_parser = argparse.ArgumentParser(description="View grid")
 
-    show_parser.add_argument('--name',
+    view_parser.add_argument('--name',
         type=str, default="temp",
         help="Name of grid"
     )
 
-    show_args = show_parser.parse_args(extra_args)
+    view_args = view_parser.parse_args(extra_args)
 
-    grid_file = grid_file_get(show_args.name)
+    grid_file = grid_file_get(view_args.name)
 
     if not os.path.exists(grid_file):
-        print(f"korsord: {show_args.name}: Grid not found")
+        print(f"korsord: {view_args.name}: Grid not found")
         sys.exit(0)
 
     subprocess.run(["cat", grid_file])
@@ -182,7 +182,7 @@ if __name__ == "__main__":
 
     parser.add_argument("command",
         nargs="?",
-        help="gen, show, edit, del, copy, list"
+        help="gen, view, edit, del, copy, list"
     )
 
     args, extra_args = parser.parse_known_args()
@@ -207,8 +207,8 @@ if __name__ == "__main__":
     if args.command == "gen":
         grid_gen(extra_args)
 
-    elif args.command == "show":
-        grid_show(extra_args)
+    elif args.command == "view":
+        grid_view(extra_args)
 
     elif args.command == "edit":
         grid_edit(extra_args)

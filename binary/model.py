@@ -70,22 +70,22 @@ def model_del(extra_args):
     subprocess.run(["rm", model_file])
 
 #
-# Handling the 'show' command
+# Handling the 'view' command
 #
-def model_show(extra_args):
-    show_parser = argparse.ArgumentParser(description="Show model")
+def model_view(extra_args):
+    view_parser = argparse.ArgumentParser(description="View model")
 
-    show_parser.add_argument('--name',
+    view_parser.add_argument('--name',
         type=str, default="temp",
         help="Name of model"
     )
 
-    show_args = show_parser.parse_args(extra_args)
+    view_args = view_parser.parse_args(extra_args)
 
-    model_file = model_file_get(show_args.name)
+    model_file = model_file_get(view_args.name)
 
     if not os.path.exists(model_file):
-        print(f"korsord: {show_args.name}: Model not found")
+        print(f"korsord: {view_args.name}: Model not found")
         sys.exit(0)
 
     subprocess.run(["cat", model_file])
@@ -217,7 +217,7 @@ if __name__ == "__main__":
 
     parser.add_argument("command",
         nargs="?",
-        help="gen, show, edit, new, del, copy, list"
+        help="gen, view, edit, new, del, copy, list"
     )
 
     args, extra_args = parser.parse_known_args()
@@ -242,8 +242,8 @@ if __name__ == "__main__":
     if args.command == "gen":
         model_gen(extra_args)
 
-    elif args.command == "show":
-        model_show(extra_args)
+    elif args.command == "view":
+        model_view(extra_args)
 
     elif args.command == "edit":
         model_edit(extra_args)

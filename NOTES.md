@@ -24,7 +24,6 @@
 
 ## Potential Quick Fixes
 - maybe hard code BASE_DIR in scripts
-- rename 'show' command to 'view'
 - rename temp. files to maybe 'default' or something similar
 - add flags to makefile to silent output
 - move lock inside stats struct and lock inside grid struct
