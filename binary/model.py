@@ -126,22 +126,48 @@ def model_edit(extra_args):
     subprocess.run(["vim", model_file])
 
 #
-# Handling the 'list' command
+# Get all model files
 #
-def model_list(extra_args):
-    files_exist = False
+def model_files_get():
+    model_files = []
 
     for root, dirs, files in os.walk(MODELS_DIR):
         for file in files:
             if file.endswith('.model'):
-                files_exist = True
-
                 model_file = os.path.join(root, file)
 
-                print(f"{model_name_get(model_file)}")
+                model_files.append(model_file)
 
-    if not files_exist:
-        print(f"No models exist")
+    return model_files
+
+#
+# Handling the 'list' command
+#
+def model_list(extra_args):
+    model_files = model_files_get()
+
+    if len(model_files) == 0:
+        print(f"No model exist")
+        sys.exit(0)
+
+    max_width = 0
+
+    for file in model_files:
+        name = model_name_get(file)
+
+        max_width = max(max_width, len(name) + 1)
+
+    for file in model_files:
+        name = model_name_get(file)
+
+        model_size = grid_size_get(file)
+
+        if not model_size:
+            continue
+
+        curr_width = max_width - len(name)
+
+        print(f"{name}{' ' * curr_width}: {model_size[0]}x{model_size[1]}")
 
 #
 # Handling the 'copy' command

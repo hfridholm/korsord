@@ -91,22 +91,48 @@ def grid_edit(extra_args):
     subprocess.run(["vim", grid_file])
 
 #
-# Handling the 'list' command
+# Get all grid files
 #
-def grid_list(extra_args):
-    files_exist = False
+def grid_files_get():
+    grid_files = []
 
     for root, dirs, files in os.walk(GRIDS_DIR):
         for file in files:
             if file.endswith('.grid'):
-                files_exist = True
-
                 grid_file = os.path.join(root, file)
 
-                print(f"{grid_name_get(grid_file)}")
+                grid_files.append(grid_file)
 
-    if not files_exist:
-        print(f"No grids exist")
+    return grid_files
+
+#
+# Handling the 'list' command
+#
+def grid_list(extra_args):
+    grid_files = grid_files_get()
+
+    if len(grid_files) == 0:
+        print(f"No grid exist")
+        sys.exit(0)
+
+    max_width = 0
+
+    for file in grid_files:
+        name = grid_name_get(file)
+
+        max_width = max(max_width, len(name) + 1)
+
+    for file in grid_files:
+        name = grid_name_get(file)
+
+        grid_size = grid_size_get(file)
+
+        if not grid_size:
+            continue
+
+        curr_width = max_width - len(name)
+
+        print(f"{name}{' ' * curr_width}: {grid_size[0]}x{grid_size[1]}")
 
 #
 # Handling the 'copy' command

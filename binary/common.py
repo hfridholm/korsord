@@ -106,7 +106,31 @@ def line_count_get(path):
             return len(file.readlines())
 
     except Exception as exception:
-        return 0
+        return None
+
+#
+# Get size of grid / model
+#
+# RETURN (width, height) or None
+#
+def grid_size_get(path):
+    try:
+        with open(path, 'r') as file:
+            lines = file.readlines()
+
+            if len(lines) == 0:
+                return None
+
+            height = len(lines)
+            width = len(lines[0]) // 2
+
+            for line in lines:
+                width = max(width, len(line) // 2)
+
+            return (width, height)
+
+    except Exception as exception:
+        return None
 
 #
 # Load placeholder prompt from file and substitute values

@@ -5,8 +5,6 @@
 - write in README.md
 
 ## Quick Fixes
-- show grid size on 'list' command in grid.py and model.py
-- extract ChatGPT prompts to .txt files with placeholders
 - fix grid-gen (korsord.c) file handling
 - return proper exit code on fail in korsord.c
 - fix render.py file handling and result storing

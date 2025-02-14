@@ -187,6 +187,9 @@ def words_list(extra_args):
 
         line_count = line_count_get(file)
 
+        if not line_count:
+            continue
+
         curr_width = max_width - len(name)
 
         print(f"{name}{' ' * curr_width}: {line_count}")
