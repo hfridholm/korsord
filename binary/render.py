@@ -12,6 +12,27 @@ import string
 import random
 import argparse
 
+# Base directory where the programs are located
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
+
+GRIDS_DIR = os.path.join(CONFIG_DIR, "grids")
+
+#
+# Get the file path of a grid by name
+#
+def grid_file_get(name):
+    return os.path.join(GRIDS_DIR, f"{name}.grid")
+
+CLUES_DIR = os.path.join(CONFIG_DIR, "clues")
+
+#
+# Get the file path of a clues by name
+#
+def clues_file_get(name):
+    return os.path.join(CLUES_DIR, f"{name}.clues")
+
 MAX_LENGTH = 30
 WRAP_WIDTH = 10
 
@@ -28,19 +49,27 @@ LINE_WIDTH  = 2
 #
 parser = argparse.ArgumentParser(description="render exported crossword to images")
 
-parser.add_argument("--results-dir", type=str, help="Directory to store crosswords")
-parser.add_argument("--result-dir",  type=str, help="Directory name of saved images")
+parser.add_argument("--results-dir",
+    type=str, default="results",
+    help="Directory to store crosswords"
+)
 
-parser.add_argument("--font-dir",    type=str, help="Directory to font")
-parser.add_argument("--font-file",   type=str, help="File name of font")
+parser.add_argument("--result-dir",
+    type=str, default="korsord",
+    help="Directory name of saved images"
+)
+
+parser.add_argument("--font-dir",
+    type=str, default="../assets/fonts",
+    help="Directory to font"
+)
+
+parser.add_argument("--font-file",
+    type=str, default="Ubuntu-B.ttf",
+    help="File name of font"
+)
 
 args = parser.parse_args()
-
-RESULTS_DIR = args.results_dir if args.results_dir else "results"
-RESULT_DIR  = args.result_dir  if args.result_dir  else "korsord"
-
-FONT_DIR  = args.font_dir  if args.font_dir  else "../assets/fonts"
-FONT_FILE = args.font_file if args.font_file else "Ubuntu-B.ttf"
 
 #
 # Square struct
@@ -235,25 +264,27 @@ def block_words_find(grid):
 
     return block_words
 
-print(f"Loading grid {'result.grid'}")
-
 #
 # Load grid
 #
-grid = grid_load("result.grid")
+grid_file = grid_file_get("temp")
 
-if(grid == None):
+print(f"Loading grid {grid_file}")
+
+grid = grid_load(grid_file)
+
+if not grid:
     print(f"Failed to load grid")
     exit(1)
 
-print(f"Loaded grid {'result.grid'}")
+print(f"Loaded grid {grid_file}")
 
 print(f"Finding words in grid")
 
 # Get blocks and their words
 block_words = block_words_find(grid)
 
-if(block_words == None):
+if not block_words:
     print(f"Failed to find block words")
     exit(2)
 
@@ -262,13 +293,15 @@ print(f"Found words in grid")
 print(f"Loading word clues {'result.words'}")
 
 # Load words along with threir clues
-word_clues = word_clues_load("result.words")
+clues_file = clues_file_get("temp")
 
-if(word_clues == None):
+word_clues = word_clues_load(clues_file)
+
+if not word_clues:
     print(f"Failed to load clues")
     exit(3)
 
-print(f"Loaded word clues {'result.words'}")
+print(f"Loaded word clues {clues_file}")
 
 # Initialize img, draw and font variables
 img_w = grid.width  * SQUARE_SIZE
@@ -277,7 +310,7 @@ img_h = grid.height * SQUARE_SIZE
 img = Image.new('RGBA', (img_w, img_h), color=(0, 0, 0, 0))
 draw = ImageDraw.Draw(img)
 
-FONT_PATH = f"{FONT_DIR}/{FONT_FILE}"
+FONT_PATH = f"{args.font_dir}/{args.font_file}"
 
 print(f"Loading font {FONT_PATH}")
 
@@ -421,21 +454,19 @@ def new_result_dir_get():
     count = 1
     new_result_dir = f"korsord{count}"
 
-    while os.path.exists(f"{RESULTS_DIR}/{new_result_dir}"):
+    while os.path.exists(f"{args.results_dir}/{new_result_dir}"):
         count += 1
         new_result_dir = f"korsord{count}"
 
     return new_result_dir
 
 # Get the path to new result directory
-if(RESULT_DIR == None):
-    RESULT_DIR = new_result_dir_get()
 
-if not os.path.exists(f"{RESULTS_DIR}/{RESULT_DIR}"):
-    os.makedirs(f"{RESULTS_DIR}/{RESULT_DIR}")
+if not os.path.exists(f"{args.results_dir}/{args.result_dir}"):
+    os.makedirs(f"{args.results_dir}/{args.result_dir}")
 
 
-img.save(f"{RESULTS_DIR}/{RESULT_DIR}/normal.png", "PNG")
+img.save(f"{args.results_dir}/{args.result_dir}/normal.png", "PNG")
 
 print(f"Saved normal crossword image")
 
@@ -491,7 +522,7 @@ for x in range(grid.width):
 
 print(f"Drew letter numbers")
 
-img.save(f"{RESULTS_DIR}/{RESULT_DIR}/helping.png", "PNG")
+img.save(f"{args.results_dir}/{args.result_dir}/helping.png", "PNG")
 
 print(f"Saved helping crossword image")
 
@@ -511,6 +542,6 @@ for x in range(grid.width):
 print(f"Filled in words")
 
 # Save solved crossword image
-img.save(f"{RESULTS_DIR}/{RESULT_DIR}/solved.png", "PNG")
+img.save(f"{args.results_dir}/{args.result_dir}/solved.png", "PNG")
 
 print(f"Saved solved crossword image")

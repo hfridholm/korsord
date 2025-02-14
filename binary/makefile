@@ -111,17 +111,19 @@ HEADER_FILES := $(wildcard $(SOURCE_DIR)/*/*.h $(SOURCE_DIR)/*.h)
 
 OBJECT_FILES := $(addprefix $(OBJECT_DIR)/, $(notdir $(SOURCE_FILES:.c=.o)))
 
-korsord: $(addprefix $(BINARY_DIR)/, gen clues.py render.py korsord.py) 
+PYTHON_SCRIPTS := $(wildcard $(BINARY_DIR)/*.py)
+
+korsord: $(PYTHON_SCRIPTS) $(BINARY_DIR)/grid-gen
 	cython $(BINARY_DIR)/korsord.py --embed -o $(BINARY_DIR)/korsord.c
 	gcc -Os $$(python3-config --includes) $(BINARY_DIR)/korsord.c -o $(BINARY_DIR)/korsord $$(python3-config --ldflags --embed)
 
-$(BINARY_DIR)/gen: COMPILE_FLAGS := $(SPEED_COMPILE_FLAGS)
-$(BINARY_DIR)/gen: $(OBJECT_FILES) $(SOURCE_FILES) $(HEADER_FILES)
-	gcc $(OBJECT_FILES) $(SPEED_LINKER_FLAGS) -o $(BINARY_DIR)/gen
+$(BINARY_DIR)/grid-gen: COMPILE_FLAGS := $(SPEED_COMPILE_FLAGS)
+$(BINARY_DIR)/grid-gen: $(OBJECT_FILES) $(SOURCE_FILES) $(HEADER_FILES)
+	gcc $(OBJECT_FILES) $(SPEED_LINKER_FLAGS) -o $(BINARY_DIR)/grid-gen
 
 debug: COMPILE_FLAGS := $(DEBUG_COMPILE_FLAGS)
 debug: $(OBJECT_FILES) $(SOURCE_FILES) $(HEADER_FILES)
-	gcc $(OBJECT_FILES) $(DEBUG_LINKER_FLAGS) -o $(BINARY_DIR)/gen
+	gcc $(OBJECT_FILES) $(DEBUG_LINKER_FLAGS) -o $(BINARY_DIR)/grid-gen
 
 $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/*/%.c
 	gcc $< -c $(COMPILE_FLAGS) -o $@
@@ -131,7 +133,7 @@ $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.c
 
 DEBUG_FILES := $(addprefix $(BINARY_DIR)/, vgcore* gmon.out profile.txt debug.log)
 
-BINARY_FILES := $(addprefix $(BINARY_DIR)/, gen korsord)
+BINARY_FILES := $(addprefix $(BINARY_DIR)/, grid-gen korsord)
 
 .PRECIOUS: $(OBJECT_FILES) $(BINARY_FILES)
 

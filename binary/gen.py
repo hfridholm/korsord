@@ -18,6 +18,10 @@ CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
 # Generate temp.words
 #
 def words_gen(args):
+    if not args.theme:
+        print(f"korsord: No supplied theme")
+        return 1
+
     words_script = os.path.join(BASE_DIR, "words-gen.py")
 
     if not os.path.isfile(words_script):
@@ -26,11 +30,13 @@ def words_gen(args):
 
     min_word_amount = int(args.width / 4 * args.height + args.height / 4 * args.width)
 
-    word_amount = min_word_amount * 10
+    word_amount = min_word_amount * 20
 
     max_length = max(args.width, args.height)
 
-    subprocess.run(["python", words_script, "--new", args.theme, "--amount", str(word_amount), "--length", str(max_length)])
+    result = subprocess.run(["python", words_script, "--new", args.theme, "--amount", str(word_amount), "--length", str(max_length)])
+
+    return result.returncode
 
 #
 # Generate temp.model
@@ -44,7 +50,9 @@ def model_gen(args):
 
     image_arg = ["--image", args.image] if args.image else []
 
-    subprocess.run(["python", model_script, "--force", str(args.width), str(args.height)] + image_arg)
+    result = subprocess.run(["python", model_script, "--force", str(args.width), str(args.height)] + image_arg)
+
+    return result.returncode
 
 #
 # Generate temp.grid and temp.clues
@@ -56,7 +64,9 @@ def grid_gen(args):
         print(f"korsord: {grid_program}: File not found")
         sys.exit(1)
 
-    subprocess.run([grid_program, "temp", "temp", "svenska/870k", "-l", "6"])
+    result = subprocess.run([grid_program, "temp.model", "temp.words", "svenska/270k.words"])
+
+    return result.returncode
 
 #
 # Generate temp.png
@@ -68,7 +78,9 @@ def image_gen(args):
         print(f"korsord: {image_script}: File not found")
         sys.exit(1)
 
-    subprocess.run(["python", image_script, args.image])
+    result = subprocess.run(["python", image_script, args.image])
+
+    return result.returncode
 
 #
 # Generate clues in temp.clues
@@ -80,7 +92,11 @@ def clues_gen(args):
         print(f"korsord: {clues_script}: File not found")
         sys.exit(1)
 
-    subprocess.run(["python", clues_script, "--theme", args.theme])
+    theme_arg = ["--theme", args.theme] if args.theme else []
+
+    result = subprocess.run(["python", clues_script] + theme_arg)
+
+    return result.returncode
 
 #
 # Render final images
@@ -94,7 +110,9 @@ def render_images(args):
 
     image_arg = ["--image", "temp.png"] if args.image else []
 
-    subprocess.run(["python", render_script, "temp.grid", "temp.clues"] + image_arg)
+    result = subprocess.run(["python", render_script] + image_arg)
+
+    return result.returncode
 
 #
 # Main routine
@@ -105,24 +123,29 @@ if __name__ == "__main__":
         description="Generate crossword completely using openai"
     )
 
-    parser.add_argument("theme",
-        type=str,
+    parser.add_argument("--theme",
+        type=str, default=None,
         help="Theme of crossword"
     )
 
-    parser.add_argument("width",
-        type=int,
+    parser.add_argument("--width",
+        type=int, default=None,
         help="Width of grid"
     )
 
-    parser.add_argument("height",
-        type=int,
+    parser.add_argument("--height",
+        type=int, default=None,
         help="Height of grid"
     )
 
     parser.add_argument("--image",
         type=str, default=None,
         help="Prompt for image"
+    )
+
+    parser.add_argument("--step",
+        type=str, default="words",
+        help="Start at step of generation"
     )
 
     args = parser.parse_args()
@@ -132,21 +155,52 @@ if __name__ == "__main__":
         print(f"korsord: {BASE_DIR}: Directory not found")
         sys.exit(1)
 
+
+    steps = ["words", "model", "grid", "clues", "image", "render"]
+
+    try:
+        step_index = steps.index(args.step)
+
+    except:
+        print(f"korsord: {args.step}: Step not found")
+        exit(1)
+
+
+    if step_index <= 0 and not args.theme:
+        print(f"korsord: Theme must be supplied for words")
+        exit(1)
+
+    if step_index <= 1 and not (args.width and args.height):
+        print(f"korsord: Size must be supplied for model")
+        exit(1)
+
+
     # 1. Generate words
-    words_gen(args)
+    if step_index <= 0 and words_gen(args) != 0:
+        print(f"Failed to generate words")
+        exit(2)
 
-    # 1. Generate model
-    model_gen(args)
+    # 2. Generate model
+    if step_index <= 1 and model_gen(args) != 0:
+        print(f"Failed to generate model")
+        exit(3)
 
-    # 1. Generate grid
-    # grid_gen(args)
+    # 3. Generate grid
+    if step_index <= 2 and grid_gen(args) != 0:
+        print(f"Failed to generate grid")
+        exit(4)
 
-    # 1. Generate clues
-    # clues_gen(args)
+    # 4. Generate clues
+    if step_index <= 3 and clues_gen(args) != 0:
+        print(f"Failed to generate clues")
+        exit(5)
 
-    # 1. Generate image
-    if args.image:
-        image_gen(args)
+    # 5. Generate image
+    if step_index <= 4 and args.image and image_gen(args) != 0:
+        print(f"Failed to generate image")
+        exit(6)
 
-    # 1. Render images
-    # render_images(args)
+    # 6. Render images
+    if step_index <= 5 and render_images(args) != 0:
+        print(f"Failed to render images")
+        exit(7)

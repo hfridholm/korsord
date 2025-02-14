@@ -5,6 +5,11 @@
 - write in README.md
 
 ## Quick Fixes
+- extract ChatGPT prompts to .txt files with placeholders
+- fix grid-gen (korsord.c) file handling
+- return proper exit code on fail in korsord.c
+- fix render.py file handling and result storing
+- create 'format' command for 'words', that aligns ':' based on all words
 - fix file paths in grid-gen (korsord.c)
 - fix image position and size in model-gen.py
 - get gen.py working

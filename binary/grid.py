@@ -23,10 +23,16 @@ def grid_file_get(name):
     return os.path.join(GRIDS_DIR, f"{name}.grid")
 
 #
+# Get the name of a grid file
+#
+def grid_name_get(file):
+    return os.path.splitext(file.replace(GRIDS_DIR, ''))[0].strip('/')
+
+#
 # Handling the 'gen' command
 #
 def grid_gen(extra_args):
-    gen_program = os.path.join(BASE_DIR, "gen")
+    gen_program = os.path.join(BASE_DIR, "grid-gen")
 
     if not os.path.isfile(gen_program):
         print(f"korsord: {gen_program}: File not found")

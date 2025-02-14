@@ -44,14 +44,12 @@ client = OpenAI(api_key=api_key_get(api_key_file))
 #
 def words_gen(existing_words):
     prompt = f"""
-        Jag vill ha {args.amount} unika ord inom temat "{args.theme}" som ska användas i ett svenskt korsord. Det är livsviktigt att orden är minst {2} bokstäver korta och max {args.length} bokstäver långa. Det är livsviktigt att det är enskilda ord och inte sammansatta ord. Det är livsviktigt att orden inte innehåller bokstäverna: å, ä eller ö.
+        Jag vill ha {args.amount} unika ord inom temat "{args.theme}" som ska användas i ett svenskt korsord. Det är livsviktigt att orden är max {args.length} bokstäver långa. Det är livsviktigt att det är enskilda ord och inte sammansatta ord. Det är livsviktigt att orden inte innehåller bokstäverna: å, ä eller ö.
 
         Det är livsviktigt att ditt svar endast innehåller varje ord på en separat rad utan numreringar eller andra markörer.
 
         Det är livsviktigt att du inte använder några av följande ord:
         {', '.join(existing_words[-10:])}
-
-        Var kreativ och påhittig. Men det är livsviktigt att du följer intruktionerna.
     """
 
     # print(f"Prompt:\n{prompt}\n")
@@ -68,7 +66,7 @@ def words_gen(existing_words):
 
         message = completion.choices[0].message.content
 
-        # print(f"Response:\n{message}\n")
+        print(f"Response:\n{message}\n")
 
         gen_words = []
 
