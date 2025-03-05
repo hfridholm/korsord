@@ -12,6 +12,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
 
+#
+# Check if string is file path or just file name
+#
+def string_is_file(string):
+    return any(char in string for char in ('/', '\\', '.', ':'))
+
 
 PROMPT_DIR = os.path.join(BASE_DIR, "../assets/prompts")
 

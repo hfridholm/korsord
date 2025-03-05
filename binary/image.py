@@ -106,7 +106,12 @@ def image_copy(extra_args):
     copy_args = copy_parser.parse_args(extra_args)
 
     image_file = image_file_get(copy_args.name)
-    copy_file = image_file_get(copy_args.copy)
+
+    if string_is_file(copy_args.copy):
+        copy_file = copy_args.copy
+
+    else:
+        copy_file = image_file_get(copy_args.copy)
 
     if not os.path.exists(image_file):
         print(f"korsord: {copy_args.name}: Image not found")
