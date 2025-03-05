@@ -116,6 +116,7 @@ PYTHON_SCRIPTS := $(wildcard $(BINARY_DIR)/*.py)
 korsord: $(PYTHON_SCRIPTS) $(BINARY_DIR)/grid-gen
 	cython $(BINARY_DIR)/korsord.py --embed -o $(BINARY_DIR)/korsord.c
 	gcc -Os $$(python3-config --includes) $(BINARY_DIR)/korsord.c -o $(BINARY_DIR)/korsord $$(python3-config --ldflags --embed)
+	@-rm 2>/dev/null $(BINARY_DIR)/korsord.c
 
 $(BINARY_DIR)/grid-gen: COMPILE_FLAGS := $(SPEED_COMPILE_FLAGS)
 $(BINARY_DIR)/grid-gen: $(OBJECT_FILES) $(SOURCE_FILES) $(HEADER_FILES)
@@ -133,7 +134,7 @@ $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.c
 
 DEBUG_FILES := $(addprefix $(BINARY_DIR)/, vgcore* gmon.out profile.txt debug.log)
 
-BINARY_FILES := $(addprefix $(BINARY_DIR)/, grid-gen korsord)
+BINARY_FILES := $(addprefix $(BINARY_DIR)/, grid-gen korsord korsord.c)
 
 .PRECIOUS: $(OBJECT_FILES) $(BINARY_FILES)
 
