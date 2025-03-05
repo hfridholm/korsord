@@ -5,13 +5,12 @@
 - write in README.md
 
 ## Quick Fixes
+- create korsord.man
 - fix grid-gen (korsord.c) file handling
 - return proper exit code on fail in korsord.c
-- fix render.py file handling and result storing
 - create 'format' command for 'words', that aligns ':' based on all words
 - fix file paths in grid-gen (korsord.c)
 - fix image position and size in model-gen.py
-- get gen.py working
 - Add messages in makefile
 - README.md in source/ explain the algorithm and refrence function names
 - write about the default models
@@ -58,9 +57,3 @@ When GEN_HALF is returned by _word_embed:
 2. Call _word_gen for the same direction
 
 This tries to keep the progress that the other successful letters achieved.
-
-## Commands
-
-korsord gen "Julafton" 15 17 --image "stor bild på en vit ren i högra hörnet"
-
-korsord render my.grid my.clues --image my.png

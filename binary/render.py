@@ -4,7 +4,6 @@
 # Written by Hampus Fridholm
 #
 
-# Import image library
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
 import os
@@ -25,33 +24,6 @@ SQUARE_SIZE = 200
 LINE_WIDTH  = 2
 
 #
-# Parse command line arguments
-#
-parser = argparse.ArgumentParser(description="render exported crossword to images")
-
-parser.add_argument("--results-dir",
-    type=str, default="results",
-    help="Directory to store crosswords"
-)
-
-parser.add_argument("--result-dir",
-    type=str, default="korsord",
-    help="Directory name of saved images"
-)
-
-parser.add_argument("--font-dir",
-    type=str, default="../assets/fonts",
-    help="Directory to font"
-)
-
-parser.add_argument("--font-file",
-    type=str, default="Ubuntu-B.ttf",
-    help="File name of font"
-)
-
-args = parser.parse_args()
-
-#
 # Square struct
 #
 class Square:
@@ -59,6 +31,9 @@ class Square:
         self.type   = square_type
         self.letter = letter
 
+#
+# Grid struct
+#
 class Grid:
     def __init__(self, width, height):
         self.width  = width
@@ -75,11 +50,13 @@ class Grid:
 #
 # Load crossword grid
 #
-def grid_load(filepath):
+def grid_load(grid_name):
     file = None
 
     try:
-        file = open(filepath, 'r')
+        grid_file = grid_file_get(grid_name)
+
+        file = open(grid_file, 'r')
 
     except FileNotFoundError:
         print(f"Grid file not found")
@@ -106,19 +83,19 @@ def grid_load(filepath):
     for y, line in enumerate(file.readlines()):
         # Get every other symbol of line (grid symbols)
         for x, symbol in enumerate(line[::2]):
-            if (symbol == 'X'):
+            if symbol == 'X':
                 grid.squares[x][y] = Square("BORDER")
 
-            elif (symbol == '.'):
+            elif symbol == '.':
                 grid.squares[x][y] = Square("EMPTY")
 
-            elif (symbol == '#'):
+            elif symbol == '#':
                 grid.squares[x][y] = Square("BLOCK")
 
             else:
                 letter = symbol.lower()
 
-                if(letter.isalpha() and letter.isascii()):
+                if letter.isalpha() and letter.isascii():
                     grid.squares[x][y] = Square("LETTER", letter)
 
                 else: # Invalid symbols in grid
@@ -128,37 +105,115 @@ def grid_load(filepath):
     return grid
 
 #
-# Load words and their clues in a dictionary
+# Load font
 #
-def word_clues_load(filepath):
-    word_clues = {}
+def font_load(font_name):
+    global CLUE_FONT, LETTER_FONT, NUMBER_FONT
+
+    font_file = font_file_get(font_name)
+
+    try:
+        CLUE_FONT   = ImageFont.truetype(font_file, CLUE_FONT_SIZE)
+
+        LETTER_FONT = ImageFont.truetype(font_file, LETTER_FONT_SIZE)
+
+        NUMBER_FONT = ImageFont.truetype(font_file, NUMBER_FONT_SIZE)
+
+        return True
+
+    except IOError:
+        print(f"Failed to load font: {font_name}")
+        return False
+
+#
+# Load clues from file
+#
+def clues_file_load(filepath):
+    clues = {}
 
     try:
         with open(filepath, 'r') as file:
             for line in file.readlines():
                 split_line = line.split(":", 1)
 
-                if(len(split_line) < 2):
+                if len(split_line) < 2:
                     return None
 
                 word = split_line[0].strip().lower()
                 clue = split_line[1].strip()
 
-                if(len(clue) > MAX_LENGTH):
+                if len(clue) > MAX_LENGTH:
                     print(f"Clue is too long: ({clue})")
                     return None
 
-                word_clues[word] = clue;
+                clues[word] = clue;
 
     except FileNotFoundError:
-        print(f"Words file not found")
+        print(f"Clues file not found")
         return None
 
     except Exception as exception:
-        print(f"Failed to read words file")
+        print(f"Failed to read clues file")
         return None
 
-    return word_clues
+    return clues
+
+#
+# Load clues from files
+#
+def clues_load(clues_names):
+    clues = {}
+
+    for clues_name in clues_names:
+        print(f"Loading clues: {clues_name}")
+
+        clues_file = clues_file_get(clues_name)
+
+        curr_clues = clues_file_load(clues_file)
+
+        if not curr_clues:
+            print(f"Failed to load clues: {clues_name}")
+            continue
+
+        for word, clue in curr_clues.items():
+            if word not in clues:
+                clues[word] = clue
+
+    return clues
+
+#
+# Save words and their clues
+#
+def clues_save(clues, clues_name):
+    # 1. Get max width for alignment
+    max_width = 0
+
+    for word in clues.keys():
+        max_width = max(max_width, len(word) + 1)
+
+    try:
+        clues_file = clues_file_get(clues_name)
+
+        with open(clues_file, 'w') as file:
+            for word, clue in clues.items():
+                curr_width = max_width - len(word)
+
+                file.write(f"{word}{' ' * curr_width}: {clue}\n")
+
+    except Exception as exception:
+        print(f"Failed to write words file")
+
+#
+# Save missing clues by appending them to temp.clues
+#
+def missing_clues_save(missing_clues):
+    clues = clues_load(["temp"])
+
+    for word in missing_clues:
+        if word not in clues.keys():
+            clues[word] = ""
+
+    clues_save(clues, "temp")
 
 #
 # Find blocks and their words
@@ -177,12 +232,12 @@ def block_words_find(grid):
         for x in range(grid.width - 1, -1, -1):
             square = grid.squares[x][y]
 
-            if(square.type == "EMPTY"):
+            if square.type == "EMPTY":
                 word = ""
 
-            elif(square.type == "BLOCK"):
-                if(len(word) > 1):
-                    if((x, y) in block_words):
+            elif square.type == "BLOCK":
+                if len(word) > 1:
+                    if (x, y) in block_words:
                         block_words[(x, y)].append(word)
 
                     else:
@@ -190,13 +245,13 @@ def block_words_find(grid):
 
                 word = ""
 
-            elif (square.type == "LETTER"):
+            elif square.type == "LETTER":
                 word = square.letter + word
 
-            if ((x == 0 or grid.squares[x - 1][y].type == "BORDER") and y < grid.height - 1):
+            if (x == 0 or grid.squares[x - 1][y].type == "BORDER") and (y < grid.height - 1):
                 # The clue square is one below
-                if(len(word) > 1):
-                    if((x, y + 1) in block_words):
+                if len(word) > 1:
+                    if (x, y + 1) in block_words:
                         block_words[(x, y + 1)].append(word)
 
                     else:
@@ -215,12 +270,12 @@ def block_words_find(grid):
         for y in range(grid.height - 1, -1, -1):
             square = grid.squares[x][y]
 
-            if(square.type == "EMPTY"):
+            if square.type == "EMPTY":
                 word = ""
 
-            elif (square.type == "BLOCK"):
-                if(len(word) > 1):
-                    if((x, y) in block_words):
+            elif square.type == "BLOCK":
+                if len(word) > 1:
+                    if (x, y) in block_words:
                         block_words[(x, y)].append(word)
 
                     else:
@@ -228,13 +283,13 @@ def block_words_find(grid):
 
                 word = ""
 
-            elif(square.type == "LETTER"):
+            elif square.type == "LETTER":
                 word = square.letter + word
 
-            if ((y == 0 or grid.squares[x][y - 1].type == "BORDER") and x > 0):
+            if (y == 0 or grid.squares[x][y - 1].type == "BORDER") and x > 0:
                 # The clue square is one to the left
-                if(len(word) > 1):
-                    if((x - 1, y) in block_words):
+                if len(word) > 1:
+                    if (x - 1, y) in block_words:
                         block_words[(x - 1, y)].append(word)
 
                     else:
@@ -245,72 +300,9 @@ def block_words_find(grid):
     return block_words
 
 #
-# Load grid
-#
-grid_file = grid_file_get("temp")
-
-print(f"Loading grid {grid_file}")
-
-grid = grid_load(grid_file)
-
-if not grid:
-    print(f"Failed to load grid")
-    sys.exit(1)
-
-print(f"Loaded grid {grid_file}")
-
-print(f"Finding words in grid")
-
-# Get blocks and their words
-block_words = block_words_find(grid)
-
-if not block_words:
-    print(f"Failed to find block words")
-    sys.exit(2)
-
-print(f"Found words in grid")
-
-print(f"Loading word clues {'result.words'}")
-
-# Load words along with threir clues
-clues_file = clues_file_get("temp")
-
-word_clues = word_clues_load(clues_file)
-
-if not word_clues:
-    print(f"Failed to load clues")
-    sys.exit(3)
-
-print(f"Loaded word clues {clues_file}")
-
-# Initialize img, draw and font variables
-img_w = grid.width  * SQUARE_SIZE
-img_h = grid.height * SQUARE_SIZE
-
-img = Image.new('RGBA', (img_w, img_h), color=(0, 0, 0, 0))
-draw = ImageDraw.Draw(img)
-
-FONT_PATH = f"{args.font_dir}/{args.font_file}"
-
-print(f"Loading font {FONT_PATH}")
-
-try:
-    clue_font = ImageFont.truetype(FONT_PATH, CLUE_FONT_SIZE)
-
-    letter_font = ImageFont.truetype(FONT_PATH, LETTER_FONT_SIZE)
-
-    number_font = ImageFont.truetype(FONT_PATH, NUMBER_FONT_SIZE)
-
-except IOError:
-    print(f"Failed to load font")
-    sys.exit(1)
-
-print(f"Loaded font {FONT_PATH}")
-
-#
 # Draw the outline for a square
 #
-def square_draw(x, y, square_type, half=False):
+def square_draw(draw, x, y, square_type, half=False):
     w = SQUARE_SIZE
     h = (SQUARE_SIZE // 2) if half else SQUARE_SIZE
 
@@ -319,12 +311,14 @@ def square_draw(x, y, square_type, half=False):
 #
 # Draw the text for the clue
 #
-def clue_draw(x, y, clue, half=False):
+def clue_draw(draw, x, y, clue, half=False):
+    global CLUE_FONT
+
     w = SQUARE_SIZE
     h = (SQUARE_SIZE // 2) if half else SQUARE_SIZE
 
     # Calculate text size
-    bbox = draw.textbbox((0, 0), clue, font=clue_font)
+    bbox = draw.textbbox((0, 0), clue, font=CLUE_FONT)
 
     text_h = bbox[3] - bbox[1]
 
@@ -340,7 +334,7 @@ def clue_draw(x, y, clue, half=False):
     # Draw the wrapped text line by line
     for index, line in enumerate(wrapped_text.split("\n")):
         # Calculate text size
-        bbox = draw.textbbox((0, 0), line, font=clue_font)
+        bbox = draw.textbbox((0, 0), line, font=CLUE_FONT)
 
         # Calculate width and height of the text
         text_w = bbox[2] - bbox[0]
@@ -349,21 +343,23 @@ def clue_draw(x, y, clue, half=False):
         text_x = x + max(0, (w - text_w) // 2)
 
         # Draw the text on the image
-        draw.text((text_x, text_y), line, fill="black", font=clue_font)
+        draw.text((text_x, text_y), line, fill="black", font=CLUE_FONT)
 
         text_y += text_h + LINE_MARGIN
 
 #
 # Draw letter in grid
 #
-def letter_draw(x, y, letter):
+def letter_draw(draw, x, y, letter):
+    global LETTER_FONT
+
     w = SQUARE_SIZE
     h = SQUARE_SIZE
 
     text = letter.upper()
 
     # Calculate text size
-    bbox = draw.textbbox((0, 0), text, font=letter_font)
+    bbox = draw.textbbox((0, 0), text, font=LETTER_FONT)
 
     text_w = bbox[2] - bbox[0]
     text_h = bbox[3] - bbox[1]
@@ -371,95 +367,90 @@ def letter_draw(x, y, letter):
     text_x = x + max(0, (w - text_w) // 2)
     text_y = y + max(0, (h - text_h) // 2)
 
-    draw.text((text_x, text_y), text, fill="red", font=letter_font)
-
-print(f"Drawing word clues")
+    draw.text((text_x, text_y), text, fill="red", font=LETTER_FONT)
 
 #
 # Draw crossword grid
 #
-for x in range(grid.width):
-    for y in range(grid.height):
-        square = grid.squares[x][y]
+def grid_and_clues_draw(draw, grid, block_words, clues):
+    is_complete = True
 
-        if(square.type == "BORDER"):
-            continue
+    for x in range(grid.width):
+        for y in range(grid.height):
+            square = grid.squares[x][y]
 
-        img_x = (x * SQUARE_SIZE)
-        img_y = (y * SQUARE_SIZE)
-
-        # Draw grid square
-        square_draw(img_x, img_y, square.type)
-
-        # Square is not block
-        if((x, y) not in block_words):
-            continue
-
-        words = block_words[(x, y)]
-
-        # Clue square is divided in two   
-        if(len(words) > 1):
-            for index, word in enumerate(words):
-                img_x = (x * SQUARE_SIZE)
-                img_y = (y * SQUARE_SIZE) if index == 0 else ((y + 1/2) * SQUARE_SIZE)
-
-                square_draw(img_x, img_y, "BLOCK", half=True)
-
-                if(word not in word_clues):
-                    continue
-
-                clue = word_clues[word]
-
-                if(clue):
-                    clue_draw(img_x, img_y, clue, half=True)
-
-        # Clue square has only one word
-        else:
-            word = words[0]
-
-            if(word not in word_clues):
+            if square.type == "BORDER":
                 continue
 
-            clue = word_clues[word]
+            img_x = (x * SQUARE_SIZE)
+            img_y = (y * SQUARE_SIZE)
 
-            if(clue):
-                clue_draw(img_x, img_y, clue)
+            # Draw grid square
+            square_draw(draw, img_x, img_y, square.type)
 
-print(f"Drew word clues")
+            # Square is not block
+            if (x, y) not in block_words:
+                continue
+
+            words = block_words[(x, y)]
+
+            # Clue square is divided in two   
+            if len(words) > 1:
+                for index, word in enumerate(words):
+                    img_x = (x * SQUARE_SIZE)
+                    img_y = (y * SQUARE_SIZE) if index == 0 else ((y + 1/2) * SQUARE_SIZE)
+
+                    square_draw(draw, img_x, img_y, "BLOCK", half=True)
+
+                    if word not in clues:
+                        is_complete = False
+                        continue
+
+                    clue = clues[word]
+
+                    if clue:
+                        clue_draw(draw, img_x, img_y, clue, half=True)
+
+            # Clue square has only one word
+            else:
+                word = words[0]
+
+                if word not in clues:
+                    is_complete = False
+                    continue
+
+                clue = clues[word]
+
+                if clue:
+                    clue_draw(draw, img_x, img_y, clue)
+
+    return is_complete
 
 #
 # Get path to new result directory
 #
-def new_result_dir_get():
-    count = 1
-    new_result_dir = f"korsord{count}"
-
-    while os.path.exists(f"{args.results_dir}/{new_result_dir}"):
-        count += 1
-        new_result_dir = f"korsord{count}"
-
-    return new_result_dir
-
-# Get the path to new result directory
-
-if not os.path.exists(f"{args.results_dir}/{args.result_dir}"):
-    os.makedirs(f"{args.results_dir}/{args.result_dir}")
-
-
-img.save(f"{args.results_dir}/{args.result_dir}/normal.png", "PNG")
-
-print(f"Saved normal crossword image")
+# def new_result_dir_get():
+#     count = 1
+#     new_result_dir = f"korsord{count}"
+# 
+#     while os.path.exists(f"{args.results_dir}/{new_result_dir}"):
+#         count += 1
+#         new_result_dir = f"korsord{count}"
+# 
+#     return new_result_dir
 
 #
 # Draw helping letter number
 #
-def number_draw(x, y, number):
+def number_draw(draw, x, y, number):
+    global NUMBER_FONT
+
     text = number
 
     text_x = x + 10
     text_y = y + 10
 
-    draw.text((text_x, text_y), text, fill="gray", font=number_font)
+    draw.text((text_x, text_y), text, fill="gray", font=NUMBER_FONT)
 
 #
 # Create random numbers dictionary
@@ -478,50 +469,191 @@ def numbers_gen():
     # Step 2: Reassign the shuffled values back to the dictionary
     return dict(zip(ordered_numbers.keys(), values))
 
-numbers = numbers_gen()
-
-print(f"Drawing letter numbers")
-
 #
 # Draw helping letter numbers
 #
-for x in range(grid.width):
-    for y in range(grid.height):
-        square = grid.squares[x][y]
+def numbers_draw(draw, grid):
+    numbers = numbers_gen()
 
-        if(square.type != "LETTER"):
-            continue
+    for x in range(grid.width):
+        for y in range(grid.height):
+            square = grid.squares[x][y]
 
-        number = numbers[square.letter]
+            if square.type != "LETTER":
+                continue
 
-        img_x = (x * SQUARE_SIZE)
-        img_y = (y * SQUARE_SIZE)
+            number = numbers[square.letter]
 
-        # Draw letter number
-        number_draw(img_x, img_y, number)
+            img_x = (x * SQUARE_SIZE)
+            img_y = (y * SQUARE_SIZE)
 
-print(f"Drew letter numbers")
+            # Draw letter number
+            number_draw(draw, img_x, img_y, number)
 
-img.save(f"{args.results_dir}/{args.result_dir}/helping.png", "PNG")
+#
+# Draw in grid letters
+#
+def letters_draw(draw, grid):
+    for x in range(grid.width):
+        for y in range(grid.height):
+            square = grid.squares[x][y]
 
-print(f"Saved helping crossword image")
+            img_x = (x * SQUARE_SIZE)
+            img_y = (y * SQUARE_SIZE)
 
-print(f"Filling in words")
+            if square.type == "LETTER":
+                letter_draw(draw, img_x, img_y, square.letter)
 
-# Create solved crossword image
-for x in range(grid.width):
-    for y in range(grid.height):
-        square = grid.squares[x][y]
+#
+# Get the words which clues are missing
+#
+def missing_clues_get(block_words, clues):
+    missing_clues = []
 
-        img_x = (x * SQUARE_SIZE)
-        img_y = (y * SQUARE_SIZE)
+    for block in block_words:
+        for word in block_words[block]:
+            if word not in clues.keys() or not clues[word]:
+                missing_clues.append(word)
 
-        if(square.type == "LETTER"):
-            letter_draw(img_x, img_y, square.letter)
+    return missing_clues
 
-print(f"Filled in words")
+#
+# Initialize image
+#
+def image_init(width, height):
+    img_w = width  * SQUARE_SIZE
+    img_h = height * SQUARE_SIZE
 
-# Save solved crossword image
-img.save(f"{args.results_dir}/{args.result_dir}/solved.png", "PNG")
+    img = Image.new('RGBA', (img_w, img_h), color=(0, 0, 0, 0))
 
-print(f"Saved solved crossword image")
+    return img
+
+#
+# Save image with name
+#
+def image_save(img, name):
+    file = render_file_get(name)
+
+    img.save(file, "PNG")
+
+#
+# Main function
+#
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="render grid to image")
+
+    parser.add_argument("--grid",
+        type=str, default="temp",
+        help="Name of grid"
+    )
+
+    parser.add_argument("--clues",
+        nargs=argparse.REMAINDER, default=["temp"],
+        help="Name of clues"
+    )
+
+    parser.add_argument("--partial",
+        action='store_true',
+        help="Allow clues to be missing"
+    )
+
+    args = parser.parse_args()
+
+
+    # Load grid
+    print(f"Loading grid")
+
+    grid = grid_load(args.grid)
+
+    if not grid:
+        print(f"Failed to load grid")
+        sys.exit(1)
+
+    print(f"Loaded grid")
+
+
+
+    print(f"Finding words in grid")
+
+    # Get blocks and their words
+    block_words = block_words_find(grid)
+
+    if not block_words:
+        print(f"Failed to find block words")
+        sys.exit(2)
+
+    print(f"Found words in grid")
+
+
+
+    print(f"Loading clues")
+
+    clues = clues_load(args.clues)
+
+    
+    print(f"Checking missing clues")
+
+    missing_clues = missing_clues_get(block_words, clues)
+
+    if not args.partial and missing_clues:
+        print(f"korsord: Some clues are missing")
+        print(missing_clues)
+        missing_clues_save(missing_clues)
+        sys.exit(3)
+
+
+    if not os.path.exists(RENDER_DIR):
+        os.makedirs(RENDER_DIR)
+
+
+    print(f"Loading font")
+
+    if not font_load("Ubuntu-B"):
+        print(f"korsord: Failed to load font")
+        sys.exit(4)
+
+    print(f"Loaded font")
+
+
+    img = image_init(grid.width, grid.height)
+
+    draw = ImageDraw.Draw(img)
+
+    
+
+    print(f"Drawing grid and clues")
+
+    is_complete = grid_and_clues_draw(draw, grid, block_words, clues)
+
+    if not args.partial and not is_complete:
+        print(f"korsord: Some clues were missing")
+        sys.exit(5);
+
+    
+    print(f"Drew grid and clues")
+
+    image_save(img, "normal")
+
+    print(f"Saved normal crossword image")
+
+
+    print(f"Drawing letter numbers")
+
+    numbers_draw(draw, grid)
+
+    print(f"Drew letter numbers")
+
+    image_save(img, "helping")
+
+    print(f"Saved helping crossword image")
+
+
+    print(f"Filling in words")
+
+    letters_draw(draw, grid)
+
+    print(f"Filled in words")
+
+    image_save(img, "solved")
+
+    print(f"Saved solved crossword image")

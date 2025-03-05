@@ -22,6 +22,15 @@ def prompt_file_get(name):
     return os.path.join(PROMPT_DIR, f"{name}.txt")
 
 
+FONT_DIR = os.path.join(BASE_DIR, "../assets/fonts")
+
+#
+# Get font file by name
+#
+def font_file_get(name):
+    return os.path.join(FONT_DIR, f"{name}.ttf")
+
+
 CLUES_DIR = os.path.join(CONFIG_DIR, "clues")
 
 #
@@ -65,6 +74,15 @@ def image_file_get(name):
 #
 def image_name_get(file):
     return os.path.splitext(file.replace(IMAGES_DIR, ''))[0].strip('/')
+
+
+RENDER_DIR = os.path.join(CONFIG_DIR, "render")
+
+#
+# Get the file path of a render image by name
+#
+def render_file_get(name):
+    return os.path.join(RENDER_DIR, f"{name}.png")
 
 
 MODELS_DIR = os.path.join(CONFIG_DIR, "models")
