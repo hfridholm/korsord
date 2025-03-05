@@ -7,7 +7,9 @@
 # Python scripts
 !common.py
 !gen.py
+
 !render.py
+!render-gen.py
 
 !clues.py
 !clues-gen.py

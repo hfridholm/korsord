@@ -84,6 +84,12 @@ RENDER_DIR = os.path.join(CONFIG_DIR, "render")
 def render_file_get(name):
     return os.path.join(RENDER_DIR, f"{name}.png")
 
+#
+# Get name of render image file
+#
+def render_name_get(file):
+    return os.path.splitext(file.replace(RENDER_DIR, ''))[0].strip('/')
+
 
 MODELS_DIR = os.path.join(CONFIG_DIR, "models")
 
