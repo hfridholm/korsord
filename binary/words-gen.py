@@ -104,18 +104,10 @@ def words_load(filepath):
 # Save words
 #
 def words_save(words, filepath):
-    # 1. Get max width for alignment
-    max_width = 0
-
-    for word in words:
-        max_width = max(max_width, len(word) + 1)
-
     try:
         with open(filepath, 'w') as file:
             for word in words:
-                curr_width = max_width - len(word)
-
-                file.write(f"{word}{' ' * curr_width}:\n")
+                file.write(f"{word}\n")
 
     except Exception as exception:
         print(f"Failed to write words file")

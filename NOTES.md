@@ -8,7 +8,6 @@
 - create korsord.man
 - fix grid-gen (korsord.c) file handling
 - return proper exit code on fail in korsord.c
-- create 'format' command for 'words', that aligns ':' based on all words
 - fix file paths in grid-gen (korsord.c)
 - fix image position and size in model-gen.py
 - Add messages in makefile
@@ -18,8 +17,6 @@
 - change if-statements to switch statements when checking _status in -gen.c
 - Fix problem with "new best grid" skyrocketing
   (I have a fealing that the problem is that singles (1 letter words) don't get restored)
-- modify render.py to accept multiple ranked .clues files
-  (multiple .clues files to extract and fill the requirement from .grid)
 
 ## Potential Quick Fixes
 - maybe hard code BASE_DIR in scripts
@@ -29,7 +26,7 @@
 - remove old_grid from _reset, instead set is_crossed on SQUARE_BLOCK and from that _reset
 
 ## Word Files
-- only read first word of each line in model_load in korsord
+- only read first word of each line in model_load in korsord.c
 - make it possible to read word files with existing clues (word : clue)
 
 ### Maybe
