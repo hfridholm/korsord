@@ -561,9 +561,13 @@ def clues_draw(draw, grid, block_words, clues, words_files):
 def number_draw(draw, x, y, number):
     global NUMBER_FONT
 
-    text = number
+    text = str(number)
 
-    text_x = x + 10
+    bbox = draw.textbbox((0, 0), text, font=NUMBER_FONT)
+
+    text_w = bbox[2] - bbox[0]
+
+    text_x = x + SQUARE_SIZE - text_w - 10
     text_y = y + 10
 
     text_draw(draw, text_x, text_y, text, "gray", NUMBER_FONT)
@@ -607,6 +611,42 @@ def numbers_draw(draw, grid):
             number_draw(draw, img_x, img_y, number)
 
 #
+# Draw direction arrow from clue square
+#
+def arrow_draw(img, x, y, direction):
+    arrow_image = Image.open("../assets/images/arrow.png")
+
+    if direction == "down":
+        img_x = (x * SQUARE_SIZE)
+
+        arrow_image = arrow_image.rotate(0, expand=True)
+
+        img.paste(arrow_image, (img_x, 0), arrow_image)
+
+    if direction == "right":
+        img_y = ((y + 1) * SQUARE_SIZE) - 60
+
+        arrow_image = arrow_image.rotate(90, expand=True)
+
+        img.paste(arrow_image, (0, img_y), arrow_image)
+
+#
+# Draw direction arrows from clue squares
+#
+def arrows_draw(img, grid, block_words):
+    for x in range(1, grid.width):
+        square = grid.squares[x][0]
+
+        if square.type == "LETTER":
+            arrow_draw(img, x, 0, "down")
+    
+    for y in range(1, grid.height):
+        square = grid.squares[0][y]
+
+        if square.type == "LETTER":
+            arrow_draw(img, 0, y, "right")
+
+#
 # Draw in grid letters
 #
 def letters_draw(draw, grid):
@@ -614,10 +654,10 @@ def letters_draw(draw, grid):
         for y in range(grid.height):
             square = grid.squares[x][y]
 
-            img_x = (x * SQUARE_SIZE)
-            img_y = (y * SQUARE_SIZE)
-
             if square.type == "LETTER":
+                img_x = (x * SQUARE_SIZE)
+                img_y = (y * SQUARE_SIZE)
+
                 letter_draw(draw, img_x, img_y, square.letter, "black")
 
 #
@@ -753,6 +793,14 @@ if __name__ == "__main__":
         sys.exit(5);
     
     print(f"Drew clues")
+
+
+    print(f"Drawing arrows")
+
+    arrows_draw(img, grid, block_words)
+
+    print(f"Drew arrows")
+
 
     image_save(img, "normal")
 
