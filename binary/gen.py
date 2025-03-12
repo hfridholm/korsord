@@ -76,7 +76,7 @@ def image_gen(args):
         print(f"korsord: {image_script}: File not found")
         sys.exit(1)
 
-    result = subprocess.run(["python", image_script, args.image])
+    result = subprocess.run(["python", image_script, args.theme])
 
     return result.returncode
 
@@ -92,7 +92,8 @@ def clues_gen(args):
 
     theme_arg = ["--theme", args.theme] if args.theme else []
 
-    result = subprocess.run(["python", clues_script] + theme_arg)
+    # result = subprocess.run(["python", clues_script] + theme_arg)
+    result = subprocess.run(["python", clues_script])
 
     return result.returncode
 
@@ -106,7 +107,7 @@ def render_gen(args):
         print(f"korsord: {render_script}: File not found")
         sys.exit(1)
 
-    image_arg = ["--image", "temp.png"] if args.image else []
+    image_arg = ["--image", "temp"] if args.image else []
 
     result = subprocess.run(["python", render_script] + image_arg)
 

@@ -618,33 +618,48 @@ def arrow_draw(img, x, y, direction):
 
     if direction == "down":
         img_x = (x * SQUARE_SIZE)
+        img_y = (y * SQUARE_SIZE)
 
         arrow_image = arrow_image.rotate(0, expand=True)
 
-        img.paste(arrow_image, (img_x, 0), arrow_image)
+        img.paste(arrow_image, (img_x, img_y), arrow_image)
 
     if direction == "right":
+        img_x = (x * SQUARE_SIZE)
         img_y = ((y + 1) * SQUARE_SIZE) - 60
 
         arrow_image = arrow_image.rotate(90, expand=True)
 
-        img.paste(arrow_image, (0, img_y), arrow_image)
+        img.paste(arrow_image, (img_x, img_y), arrow_image)
 
 #
 # Draw direction arrows from clue squares
 #
 def arrows_draw(img, grid, block_words):
-    for x in range(1, grid.width):
-        square = grid.squares[x][0]
+    for y in range(grid.height):
+        for x in range(grid.width):
+            square = grid.squares[x][y]
 
-        if square.type == "LETTER":
-            arrow_draw(img, x, 0, "down")
-    
-    for y in range(1, grid.height):
-        square = grid.squares[0][y]
+            if square.type != "LETTER":
+                continue
 
-        if square.type == "LETTER":
-            arrow_draw(img, 0, y, "right")
+            if y > 0:
+                square_over = grid.squares[x][y - 1]
+
+                if square_over.type == "BORDER":
+                    arrow_draw(img, x, y, "down")
+
+            else:
+                arrow_draw(img, x, y, "down")
+
+            if x > 0:
+                square_left = grid.squares[x - 1][y]
+
+                if square_left.type == "BORDER":
+                    arrow_draw(img, x, y, "right")
+
+            else:
+                arrow_draw(img, x, y, "right")
 
 #
 # Draw in grid letters
