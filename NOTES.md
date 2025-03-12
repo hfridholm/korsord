@@ -5,6 +5,8 @@
 - write in README.md
 
 ## Quick Fixes
+- draw letters in different colors based on word files
+- fix image render in render-gen.py
 - create korsord.man
 - fix grid-gen (korsord.c) file handling
 - return proper exit code on fail in korsord.c

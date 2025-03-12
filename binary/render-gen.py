@@ -4,7 +4,7 @@
 # Written by Hampus Fridholm
 #
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageColor
 import textwrap
 import os
 import string
@@ -159,6 +159,55 @@ def clues_file_load(filepath):
     return clues
 
 #
+# Load words
+#
+def words_file_load(filepath):
+    words = []
+
+    try:
+        with open(filepath, 'r') as file:
+            for line in file.readlines():
+                split_line = line.split(":", 1)
+
+                if(len(split_line) < 1):
+                    return None
+
+                word = split_line[0].strip().lower()
+
+                words.append(word);
+
+        return words
+
+    except FileNotFoundError:
+        print(f"korsord: Words file not found")
+        return None
+
+    except Exception as exception:
+        print(f"korsord: Failed to read words file")
+        return None
+
+#
+# Load words from files
+#
+def words_files_load(words_names):
+    words_files = {}
+
+    for words_name in words_names:
+        print(f"Loading words: {words_name}")
+
+        words_file = words_file_get(words_name)
+
+        curr_words = words_file_load(words_file)
+
+        if not curr_words:
+            print(f"Failed to load words: {words_name}")
+            continue
+
+        words_files[words_name] = curr_words
+
+    return words_files
+
+#
 # Load clues from files
 #
 def clues_load(clues_names):
@@ -309,9 +358,21 @@ def square_draw(draw, x, y, square_type, half=False):
     draw.rectangle([x, y, x + w, y + h], fill="white", outline="black", width=LINE_WIDTH)
 
 #
+#
+# Draw outline by shifting text slightly in multiple directions
+#
+def text_draw(draw, x, y, text, color, font, outline_thickness=0, outline_color="black"):
+    for dx in range(-outline_thickness, outline_thickness + 1):
+        for dy in range(-outline_thickness, outline_thickness + 1):
+            if dx != 0 or dy != 0:
+                draw.text((x + dx, y + dy), text, font=font, fill=outline_color)
+    
+    draw.text((x, y), text, fill=color, font=font)
+
+#
 # Draw the text for the clue
 #
-def clue_draw(draw, x, y, clue, half=False):
+def clue_draw(draw, x, y, clue, color, half=False, outline_thickness=0, outline_color="black"):
     global CLUE_FONT
 
     w = SQUARE_SIZE
@@ -343,14 +404,14 @@ def clue_draw(draw, x, y, clue, half=False):
         text_x = x + max(0, (w - text_w) // 2)
 
         # Draw the text on the image
-        draw.text((text_x, text_y), line, fill="black", font=CLUE_FONT)
+        text_draw(draw, text_x, text_y, line, color, CLUE_FONT, outline_thickness, outline_color) 
 
         text_y += text_h + LINE_MARGIN
 
 #
 # Draw letter in grid
 #
-def letter_draw(draw, x, y, letter):
+def letter_draw(draw, x, y, letter, color, outline_thickness=0, outline_color="black"):
     global LETTER_FONT
 
     w = SQUARE_SIZE
@@ -367,14 +428,37 @@ def letter_draw(draw, x, y, letter):
     text_x = x + max(0, (w - text_w) // 2)
     text_y = y + max(0, (h - text_h) // 2)
 
-    draw.text((text_x, text_y), text, fill="red", font=LETTER_FONT)
+    text_draw(draw, text_x, text_y, text, color, LETTER_FONT, outline_thickness, outline_color)
+
+#
+# Get color of word
+#
+# If there are fewer colors than files, the first color is used as default
+#
+def word_color_get(words_files, word):
+    if not words_files:
+        return "black"
+
+    colors = ["red", "orange", "yellow"]
+
+    files = list(words_files.keys())
+
+    for file, words in words_files.items():
+        if word in words:
+            file_index = files.index(file)
+
+            color_index = max(0, len(colors) - file_index - 1)
+
+            color = colors[color_index]
+
+            return color
+
+    return "black"
 
 #
 # Draw crossword grid
 #
-def grid_and_clues_draw(draw, grid, block_words, clues):
-    is_complete = True
-
+def grid_draw(draw, grid, block_words):
     for x in range(grid.width):
         for y in range(grid.height):
             square = grid.squares[x][y]
@@ -402,14 +486,44 @@ def grid_and_clues_draw(draw, grid, block_words, clues):
 
                     square_draw(draw, img_x, img_y, "BLOCK", half=True)
 
+#
+# Draw clues in grid
+#
+def clues_draw(draw, grid, block_words, clues, words_files):
+    is_complete = True
+
+    for x in range(grid.width):
+        for y in range(grid.height):
+            square = grid.squares[x][y]
+
+            if square.type == "BORDER":
+                continue
+
+            img_x = (x * SQUARE_SIZE)
+            img_y = (y * SQUARE_SIZE)
+
+            # Square is not block
+            if (x, y) not in block_words:
+                continue
+
+            words = block_words[(x, y)]
+
+            # Clue square is divided in two   
+            if len(words) > 1:
+                for index, word in enumerate(words):
+                    img_x = (x * SQUARE_SIZE)
+                    img_y = (y * SQUARE_SIZE) if index == 0 else ((y + 1/2) * SQUARE_SIZE)
+
                     if word not in clues:
                         is_complete = False
                         continue
 
                     clue = clues[word]
 
+                    color = word_color_get(words_files, word)
+
                     if clue:
-                        clue_draw(draw, img_x, img_y, clue, half=True)
+                        clue_draw(draw, img_x, img_y, clue, color, half=True)
 
             # Clue square has only one word
             else:
@@ -421,8 +535,10 @@ def grid_and_clues_draw(draw, grid, block_words, clues):
 
                 clue = clues[word]
 
+                color = word_color_get(words_files, word)
+
                 if clue:
-                    clue_draw(draw, img_x, img_y, clue)
+                    clue_draw(draw, img_x, img_y, clue, color)
 
     return is_complete
 
@@ -450,7 +566,7 @@ def number_draw(draw, x, y, number):
     text_x = x + 10
     text_y = y + 10
 
-    draw.text((text_x, text_y), text, fill="gray", font=NUMBER_FONT)
+    text_draw(draw, text_x, text_y, text, "gray", NUMBER_FONT)
 
 #
 # Create random numbers dictionary
@@ -502,7 +618,7 @@ def letters_draw(draw, grid):
             img_y = (y * SQUARE_SIZE)
 
             if square.type == "LETTER":
-                letter_draw(draw, img_x, img_y, square.letter)
+                letter_draw(draw, img_x, img_y, square.letter, "black")
 
 #
 # Get the words which clues are missing
@@ -621,16 +737,22 @@ if __name__ == "__main__":
 
     
 
-    print(f"Drawing grid and clues")
+    print(f"Drawing grid")
 
-    is_complete = grid_and_clues_draw(draw, grid, block_words, clues)
+    grid_draw(draw, grid, block_words)
+
+    print(f"Drew grid")
+
+
+    print(f"Drawing clues")
+
+    is_complete = clues_draw(draw, grid, block_words, clues, None)
 
     if not args.partial and not is_complete:
         print(f"korsord: Some clues were missing")
         sys.exit(5);
-
     
-    print(f"Drew grid and clues")
+    print(f"Drew clues")
 
     image_save(img, "normal")
 
@@ -646,6 +768,19 @@ if __name__ == "__main__":
     image_save(img, "helping")
 
     print(f"Saved helping crossword image")
+
+
+    print(f"Drawing clues")
+
+    words_files = words_files_load(["temp", "svenska/270k"])
+
+    is_complete = clues_draw(draw, grid, block_words, clues, words_files)
+
+    if not args.partial and not is_complete:
+        print(f"korsord: Some clues were missing")
+        sys.exit(5);
+    
+    print(f"Drew clues")
 
 
     print(f"Filling in words")

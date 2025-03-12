@@ -10,6 +10,8 @@ import sys
 import os
 from common import *
 
+WORDS_FACTOR = 2
+
 #
 # Generate temp.words
 #
@@ -26,7 +28,7 @@ def words_gen(args):
 
     min_word_amount = int(args.width / 4 * args.height + args.height / 4 * args.width)
 
-    word_amount = min_word_amount * 20
+    word_amount = min_word_amount * WORDS_FACTOR
 
     max_length = max(args.width, args.height)
 
@@ -97,8 +99,8 @@ def clues_gen(args):
 #
 # Render final images
 #
-def render_images(args):
-    render_script = os.path.join(BASE_DIR, "render.py")
+def render_gen(args):
+    render_script = os.path.join(BASE_DIR, "render-gen.py")
 
     if not os.path.isfile(render_script):
         print(f"korsord: {render_script}: File not found")
@@ -197,6 +199,6 @@ if __name__ == "__main__":
         sys.exit(6)
 
     # 6. Render images
-    if step_index <= 5 and render_images(args) != 0:
+    if step_index <= 5 and render_gen(args) != 0:
         print(f"Failed to render images")
         sys.exit(7)
