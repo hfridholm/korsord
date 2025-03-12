@@ -674,6 +674,53 @@ def missing_clues_get(block_words, clues):
     return missing_clues
 
 #
+# Draw image behind grid
+#
+def image_draw(img, grid, image_name):
+    min_x = grid.width  - 1
+    max_x = 0
+
+    min_y = grid.height - 1
+    max_y = 0
+
+    for x in range(0, grid.width, 1):
+        for y in range(0, grid.height, 1):
+            square = grid.squares[x][y]
+
+            if square.type != "BORDER":
+                continue
+
+            min_x = min(min_x, x)
+            max_x = max(max_x, x + 1)
+
+            min_y = min(min_y, y)
+            max_y = max(max_y, y + 1)
+        
+
+    image_file = image_file_get(image_name)
+
+    image = Image.open(image_file)
+
+    position = (min_x * SQUARE_SIZE, min_y * SQUARE_SIZE, max_x * SQUARE_SIZE, max_y * SQUARE_SIZE)
+
+    box_width  = position[2] - position[0]
+    box_height = position[3] - position[1]
+
+    original_width, original_height = image.size
+
+    scaling_factor = max(box_width / original_width, box_height / original_height)
+
+    new_width  = int(original_width  * scaling_factor)
+    new_height = int(original_height * scaling_factor)
+
+    resized_image = image.resize((new_width, new_height))
+
+    img_x = (box_width  - new_width)  // 2
+    img_y = (box_height - new_height) // 2
+
+    img.paste(resized_image, (img_x, img_y))
+
+#
 # Initialize image
 #
 def image_init(width, height):
@@ -711,6 +758,11 @@ if __name__ == "__main__":
     parser.add_argument("--partial",
         action='store_true',
         help="Allow clues to be missing"
+    )
+
+    parser.add_argument("--image",
+        type=str, default=None,
+        help="Name of image"
     )
 
     args = parser.parse_args()
@@ -775,6 +827,13 @@ if __name__ == "__main__":
 
     draw = ImageDraw.Draw(img)
 
+    
+    if args.image:
+        print(f"Drawing image")
+
+        image_draw(img, grid, args.image)
+
+        print(f"Drew image")
     
 
     print(f"Drawing grid")
