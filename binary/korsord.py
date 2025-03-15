@@ -9,7 +9,9 @@ import subprocess
 import sys
 import os
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.expanduser("~/Documents/Programming/korsord/binary/")
+
+sys.path.append(BASE_DIR)
 
 from common import *
 

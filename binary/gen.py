@@ -10,7 +10,7 @@ import sys
 import os
 from common import *
 
-WORDS_FACTOR = 2
+WORDS_FACTOR = 10
 
 #
 # Generate temp.words

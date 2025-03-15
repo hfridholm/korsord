@@ -614,7 +614,9 @@ def numbers_draw(draw, grid):
 # Draw direction arrow from clue square
 #
 def arrow_draw(img, x, y, direction):
-    arrow_image = Image.open("../assets/images/arrow.png")
+    arrow_file = os.path.join(BASE_DIR, "../assets/images/arrow.png")
+
+    arrow_image = Image.open(arrow_file)
 
     if direction == "down":
         img_x = (x * SQUARE_SIZE)

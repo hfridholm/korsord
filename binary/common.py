@@ -8,7 +8,7 @@ import sys
 import os
 
 # Base directory where the programs are located
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.expanduser("~/Documents/Programming/korsord/binary/")
 
 CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
 
@@ -183,9 +183,11 @@ def prompt_load(prompt_name, values):
         return None
 
 #
-# Function to read the API key from a local file
+# Extract API key from api key file
 #
-def api_key_get(filepath):
+def api_key_get():
+    filepath = os.path.join(CONFIG_DIR, "api.key")
+
     try:
         with open(filepath, 'r') as file:
             api_key = file.read().strip()

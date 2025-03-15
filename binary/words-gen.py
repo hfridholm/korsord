@@ -12,10 +12,14 @@ import os
 from common import *
 import re
 
-api_key_file = "api.key"
-
 # Start an openai client using API key
-client = OpenAI(api_key=api_key_get(api_key_file))
+api_key = api_key_get()
+
+if not api_key:
+    print(f"korsord: API key not found")
+    sys.exit(1)
+
+client = OpenAI(api_key=api_key)
 
 #
 # Ask ChatGPT for a clue to a word

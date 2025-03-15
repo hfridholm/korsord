@@ -5,20 +5,26 @@
 - write in README.md
 
 ## Quick Fixes
-- draw letters in different colors based on word files
-- fix image render in render-gen.py
+- don't print "Använd inte följande ord:" om inga ord finns
+- New command in words.py "merge" to combine words into one file
+- Don't let ChatGPT create image size in model (only interpret instructions)
+- Always give theme when generating clues for words in "temp.words"
+- Generate multiple grids and choose the one with most theme words
+- fix image position and size in model-gen.py
+- Add messages in makefile
+- write about the default models
+- write about makefile and scripts in binary
+
+## korsord.c
 - create korsord.man
 - fix grid-gen (korsord.c) file handling
 - return proper exit code on fail in korsord.c
 - fix file paths in grid-gen (korsord.c)
-- fix image position and size in model-gen.py
-- Add messages in makefile
 - README.md in source/ explain the algorithm and refrence function names
-- write about the default models
-- write about makefile and scripts in binary
 - change if-statements to switch statements when checking _status in -gen.c
 - Fix problem with "new best grid" skyrocketing
   (I have a fealing that the problem is that singles (1 letter words) don't get restored)
+- Delete debug.sh and valgrind.sh
 
 ## Potential Quick Fixes
 - maybe hard code BASE_DIR in scripts
