@@ -231,6 +231,104 @@ def words_copy(extra_args):
     subprocess.run(["cp", words_file, copy_file])
 
 #
+# Load words
+#
+def words_file_load(filepath):
+    words = []
+
+    try:
+        with open(filepath, 'r') as file:
+            for line in file.readlines():
+                split_line = line.split(":", 1)
+
+                if(len(split_line) < 1):
+                    return None
+
+                word = split_line[0].strip().lower()
+
+                words.append(word);
+
+        return words
+
+    except FileNotFoundError:
+        print(f"korsord: Words file not found")
+        return None
+
+    except Exception as exception:
+        print(f"korsord: Failed to read words file")
+        return None
+
+#
+# Load words from files of inputted names
+#
+def words_load(words_names):
+    words = []
+
+    for words_name in words_names:
+        print(f"Loading words: {words_name}")
+
+        words_file = words_file_get(words_name)
+
+        curr_words = words_file_load(words_file)
+
+        if not curr_words:
+            print(f"Failed to load words: {words_name}")
+            continue
+
+        for word in curr_words:
+            if word not in words:
+                words.append(word)
+
+    return words
+
+#
+# Save words
+#
+def words_save(words, filepath):
+    try:
+        with open(filepath, 'w') as file:
+            for word in words:
+                file.write(f"{word}\n")
+
+    except Exception as exception:
+        print(f"Failed to write words file")
+
+#
+# Handling the 'merge' command
+#
+def words_merge(extra_args):
+    merge_parser = argparse.ArgumentParser(description="Merge words together")
+
+    merge_parser.add_argument('--name',
+        type=str, default="temp",
+        help="Name of merged words"
+    )
+
+    merge_parser.add_argument('words',
+        nargs=argparse.REMAINDER,
+        help="Words to merge"
+    )
+
+    merge_parser.add_argument('--force',
+        action='store_true',
+        help="Overwrite existing words"
+    )
+
+    merge_args = merge_parser.parse_args(extra_args)
+
+    print(f"words: {merge_args.words}")
+
+    words = words_load(merge_args.words)
+
+    words_file = words_file_get(merge_args.name)
+
+    if os.path.exists(words_file) and not merge_args.force:
+        print(f"korsord: {merge_args.name}: Words already exists")
+        sys.exit(0)
+
+    words_save(words, words_file)
+
+#
 # Main function
 #
 if __name__ == "__main__":
@@ -242,7 +340,7 @@ if __name__ == "__main__":
 
     parser.add_argument("command",
         nargs="?",
-        help="gen, view, edit, new, del, copy, list"
+        help="gen, view, edit, new, del, copy, list, merge"
     )
 
     args, extra_args = parser.parse_known_args()
@@ -284,6 +382,9 @@ if __name__ == "__main__":
 
     elif args.command == "copy":
         words_copy(extra_args)
+
+    elif args.command == "merge":
+        words_merge(extra_args)
 
     else:
         print(f"korsord: {args.command}: Command not found")

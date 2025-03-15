@@ -6,7 +6,6 @@
 
 ## Quick Fixes
 - don't print "Använd inte följande ord:" om inga ord finns
-- New command in words.py "merge" to combine words into one file
 - Don't let ChatGPT create image size in model (only interpret instructions)
 - Always give theme when generating clues for words in "temp.words"
 - Generate multiple grids and choose the one with most theme words
