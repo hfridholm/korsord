@@ -5,9 +5,9 @@
 - write in README.md
 
 ## Quick Fixes
+- add 'words' arg to gen.py, which consists of pre generated words (in priority order)
+- add 'model', 'grid', 'clues', 'image' which gets overwritten at each step
 - don't print "Använd inte följande ord:" om inga ord finns
-- Don't let ChatGPT create image size in model (only interpret instructions)
-- fix image position and size in model-gen.py
 - Add messages in makefile
 - write about the default models
 - write about makefile and scripts in binary

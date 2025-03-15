@@ -196,6 +196,10 @@ def grid_gen(args):
 # Generate temp.png
 #
 def image_gen(args):
+    if not args.theme:
+        print(f"korsord: Theme not specified")
+        sys.exit(1)
+
     image_script = os.path.join(BASE_DIR, "image-gen.py")
 
     if not os.path.isfile(image_script):

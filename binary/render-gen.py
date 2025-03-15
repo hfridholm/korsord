@@ -718,10 +718,8 @@ def image_draw(img, grid, image_name):
 
     image = Image.open(image_file)
 
-    position = (min_x * SQUARE_SIZE, min_y * SQUARE_SIZE, max_x * SQUARE_SIZE, max_y * SQUARE_SIZE)
-
-    box_width  = position[2] - position[0]
-    box_height = position[3] - position[1]
+    box_width  = SQUARE_SIZE * (max_x - min_x)
+    box_height = SQUARE_SIZE * (max_y - min_y)
 
     original_width, original_height = image.size
 
@@ -732,8 +730,8 @@ def image_draw(img, grid, image_name):
 
     resized_image = image.resize((new_width, new_height))
 
-    img_x = (box_width  - new_width)  // 2
-    img_y = (box_height - new_height) // 2
+    img_x = min_x * SQUARE_SIZE + (box_width  - new_width)  // 2
+    img_y = min_y * SQUARE_SIZE + (box_height - new_height) // 2
 
     img.paste(resized_image, (img_x, img_y))
 

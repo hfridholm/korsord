@@ -1,0 +1,19 @@
+Extrahera den vertikala och horizontella positionen samt storleken av bilden som beskrivs av följande mening:
+{image}
+
+Svara med tre siffror på varsin rad. Exempel:
+1
+2
+0.4
+
+Den första siffran beskriver vertikalen:
+0 : toppen
+1 : mitten
+2 : botten
+
+Den andra siffran beskriver horizontalen:
+0 : vänster
+1 : mitten
+2 : höger
+
+Den tredje siffran beskriver storleken (0 - 1). Tal närmare 0 är små bilder och tal närmare 1 är stora bilder
