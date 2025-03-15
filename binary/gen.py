@@ -218,8 +218,7 @@ def clues_gen(args):
 
     theme_arg = ["--theme", args.theme] if args.theme else []
 
-    # result = subprocess.run(["python", clues_script] + theme_arg)
-    result = subprocess.run(["python", clues_script])
+    result = subprocess.run(["python", clues_script, "--force"] + theme_arg)
 
     return result.returncode
 

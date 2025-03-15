@@ -7,7 +7,6 @@
 ## Quick Fixes
 - don't print "Använd inte följande ord:" om inga ord finns
 - Don't let ChatGPT create image size in model (only interpret instructions)
-- Always give theme when generating clues for words in "temp.words"
 - fix image position and size in model-gen.py
 - Add messages in makefile
 - write about the default models

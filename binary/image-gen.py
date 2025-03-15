@@ -41,12 +41,17 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+
+    print(f"Generating image")
+
     # Call the OpenAI API to generate an image
     response = client.images.generate(
       prompt=args.prompt,
-      n=1,             # Number of images to generate
-      size="1024x1024" # Image size, you can adjust as needed
+      n=1,           # Number of images to generate
+      size="256x256" # Image size, you can adjust as needed
     )
+
+    print(f"Generated image")
 
     # Get the image URL from the response
     image_url = response.data[0].url

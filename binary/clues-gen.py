@@ -36,7 +36,7 @@ def word_clue_gen(word):
         return None
 
     if args.theme:
-        prompt += f"Temat är: \'{args.theme}\'"
+        prompt += f"Om ordet passar temat \'{args.theme}\' använd det temat, annars ge en generell ledtråd."
 
     try:
         completion = client.chat.completions.create(
@@ -183,8 +183,8 @@ if __name__ == "__main__":
     # Fill in missing clues using ChatGPT
     for word, clue in word_clues.items():
 
-        # Generate missing clues, or overwrite clues if specified
-        if (not words and len(clue) == 0) or (words and word in words):
+        # Generate missing clues, or overwrite clues if specified, or is forcing
+        if (not words and len(clue) == 0) or (words and word in words) or args.force:
             for count in range(10):
                 clue = word_clue_gen(word)
 
