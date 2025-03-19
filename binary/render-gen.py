@@ -700,6 +700,8 @@ def image_draw(img, grid, image_name):
     min_y = grid.height - 1
     max_y = 0
 
+    img_exists = False
+
     for x in range(0, grid.width, 1):
         for y in range(0, grid.height, 1):
             square = grid.squares[x][y]
@@ -707,12 +709,17 @@ def image_draw(img, grid, image_name):
             if square.type != "BORDER":
                 continue
 
+            img_exists = True
+
             min_x = min(min_x, x)
             max_x = max(max_x, x + 1)
 
             min_y = min(min_y, y)
             max_y = max(max_y, y + 1)
         
+    if not img_exists:
+        print(f"korsord: Image doesn't exist")
+        return
 
     image_file = image_file_get(image_name)
 
@@ -732,6 +739,8 @@ def image_draw(img, grid, image_name):
 
     img_x = min_x * SQUARE_SIZE + (box_width  - new_width)  // 2
     img_y = min_y * SQUARE_SIZE + (box_height - new_height) // 2
+
+    print(f"image_draw {img_x}, {img_y} {new_width}x{new_height}")
 
     img.paste(resized_image, (img_x, img_y))
 

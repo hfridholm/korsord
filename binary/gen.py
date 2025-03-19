@@ -137,11 +137,11 @@ def grid_gen(args):
         print(f"korsord: {grid_program}: File not found")
         sys.exit(1)
 
-    model_arg = ["temp.model"]
-    words_arg = ["temp.words", "svenska/270k.words"]
+    model_arg = [f"{args.model}.model"]
+    words_arg = [f"{args.words}.words", "svenska/270k.words"]
 
 
-    words_file = words_file_get("temp")
+    words_file = words_file_get(args.words)
 
     theme_words = words_file_load(words_file)
 
@@ -236,7 +236,7 @@ def render_gen(args):
         print(f"korsord: {render_script}: File not found")
         sys.exit(1)
 
-    image_arg = ["--image", "temp"] if args.image else []
+    image_arg = ["--image", "temp"]
 
     result = subprocess.run(["python", render_script] + image_arg)
 
@@ -276,6 +276,18 @@ if __name__ == "__main__":
         help="Start at step of generation"
     )
 
+    # Define arguments for each step result
+    parser.add_argument("--words",
+        type=str, default=None,
+        help="Prompt for image"
+    )
+
+    parser.add_argument("--model",
+        type=str, default=None,
+        help="Prompt for image"
+    )
+
+
     args = parser.parse_args()
 
     # Ensure that BASE_DIR is set correctly and exists
@@ -295,24 +307,43 @@ if __name__ == "__main__":
         sys.exit(1)
 
 
-    if step_index <= 0 and not args.theme:
+    if args.model:
+        model_file = model_file_get(args.model)
+
+        model_size = grid_size_get(model_file)
+
+        if model_size:
+            args.width, args.height = model_size
+
+
+    if step_index <= 0 and not args.words and not args.theme:
         print(f"korsord: Theme must be supplied for words")
         sys.exit(1)
 
-    if step_index <= 1 and not (args.width and args.height):
+    if step_index <= 1 and not args.model and not (args.width and args.height):
         print(f"korsord: Size must be supplied for model")
+        sys.exit(1)
+
+    if step_index <= 4 and args.image and not args.theme:
+        print(f"korsord: Theme must be supplied for image")
         sys.exit(1)
 
 
     # 1. Generate words
-    if step_index <= 0 and words_gen(args) != 0:
-        print(f"Failed to generate words")
-        sys.exit(2)
+    if step_index <= 0 and not args.words:
+        if words_gen(args) != 0:
+            print(f"Failed to generate words")
+            sys.exit(2)
+
+        args.words = "temp"
 
     # 2. Generate model
-    if step_index <= 1 and model_gen(args) != 0:
-        print(f"Failed to generate model")
-        sys.exit(3)
+    if step_index <= 1 and not args.model:
+        if model_gen(args) != 0:
+            print(f"Failed to generate model")
+            sys.exit(3)
+
+        args.model = "temp"
 
     # 3. Generate grid
     if step_index <= 2 and grid_gen(args) != 0:
@@ -325,7 +356,7 @@ if __name__ == "__main__":
         sys.exit(5)
 
     # 5. Generate image
-    if step_index <= 4 and args.image and image_gen(args) != 0:
+    if step_index <= 4 and args.theme and image_gen(args) != 0:
         print(f"Failed to generate image")
         sys.exit(6)
 
