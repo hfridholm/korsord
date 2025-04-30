@@ -8,7 +8,6 @@ import argparse
 import subprocess
 import sys
 import os
-import time
 from common import *
 
 WORDS_FACTOR = 10
@@ -54,143 +53,18 @@ def model_gen(args):
     return result.returncode
 
 #
-# Load words
-#
-def words_file_load(filepath):
-    words = []
-
-    try:
-        with open(filepath, 'r') as file:
-            for line in file.readlines():
-                split_line = line.split(":", 1)
-
-                if(len(split_line) < 1):
-                    return None
-
-                word = split_line[0].strip().lower()
-
-                words.append(word);
-
-        return words
-
-    except FileNotFoundError:
-        print(f"korsord: Words file not found")
-        return None
-
-    except Exception as exception:
-        print(f"korsord: Failed to read words file")
-        return None
-
-#
-# Get the number of words used in crossword
-#
-def used_word_amount_get(theme_words):
-    used_count = 0
-
-    clues_file = clues_file_get("temp")
-
-    grid_words = words_file_load(clues_file)
-
-    for word in grid_words:
-        if word in theme_words:
-            used_count += 1
-
-    return used_count
-
-#
-# Read data from file
-#
-def file_read(filepath):
-    try:
-        with open(filepath, "r") as file:
-            return file.read()
-
-    except FileNotFoundError:
-        print(f"korsord: Words file not found")
-        return None
-
-    except Exception as exception:
-        print(f"korsord: Failed to read words file")
-        return None
-
-#
-# Write data to file
-#
-def file_write(filepath, data):
-    try:
-        with open(filepath, 'w') as file:
-            file.write(data)
-
-    except Exception as exception:
-        print(f"korsord: Failed to write words file")
-
-GRID_GEN_TIME  = 10 # Seconds
-GRID_GEN_COUNT = 10 # Tries
-
-#
 # Generate temp.grid and temp.clues
 #
 def grid_gen(args):
-    grid_program = os.path.join(BASE_DIR, "grid-gen")
+    grid_script = os.path.join(BASE_DIR, "grid-gen.py")
 
-    if not os.path.isfile(grid_program):
-        print(f"korsord: {grid_program}: File not found")
+    if not os.path.isfile(grid_script):
+        print(f"korsord: {grid_script}: File not found")
         sys.exit(1)
 
-    model_arg = [f"{args.model}.model"]
-    words_arg = [f"{args.words}.words", "svenska/270k.words"]
+    result = subprocess.run(["python", grid_script, args.model + args.words])
 
-
-    words_file = words_file_get(args.words)
-
-    theme_words = words_file_load(words_file)
-
-    grid_file = grid_file_get("temp")
-    clues_file = clues_file_get("temp")
-
-    best_grid = None
-    best_clues = None
-    best_count = 0
-
-    for iteration in range(GRID_GEN_COUNT):
-        try:
-            result = subprocess.run([grid_program] + model_arg + words_arg, timeout=GRID_GEN_TIME)
-
-            # To make next grid generation random, wait 1 more second
-            time.sleep(1)
-
-            if result.returncode != 0:
-                continue
-            
-            # Get amount of words from 'temp.words'
-            curr_count = used_word_amount_get(theme_words)
-
-            print(f"Theme words: {curr_count}")
-
-            if curr_count > best_count:
-                best_grid = file_read(grid_file)
-
-                best_clues = file_read(clues_file)
-
-                best_count = curr_count
-    
-        except subprocess.TimeoutExpired:
-            print(f"korsord: Grid generation timed out")
-            continue
-
-    if best_grid:
-        file_write(grid_file, best_grid)
-
-    if best_clues:
-        file_write(clues_file, best_clues)
-
-    # If a grid was not generated, return error code
-    if not best_grid or not best_clues:
-        return 1
-
-    print(f"Best theme words: {best_count}")
-
-    return 0
+    return result.returncode
 
 #
 # Generate temp.png
@@ -279,23 +153,27 @@ if __name__ == "__main__":
     # Define arguments for each step result
     parser.add_argument("--words",
         type=str, default=None,
-        help="Prompt for image"
+        help="Names of words"
     )
 
     parser.add_argument("--model",
         type=str, default=None,
-        help="Prompt for image"
+        help="Name of model"
     )
 
-
     args = parser.parse_args()
+
+    # Expand arguments
+    if args.words:
+        args.words = args.words.split(' ')
+
 
     # Ensure that BASE_DIR is set correctly and exists
     if not os.path.exists(BASE_DIR):
         print(f"korsord: {BASE_DIR}: Directory not found")
         sys.exit(1)
 
-
+    # Parse step argument
     steps = ["words", "model", "grid", "clues", "image", "render"]
 
     try:
@@ -306,7 +184,7 @@ if __name__ == "__main__":
         print(f"korsord: {args.step}: Step not found")
         sys.exit(1)
 
-
+    # Populate width and height if model is supplied
     if args.model:
         model_file = model_file_get(args.model)
 
@@ -335,7 +213,7 @@ if __name__ == "__main__":
             print(f"Failed to generate words")
             sys.exit(2)
 
-        args.words = "temp"
+        args.words = ["temp"]
 
     # 2. Generate model
     if step_index <= 1 and not args.model:

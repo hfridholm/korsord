@@ -14,13 +14,13 @@ from common import *
 # Handling the 'gen' command
 #
 def grid_gen(extra_args):
-    gen_program = os.path.join(BASE_DIR, "grid-gen")
+    gen_script = os.path.join(BASE_DIR, "grid-gen.py")
 
-    if not os.path.isfile(gen_program):
-        print(f"korsord: {gen_program}: File not found")
+    if not os.path.isfile(gen_script):
+        print(f"korsord: {gen_script}: File not found")
         sys.exit(1)
 
-    subprocess.run([gen_program] + extra_args)
+    subprocess.run(["python", gen_script] + extra_args)
 
 #
 # Handling the 'del' command
