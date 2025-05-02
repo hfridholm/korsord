@@ -1,0 +1,6 @@
+Skriv en ledtråd till ordet '{word}'.
+Ledtråden ska användas i ett korsord.
+Ditt svar ska innehålla färre än {amount} ord.
+Själva ordet får inte stå med i ledtråden.
+Ordet 'ledtråd' får inte finnas med i ditt svar.
+Inga långa ord får finnas med.

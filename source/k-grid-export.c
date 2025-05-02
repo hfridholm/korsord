@@ -88,8 +88,14 @@ int grid_words_export(grid_t* grid)
     max_width = MAX(max_width, curr_width);
   }
 
+
+  char clues_file[1024];
+
+  sprintf(clues_file, "%s/.korsord/clues/temp.clues", getenv("HOME"));
+
+
   // 3. Open or create file to write to
-  FILE* file = fopen("result.words", "w");
+  FILE* file = fopen(clues_file, "w");
 
   if(!file)
   {
@@ -122,10 +128,21 @@ int grid_words_export(grid_t* grid)
  */
 int grid_export(grid_t* grid)
 {
-  if(!grid || !grid->squares) return 1;
+  if(!grid || !grid->squares)
+  {
+    error_print("Failed to export: Missing grid");
+    return 1;
+  }
+
+  char grid_file[1024];
+
+  sprintf(grid_file, "%s/.korsord/grids/temp.grid", getenv("HOME"));
+
+  printf("Exporting grid: (%s)\n", grid_file);
+
 
   // 3. Open or create file to write to
-  FILE* file = fopen("result.grid", "w");
+  FILE* file = fopen(grid_file, "w");
 
   if(!file)
   {

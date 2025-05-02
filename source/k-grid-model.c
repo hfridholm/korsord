@@ -9,8 +9,6 @@
 
 #include "file.h"
 
-#define MODEL_DIR "../assets/models"
-
 /*
  * Load grid from model
  *
@@ -20,12 +18,22 @@ grid_t* grid_model_load(const char* model)
 {
   if(!model) return NULL;
 
+  char model_dir[1024];
+
+  sprintf(model_dir, "%s/.korsord/models", getenv("HOME"));
+
+
   // 1. Read model file
-  size_t file_size = dir_file_size_get(MODEL_DIR, model);
+  size_t file_size = dir_file_size_get(model_dir, model);
+
+  if (file_size == 0)
+  {
+    return NULL;
+  }
 
   char* buffer = malloc(sizeof(char) * (file_size + 1));
 
-  if(dir_file_read(buffer, file_size, MODEL_DIR, model) == 0)
+  if(dir_file_read(buffer, file_size, model_dir, model) == 0)
   {
     free(buffer);
 

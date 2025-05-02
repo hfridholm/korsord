@@ -1,516 +1,197 @@
 #
-# render.py - render crossword to image
+# render.py - commands for managing rendered images
 #
 # Written by Hampus Fridholm
 #
 
-# Import image library
-from PIL import Image, ImageDraw, ImageFont
-import textwrap
-import os
-import string
-import random
 import argparse
-
-MAX_LENGTH = 30
-WRAP_WIDTH = 10
-
-LETTER_FONT_SIZE = 100
-NUMBER_FONT_SIZE = 40
-CLUE_FONT_SIZE   = 25
-
-LINE_MARGIN = 10
-SQUARE_SIZE = 200
-LINE_WIDTH  = 2
+import subprocess
+import sys
+import os
+from common import *
 
 #
-# Parse command line arguments
+# Handling the 'gen' command
 #
-parser = argparse.ArgumentParser(description="render exported crossword to images")
+def render_gen(extra_args):
+    gen_script = os.path.join(BASE_DIR, "render-gen.py")
 
-parser.add_argument("--results-dir", type=str, help="Directory to store crosswords")
-parser.add_argument("--result-dir",  type=str, help="Directory name of saved images")
+    if not os.path.isfile(gen_script):
+        print(f"korsord: {gen_script}: File not found")
+        sys.exit(1)
 
-parser.add_argument("--font-dir",    type=str, help="Directory to font")
-parser.add_argument("--font-file",   type=str, help="File name of font")
-
-args = parser.parse_args()
-
-RESULTS_DIR = args.results_dir if args.results_dir else "results"
-RESULT_DIR  = args.result_dir  if args.result_dir  else "korsord"
-
-FONT_DIR  = args.font_dir  if args.font_dir  else "../assets/fonts"
-FONT_FILE = args.font_file if args.font_file else "Ubuntu-B.ttf"
+    subprocess.run(["python", gen_script] + extra_args)
 
 #
-# Square struct
+# Handling the 'del' command
 #
-class Square:
-    def __init__(self, square_type, letter=None):
-        self.type   = square_type
-        self.letter = letter
+def render_del(extra_args):
+    del_parser = argparse.ArgumentParser(description="Delete render")
 
-class Grid:
-    def __init__(self, width, height):
-        self.width  = width
-        self.height = height
+    del_parser.add_argument('name',
+        type=str,
+        help="Name of render"
+    )
 
-        self.squares = []
+    del_args = del_parser.parse_args(extra_args)
 
-        for x in range(width):
-            self.squares.append([])
+    render_file = render_file_get(del_args.name)
 
-            for y in range(height):
-                self.squares[x].append(Square("EMPTY"))
+    if not os.path.exists(render_file):
+        print(f"korsord: {del_args.name}: Image not found")
+        sys.exit(0)
 
-#
-# Load crossword grid
-#
-def grid_load(filepath):
-    file = None
-
-    try:
-        file = open(filepath, 'r')
-
-    except FileNotFoundError:
-        print(f"Grid file not found")
-        return None
-
-    except Exception as exception:
-        print(f"Failed to read grid file")
-        return None
-
-    # Get width and height of grid
-    width  = 0
-    height = 0
-
-    for line in file.readlines():
-        width = max(width, len(line) // 2)
-        height += 1
-
-    # Extract squares of grid
-    grid = Grid(width, height)
-
-    # Go back to the beginning of the file
-    file.seek(0)
-
-    for y, line in enumerate(file.readlines()):
-        # Get every other symbol of line (grid symbols)
-        for x, symbol in enumerate(line[::2]):
-            if (symbol == 'X'):
-                grid.squares[x][y] = Square("BORDER")
-
-            elif (symbol == '.'):
-                grid.squares[x][y] = Square("EMPTY")
-
-            elif (symbol == '#'):
-                grid.squares[x][y] = Square("BLOCK")
-
-            else:
-                letter = symbol.lower()
-
-                if(letter.isalpha() and letter.isascii()):
-                    grid.squares[x][y] = Square("LETTER", letter)
-
-                else: # Invalid symbols in grid
-                    print(f"Invalid symbol ({x}, {y}): '{symbol}'")
-                    return None
-
-    return grid
+    subprocess.run(["rm", render_file])
 
 #
-# Load words and their clues in a dictionary
+# Handling the 'view' command
 #
-def word_clues_load(filepath):
-    word_clues = {}
+def render_view(extra_args):
+    view_parser = argparse.ArgumentParser(description="View render")
 
-    try:
-        with open(filepath, 'r') as file:
-            for line in file.readlines():
-                split_line = line.split(":", 1)
+    view_parser.add_argument('--name',
+        type=str, default="normal",
+        help="Name of render"
+    )
 
-                if(len(split_line) < 2):
-                    return None
+    view_args = view_parser.parse_args(extra_args)
 
-                word = split_line[0].strip().lower()
-                clue = split_line[1].strip()
+    render_file = render_file_get(view_args.name)
 
-                if(len(clue) > MAX_LENGTH):
-                    print(f"Clue is too long: ({clue})")
-                    return None
+    if not os.path.exists(render_file):
+        print(f"korsord: {view_args.name}: Image not found")
+        sys.exit(0)
 
-                word_clues[word] = clue;
-
-    except FileNotFoundError:
-        print(f"Words file not found")
-        return None
-
-    except Exception as exception:
-        print(f"Failed to read words file")
-        return None
-
-    return word_clues
+    subprocess.run(["feh", render_file])
 
 #
-# Find blocks and their words
+# Get all render files
 #
-def block_words_find(grid):
-    block_words = {}
+def render_files_get():
+    render_files = []
 
-    # Extract horizontal words
-    #
-    # By going from the top to the bottom (y getting bigger),
-    # the double clue squares becomes correct
-    #
-    for y in range(grid.height):
-        word = ""
+    for root, dirs, files in os.walk(RENDER_DIR):
+        for file in files:
+            if file.endswith('.png'):
+                render_file = os.path.join(root, file)
 
-        for x in range(grid.width - 1, -1, -1):
-            square = grid.squares[x][y]
+                render_files.append(render_file)
 
-            if(square.type == "EMPTY"):
-                word = ""
-
-            elif(square.type == "BLOCK"):
-                if(len(word) > 1):
-                    if((x, y) in block_words):
-                        block_words[(x, y)].append(word)
-
-                    else:
-                        block_words[(x, y)] = [word]
-
-                word = ""
-
-            elif (square.type == "LETTER"):
-                word = square.letter + word
-
-            if ((x == 0 or grid.squares[x - 1][y].type == "BORDER") and y < grid.height - 1):
-                # The clue square is one below
-                if(len(word) > 1):
-                    if((x, y + 1) in block_words):
-                        block_words[(x, y + 1)].append(word)
-
-                    else:
-                        block_words[(x, y + 1)] = [word]
-
-                word = ""
-
-    # Extract vertical words
-    #
-    # By going from right to left (x getting smaller),
-    # the double clue squares becomes correct
-    #
-    for x in range(grid.width - 1, -1, -1):
-        word = ""
-
-        for y in range(grid.height - 1, -1, -1):
-            square = grid.squares[x][y]
-
-            if(square.type == "EMPTY"):
-                word = ""
-
-            elif (square.type == "BLOCK"):
-                if(len(word) > 1):
-                    if((x, y) in block_words):
-                        block_words[(x, y)].append(word)
-
-                    else:
-                        block_words[(x, y)] = [word]
-
-                word = ""
-
-            elif(square.type == "LETTER"):
-                word = square.letter + word
-
-            if ((y == 0 or grid.squares[x][y - 1].type == "BORDER") and x > 0):
-                # The clue square is one to the left
-                if(len(word) > 1):
-                    if((x - 1, y) in block_words):
-                        block_words[(x - 1, y)].append(word)
-
-                    else:
-                        block_words[(x - 1, y)] = [word]
-
-                word = ""
-
-    return block_words
-
-print(f"Loading grid {'result.grid'}")
+    return render_files
 
 #
-# Load grid
+# Handling the 'list' command
 #
-grid = grid_load("result.grid")
+def render_list(extra_args):
+    render_files = render_files_get()
 
-if(grid == None):
-    print(f"Failed to load grid")
-    exit(1)
+    if len(render_files) == 0:
+        print(f"No images exist")
+        sys.exit(0)
 
-print(f"Loaded grid {'result.grid'}")
+    max_width = 0
 
-print(f"Finding words in grid")
+    for file in render_files:
+        name = render_name_get(file)
 
-# Get blocks and their words
-block_words = block_words_find(grid)
+        max_width = max(max_width, len(name) + 1)
 
-if(block_words == None):
-    print(f"Failed to find block words")
-    exit(2)
+    for file in render_files:
+        name = render_name_get(file)
 
-print(f"Found words in grid")
+        curr_width = max_width - len(name)
 
-print(f"Loading word clues {'result.words'}")
-
-# Load words along with threir clues
-word_clues = word_clues_load("result.words")
-
-if(word_clues == None):
-    print(f"Failed to load clues")
-    exit(3)
-
-print(f"Loaded word clues {'result.words'}")
-
-# Initialize img, draw and font variables
-img_w = grid.width  * SQUARE_SIZE
-img_h = grid.height * SQUARE_SIZE
-
-img = Image.new('RGBA', (img_w, img_h), color=(0, 0, 0, 0))
-draw = ImageDraw.Draw(img)
-
-FONT_PATH = f"{FONT_DIR}/{FONT_FILE}"
-
-print(f"Loading font {FONT_PATH}")
-
-try:
-    clue_font = ImageFont.truetype(FONT_PATH, CLUE_FONT_SIZE)
-
-    letter_font = ImageFont.truetype(FONT_PATH, LETTER_FONT_SIZE)
-
-    number_font = ImageFont.truetype(FONT_PATH, NUMBER_FONT_SIZE)
-
-except IOError:
-    print(f"Failed to load font")
-    exit(1)
-
-print(f"Loaded font {FONT_PATH}")
+        print(f"{name}{' ' * curr_width}")
 
 #
-# Draw the outline for a square
+# Handling the 'copy' command
 #
-def square_draw(x, y, square_type, half=False):
-    w = SQUARE_SIZE
-    h = (SQUARE_SIZE // 2) if half else SQUARE_SIZE
+def render_copy(extra_args):
+    copy_parser = argparse.ArgumentParser(description="Save copy of render")
 
-    draw.rectangle([x, y, x + w, y + h], fill="white", outline="black", width=LINE_WIDTH)
+    copy_parser.add_argument('--name',
+        type=str, default="normal",
+        help="Name of render"
+    )
 
-#
-# Draw the text for the clue
-#
-def clue_draw(x, y, clue, half=False):
-    w = SQUARE_SIZE
-    h = (SQUARE_SIZE // 2) if half else SQUARE_SIZE
+    copy_parser.add_argument('copy',
+        type=str,
+        help="Name of copy"
+    )
 
-    # Calculate text size
-    bbox = draw.textbbox((0, 0), clue, font=clue_font)
+    copy_parser.add_argument('--force',
+        action='store_true',
+        help="Overwrite existing render"
+    )
 
-    text_h = bbox[3] - bbox[1]
+    copy_args = copy_parser.parse_args(extra_args)
 
-    wrapped_text = textwrap.fill(clue, width=WRAP_WIDTH, break_long_words=True)
+    render_file = render_file_get(copy_args.name)
 
-    line_amount = len(wrapped_text.split("\n"))
+    if string_is_file(copy_args.copy):
+        copy_file = copy_args.copy
 
-    # Height of text lines
-    lines_h = text_h + (line_amount - 1) * (text_h + LINE_MARGIN)
+    else:
+        copy_file = render_file_get(copy_args.copy)
 
-    text_y = y + max(0, (h - lines_h) // 2)
+    if not os.path.exists(render_file):
+        print(f"korsord: {copy_args.name}: Image not found")
+        sys.exit(0)
 
-    # Draw the wrapped text line by line
-    for index, line in enumerate(wrapped_text.split("\n")):
-        # Calculate text size
-        bbox = draw.textbbox((0, 0), line, font=clue_font)
+    if os.path.exists(copy_file) and not copy_args.force:
+        print(f"korsord: {copy_args.copy}: Image already exists")
+        sys.exit(0)
 
-        # Calculate width and height of the text
-        text_w = bbox[2] - bbox[0]
-        text_h = bbox[3] - bbox[1]
-
-        text_x = x + max(0, (w - text_w) // 2)
-
-        # Draw the text on the image
-        draw.text((text_x, text_y), line, fill="black", font=clue_font)
-
-        text_y += text_h + LINE_MARGIN
+    subprocess.run(["cp", render_file, copy_file])
 
 #
-# Draw letter in grid
+# Main function
 #
-def letter_draw(x, y, letter):
-    w = SQUARE_SIZE
-    h = SQUARE_SIZE
+if __name__ == "__main__":
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(
+        description="Crossword render handler",
+        add_help=False
+    )
 
-    text = letter.upper()
+    parser.add_argument("command",
+        nargs="?",
+        help="gen, view, del, copy, list"
+    )
 
-    # Calculate text size
-    bbox = draw.textbbox((0, 0), text, font=letter_font)
+    args, extra_args = parser.parse_known_args()
 
-    text_w = bbox[2] - bbox[0]
-    text_h = bbox[3] - bbox[1]
-
-    text_x = x + max(0, (w - text_w) // 2)
-    text_y = y + max(0, (h - text_h) // 2)
-
-    draw.text((text_x, text_y), text, fill="red", font=letter_font)
-
-print(f"Drawing word clues")
-
-#
-# Draw crossword grid
-#
-for x in range(grid.width):
-    for y in range(grid.height):
-        square = grid.squares[x][y]
-
-        if(square.type == "BORDER"):
-            continue
-
-        img_x = (x * SQUARE_SIZE)
-        img_y = (y * SQUARE_SIZE)
-
-        # Draw grid square
-        square_draw(img_x, img_y, square.type)
-
-        # Square is not block
-        if((x, y) not in block_words):
-            continue
-
-        words = block_words[(x, y)]
-
-        # Clue square is divided in two   
-        if(len(words) > 1):
-            for index, word in enumerate(words):
-                img_x = (x * SQUARE_SIZE)
-                img_y = (y * SQUARE_SIZE) if index == 0 else ((y + 1/2) * SQUARE_SIZE)
-
-                square_draw(img_x, img_y, "BLOCK", half=True)
-
-                if(word not in word_clues):
-                    continue
-
-                clue = word_clues[word]
-
-                if(clue):
-                    clue_draw(img_x, img_y, clue, half=True)
-
-        # Clue square has only one word
-        else:
-            word = words[0]
-
-            if(word not in word_clues):
-                continue
-
-            clue = word_clues[word]
-
-            if(clue):
-                clue_draw(img_x, img_y, clue)
-
-print(f"Drew word clues")
-
-#
-# Get path to new result directory
-#
-def new_result_dir_get():
-    count = 1
-    new_result_dir = f"korsord{count}"
-
-    while os.path.exists(f"{RESULTS_DIR}/{new_result_dir}"):
-        count += 1
-        new_result_dir = f"korsord{count}"
-
-    return new_result_dir
-
-# Get the path to new result directory
-if(RESULT_DIR == None):
-    RESULT_DIR = new_result_dir_get()
-
-if not os.path.exists(f"{RESULTS_DIR}/{RESULT_DIR}"):
-    os.makedirs(f"{RESULTS_DIR}/{RESULT_DIR}")
+    # Print help menu if no command was supplied
+    if not args.command:
+        parser.print_help()
+        sys.exit(0)
 
 
-img.save(f"{RESULTS_DIR}/{RESULT_DIR}/normal.png", "PNG")
+    # Ensure that BASE_DIR is set correctly and exists
+    if not os.path.exists(BASE_DIR):
+        print(f"korsord: {BASE_DIR}: Directory not found")
+        sys.exit(1)
 
-print(f"Saved normal crossword image")
+    # Ensure that RENDER_DIR is set correctly and exists
+    if not os.path.exists(RENDER_DIR):
+        print(f"korsord: {RENDER_DIR}: Directory not found")
+        sys.exit(1)
 
-#
-# Draw helping letter number
-#
-def number_draw(x, y, number):
-    text = number
+    # Parse command
+    if args.command == "gen":
+        render_gen(extra_args)
 
-    text_x = x + 10
-    text_y = y + 10
+    elif args.command == "view":
+        render_view(extra_args)
 
-    draw.text((text_x, text_y), text, fill="gray", font=number_font)
+    elif args.command == "del":
+        render_del(extra_args)
 
-#
-# Create random numbers dictionary
-#
-def numbers_gen():
-    ordered_numbers = {}
+    elif args.command == "list":
+        render_list(extra_args)
 
-    for index, letter in enumerate(string.ascii_lowercase):
-        ordered_numbers[letter] = str(index + 1)
+    elif args.command == "copy":
+        render_copy(extra_args)
 
-    # Step 1: Extract the values and shuffle them
-    values = list(ordered_numbers.values())
-
-    random.shuffle(values)
-
-    # Step 2: Reassign the shuffled values back to the dictionary
-    return dict(zip(ordered_numbers.keys(), values))
-
-numbers = numbers_gen()
-
-print(f"Drawing letter numbers")
-
-#
-# Draw helping letter numbers
-#
-for x in range(grid.width):
-    for y in range(grid.height):
-        square = grid.squares[x][y]
-
-        if(square.type != "LETTER"):
-            continue
-
-        number = numbers[square.letter]
-
-        img_x = (x * SQUARE_SIZE)
-        img_y = (y * SQUARE_SIZE)
-
-        # Draw letter number
-        number_draw(img_x, img_y, number)
-
-print(f"Drew letter numbers")
-
-img.save(f"{RESULTS_DIR}/{RESULT_DIR}/helping.png", "PNG")
-
-print(f"Saved helping crossword image")
-
-print(f"Filling in words")
-
-# Create solved crossword image
-for x in range(grid.width):
-    for y in range(grid.height):
-        square = grid.squares[x][y]
-
-        img_x = (x * SQUARE_SIZE)
-        img_y = (y * SQUARE_SIZE)
-
-        if(square.type == "LETTER"):
-            letter_draw(img_x, img_y, square.letter)
-
-print(f"Filled in words")
-
-# Save solved crossword image
-img.save(f"{RESULTS_DIR}/{RESULT_DIR}/solved.png", "PNG")
-
-print(f"Saved solved crossword image")
+    else:
+        print(f"korsord: {args.command}: Command not found")

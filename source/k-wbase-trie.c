@@ -9,8 +9,6 @@
 
 extern int MAX_WORD_LENGTH;
 
-#define WORDS_DIR "../assets/words"
-
 /*
  * Create blank trie node
  */
@@ -100,11 +98,18 @@ trie_t* trie_load(const char* wfile)
 {
   if(!wfile) return NULL;
 
-  size_t file_size = dir_file_size_get(WORDS_DIR, wfile);
+  char words_dir[1024];
+
+  sprintf(words_dir, "%s/.korsord/words", getenv("HOME"));
+
+
+  size_t file_size = dir_file_size_get(words_dir, wfile);
+
+  printf("file_size: %ld\n", file_size);
 
   char* buffer = malloc(sizeof(char) * (file_size + 1));
 
-  if(dir_file_read(buffer, file_size, WORDS_DIR, wfile) == 0)
+  if(dir_file_read(buffer, file_size, words_dir, wfile) == 0)
   {
     return NULL;
   }

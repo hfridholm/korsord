@@ -1,139 +1,232 @@
 #
-# clues.py - generate crossword clues using AI
+# clues.py - commands for managing clues
 #
 # Written by Hampus Fridholm
 #
-# https://github.com/openai/openai-python
-#
 
-from openai import OpenAI
-
-MAX_CLUE_LENGTH = 30
-MAX_WORD_AMOUNT = 4
-
-api_key_file = "api.key"
-
-# Function to read the API key from a local file
-def api_key_get(filepath):
-    try:
-        with open(filepath, 'r') as file:
-            api_key = file.read().strip()
-
-        return api_key
-
-    except Exception as e:
-        print(f"Error reading API key: {e}")
-        return None
-
-# Start an openai client using API key
-client = OpenAI(api_key=api_key_get(api_key_file))
+import argparse
+import subprocess
+import sys
+import os
+from common import *
 
 #
-# Ask ChatGPT for a clue to a word
+# Handling the 'gen' command
 #
-def word_clue_gen(word):
-    prompt = f"""
-        Skriv en ledtråd till ordet '{word}'.
-        Ledtråden ska användas i ett korsord.
-        Ditt svar ska inte sluta med en punkt.
-        Ditt svar ska innehålla färre än {MAX_WORD_AMOUNT} ord.
-        Själva ordet får inte stå med i ledtråden.
-        Ordet 'ledtråd' får inte finnas med i ditt svar.
-        Inga långa ord får finnas med.
-    """
+def clues_gen(extra_args):
+    gen_script = os.path.join(BASE_DIR, "clues-gen.py")
 
-    try:
-        completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=MAX_CLUE_LENGTH,
-            temperature=0.7
-        )
+    if not os.path.isfile(gen_script):
+        print(f"korsord: {gen_script}: File not found")
+        sys.exit(1)
 
-        message = completion.choices[0].message.content
-
-        clue = message.strip().strip(".").upper()
-
-        return clue
-
-    except Exception as exception:
-        print(f"ChatGPT error: {exception}")
-        return None
+    subprocess.run(["python", gen_script] + extra_args)
 
 #
-# Load words and their clues in a dictionary
+# Handling the 'del' command
 #
-def word_clues_load(filepath):
-    word_clues = {}
+def clues_del(extra_args):
+    del_parser = argparse.ArgumentParser(description="Delete clues")
 
-    try:
-        with open(filepath, 'r') as file:
-            for line in file.readlines():
-                split_line = line.split(":", 1)
+    del_parser.add_argument('name',
+        type=str,
+        help="Name of clues"
+    )
 
-                if(len(split_line) < 2):
-                    return None
+    del_args = del_parser.parse_args(extra_args)
 
-                word = split_line[0].strip().lower()
-                clue = split_line[1].strip()
+    clues_file = clues_file_get(del_args.name)
 
-                word_clues[word] = clue;
+    if not os.path.exists(clues_file):
+        print(f"korsord: {del_args.name}: Clues not found")
+        sys.exit(0)
 
-    except FileNotFoundError:
-        print(f"Words file not found")
-        return None
-
-    except Exception as exception:
-        print(f"Failed to read words file")
-        return None
-
-    return word_clues
+    subprocess.run(["rm", clues_file])
 
 #
-# Save words and their clues
+# Handling the 'edit' command
 #
-def word_clues_save(word_clues, filepath):
-    # 1. Get max width for alignment
+def clues_edit(extra_args):
+    edit_parser = argparse.ArgumentParser(description="Edit clues")
+
+    edit_parser.add_argument('--name',
+        type=str, default="temp",
+        help="Name of clues"
+    )
+
+    edit_args = edit_parser.parse_args(extra_args)
+
+    clues_file = clues_file_get(edit_args.name)
+
+    if not os.path.exists(clues_file):
+        if edit_args.name == "temp":
+            print(f"korsord: Clues not found")
+
+        else:
+            print(f"korsord: {edit_args.name}: Clues not found")
+
+        sys.exit(0)
+
+    subprocess.run(["vim", clues_file])
+
+#
+# Handling the 'view' command
+#
+def clues_view(extra_args):
+    view_parser = argparse.ArgumentParser(description="View clues")
+
+    view_parser.add_argument('--name',
+        type=str, default="temp",
+        help="Name of clues"
+    )
+
+    view_args = view_parser.parse_args(extra_args)
+
+    clues_file = clues_file_get(view_args.name)
+
+    if not os.path.exists(clues_file):
+        if not view_args.new:
+            if view_args.name == "temp":
+                print(f"korsord: Words not found")
+
+            else:
+                print(f"korsord: {view_args.name}: Words not found")
+
+            sys.exit(0)
+
+    subprocess.run(["less", clues_file])
+
+#
+# Get all clues files
+#
+def clues_files_get():
+    clues_files = []
+
+    for root, dirs, files in os.walk(CLUES_DIR):
+        for file in files:
+            if file.endswith('.clues'):
+                clues_file = os.path.join(root, file)
+
+                clues_files.append(clues_file)
+
+    return clues_files
+
+#
+# Handling the 'list' command
+#
+def clues_list(extra_args):
+    clues_files = clues_files_get()
+
+    if len(clues_files) == 0:
+        print(f"No clues exist")
+        sys.exit(0)
+
     max_width = 0
 
-    for word in word_clues:
-        max_width = max(max_width, len(word) + 1)
+    for file in clues_files:
+        name = clues_name_get(file)
 
-    try:
-        with open(filepath, 'w') as file:
-            for word, clue in word_clues.items():
-                curr_width = max_width - len(word)
+        max_width = max(max_width, len(name) + 1)
 
-                file.write(f"{word}{' ' * curr_width}: {clue}\n")
+    for file in clues_files:
+        name = clues_name_get(file)
 
-    except Exception as exception:
-        print(f"Failed to write words file")
+        line_count = line_count_get(file)
+
+        if not line_count:
+            continue
+
+        curr_width = max_width - len(name)
+
+        print(f"{name}{' ' * curr_width}: {line_count}")
+
+#
+# Handling the 'copy' command
+#
+def clues_copy(extra_args):
+    copy_parser = argparse.ArgumentParser(description="Save copy of clues")
+
+    copy_parser.add_argument('--name',
+        type=str, default="temp",
+        help="Name of clues"
+    )
+
+    copy_parser.add_argument('copy',
+        type=str,
+        help="Name of copy"
+    )
+
+    copy_parser.add_argument('--force',
+        action='store_true',
+        help="Overwrite existing clues"
+    )
+
+    copy_args = copy_parser.parse_args(extra_args)
+
+    clues_file = clues_file_get(copy_args.name)
+    copy_file = clues_file_get(copy_args.copy)
+
+    if not os.path.exists(clues_file):
+        print(f"korsord: {copy_args.name}: Clues not found")
+        sys.exit(0)
+
+    if os.path.exists(copy_file) and not copy_args.force:
+        print(f"korsord: {copy_args.copy}: Clues already exists")
+        sys.exit(0)
+
+    subprocess.run(["cp", clues_file, copy_file])
 
 #
 # Main function
 #
 if __name__ == "__main__":
-    # 1. Load word clues
-    word_clues = word_clues_load("result.words")
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(
+        description="Crossword clues handler",
+        add_help=False
+    )
 
-    if(word_clues == None):
-        print(f"Failed to load word clues")
-        exit(1)
+    parser.add_argument("command",
+        nargs="?",
+        help="gen, view, edit, del, copy, list"
+    )
 
-    print(f"Loaded words")
+    args, extra_args = parser.parse_known_args()
 
-    # 2. Fill in missing clues using ChatGPT
-    for word, clue in word_clues.items():
-        if(len(clue) == 0):
-            clue = word_clue_gen(word)
-            print(f"Generated ({word}): {clue}")
+    # Print help menu if no command was supplied
+    if not args.command:
+        parser.print_help()
+        sys.exit(0)
 
-        word_clues[word] = clue
 
-    # 3. Load word clues
-    word_clues_save(word_clues, "result.words")
+    # Ensure that BASE_DIR is set correctly and exists
+    if not os.path.exists(BASE_DIR):
+        print(f"korsord: {BASE_DIR}: Directory not found")
+        sys.exit(1)
 
-    print(f"Saved result")
+    # Ensure that CLUES_DIR is set correctly and exists
+    if not os.path.exists(CLUES_DIR):
+        print(f"korsord: {CLUES_DIR}: Directory not found")
+        sys.exit(1)
+
+    # Parse command
+    if args.command == "gen":
+        clues_gen(extra_args)
+
+    elif args.command == "edit":
+        clues_edit(extra_args)
+
+    elif args.command == "view":
+        clues_view(extra_args)
+
+    elif args.command == "del":
+        clues_del(extra_args)
+
+    elif args.command == "list":
+        clues_list(extra_args)
+
+    elif args.command == "copy":
+        clues_copy(extra_args)
+
+    else:
+        print(f"korsord: {args.command}: Command not found")

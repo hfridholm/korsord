@@ -5,22 +5,38 @@
 - write in README.md
 
 ## Quick Fixes
-- README.md in source/ explain the algorithm and refrence function names
+- change all args.REMAINDER to string.split(' ')
+- add 'words' to render-gen.py
+- add 'words' arg to gen.py, which consists of pre generated words (in priority order)
+- add 'model', 'grid', 'clues', 'image' which gets overwritten at each step
+- change 'theme' to 'prompt' in gen.py. Theme, image_pos and image_prompt is then extracted from prompt
+- don't print "Använd inte följande ord:" om inga ord finns
+- Add messages in makefile
 - write about the default models
 - write about makefile and scripts in binary
-- add argp to clues.py
+
+## korsord.c
+- create korsord.man
+- fix grid-gen (korsord.c) file handling
+- return proper exit code on fail in korsord.c
+- fix file paths in grid-gen (korsord.c)
+- README.md in source/ explain the algorithm and refrence function names
 - change if-statements to switch statements when checking _status in -gen.c
 - Fix problem with "new best grid" skyrocketing
   (I have a fealing that the problem is that singles (1 letter words) don't get restored)
+- Delete debug.sh and valgrind.sh
 
 ## Potential Quick Fixes
+- maybe hard code BASE_DIR in scripts
+- rename temp. files to maybe 'default' or something similar
 - add flags to makefile to silent output
 - move lock inside stats struct and lock inside grid struct
 - remove old_grid from _reset, instead set is_crossed on SQUARE_BLOCK and from that _reset
 
 ## Word Files
-- only read first word of each line in model_load in korsord
+- only read first word of each line in model_load in korsord.c
 - make it possible to read word files with existing clues (word : clue)
+
 ### Maybe
 - make it possible to store multiple clues in one words file
 * collect clues in large words file, where old clues can be reused

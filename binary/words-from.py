@@ -1,10 +1,14 @@
 #
-# ordlista.py - word list scraping tool
+# words-from.py - extract words from file
 #
 # Written by Hampus Fridholm
 #
 
 import argparse
+import subprocess
+import sys
+import os
+from common import *
 
 #
 # Extract the first word of line
@@ -13,11 +17,11 @@ def word_extract(line):
     first_word = line.split()[0] if line.split() else ""
 
     # The word must have only ascii characters
-    if(not first_word.isalpha() or not first_word.isascii()):
+    if not first_word.isalpha() or not first_word.isascii():
         return None
 
     # The word must have at least 2 letters
-    if(len(first_word) < 2):
+    if len(first_word) < 2:
         return None
 
     return first_word.lower()
@@ -35,7 +39,7 @@ def words_extract(input_file):
             for line in infile:
                 word = word_extract(line)
 
-                if(word != None):
+                if word:
                     words.append(word)
 
         print(f"Extracted words from {input_file}")
@@ -69,35 +73,43 @@ def words_filter(words):
     return result
 
 #
-# Write words to output file on seperate lines
+# Save words
 #
-def words_write(words, output_file):
+def words_save(words, filepath):
     try:
-        print(f"Writing words to {output_file}")
-
-        with open(output_file, 'w') as outfile:
+        with open(filepath, 'w') as file:
             for word in words:
-                outfile.write(word + '\n')
-
-        print(f"Wrote words to {output_file}")
+                file.write(f"{word}\n")
 
     except Exception as exception:
-        print(f"An error occurred: {exception}")
+        print(f"Failed to write words file")
 
 #
 # Main routine
 #
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Extract the first word from each line of an input file and save them to an output file.")
+    parser = argparse.ArgumentParser(description="Extract words from file")
     
-    parser.add_argument('input_file', help="The input file containing lines of text")
-    parser.add_argument('output_file', help="The output file to store the first words")
+    parser.add_argument('file',
+        type=str,
+        help="File to extract words from"
+    )
+
+    parser.add_argument('--name',
+        type=str, default="temp",
+        help="Name of words"
+    )
 
     args = parser.parse_args()
 
-    words = words_extract(args.input_file)
+    words = words_extract(args.file)
 
-    if (words != None):
-        words = words_filter(words)
+    if not words:
+        print(f"No words to extract")
+        sys.exit(0)
 
-        words_write(words, args.output_file)
+    words = words_filter(words)
+
+    words_file = words_file_get(args.name)
+
+    words_save(words, words_file)

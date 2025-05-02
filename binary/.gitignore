@@ -1,12 +1,32 @@
 *
 !.gitignore
+!korsord.py
 !README.md
 !makefile
+
+# Python scripts
+!common.py
+!gen.py
+
+!render.py
+!render-gen.py
+
+!clues.py
+!clues-gen.py
+
+!words.py
+!words-gen.py
+!words-from.py
+
+!model.py
+!model-gen.py
+
+!image.py
+!image-gen.py
+
+!grid.py
+!grid-gen.py
 
 # Shell scripts
 !debug.sh
 !valgrind.sh
-
-# Python scripts
-!render.py
-!clues.py
