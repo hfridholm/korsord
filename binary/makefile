@@ -6,7 +6,7 @@
 
 .PHONY: apt-packages pip-packages
 
-default: apt-packages pip-packages config-init korsord
+default: apt-packages config-init korsord
 
 CONFIG_DIR := $(HOME)/.korsord
 
@@ -66,13 +66,13 @@ config-init:
 		echo "Directory $(CONFIG_DIR) already exists."; \
 	fi
 
-APT_PACKAGES := gcc pip
+APT_PACKAGES := gcc python3-pip
 
 # Target for installing apt packages
 apt-packages:
 	@echo "Checking and installing missing packages..."
 	@for package in $(APT_PACKAGES); do \
-		if ! dpkg -l | grep -q $$package; then \
+		if ! dpkg -s $$package >/dev/null 2>&1; then \
 			echo "Package $$package not found. Installing..."; \
 			sudo apt-get update && sudo apt-get install -y $$package; \
 		else \
