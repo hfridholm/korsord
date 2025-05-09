@@ -78,7 +78,7 @@ int vert_words_exist(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 
       int max_amount = (MAX_EXIST_AMOUNT - amount);
 
-      amount += wbase_words_exist_for_pattern(wbase, pattern, max_amount);
+      amount += wbase_words_exist_for_pattern(wbase, grid->words, pattern, max_amount);
       
       // This is opimization only done for performance
       if(amount >= MAX_EXIST_AMOUNT) break;
@@ -150,7 +150,7 @@ int horiz_words_exist(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 
       int max_amount = (MAX_EXIST_AMOUNT - amount);
 
-      amount += wbase_words_exist_for_pattern(wbase, pattern, max_amount);
+      amount += wbase_words_exist_for_pattern(wbase, grid->words, pattern, max_amount);
       
       // This is opimization only done for performance
       if(amount >= MAX_EXIST_AMOUNT) break;

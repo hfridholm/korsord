@@ -157,12 +157,13 @@ int grid_words_get(char*** words, size_t* count, grid_t* grid)
  * PARAMS
  * - char* word | The letters sience root
  */
-static void _words_search(char*** words, size_t* count, node_t* node, const char* pattern, int index, char* word)
+static void _words_search(char*** words, size_t* count, node_t* node, node_t* used_node, const char* pattern, int index, char* word)
 {
   // Base case - the end of the word
   if(pattern[index] == '\0')
   {
-    if(node->is_end_of_word && !node->is_used)
+    if(node->is_end_of_word &&
+       (!used_node || !used_node->is_end_of_word))
     {
       word_append(words, count, word);
     }
@@ -180,13 +181,15 @@ static void _words_search(char*** words, size_t* count, node_t* node, const char
     // If no words have the letter, abort
     if(!child) return;
 
+    node_t* used_child = used_node ? used_node->children[letter_index] : NULL;
+
     char new_word[index + 2];
 
     char letter = pattern[index];
 
     snprintf(new_word, index + 2, "%.*s%c", index, word, letter);
 
-    _words_search(words, count, child, pattern, index + 1, new_word);
+    _words_search(words, count, child, used_child, pattern, index + 1, new_word);
   }
   else
   {
@@ -197,6 +200,7 @@ static void _words_search(char*** words, size_t* count, node_t* node, const char
       // Only go through the allocated letters
       if(!child) continue;
 
+      node_t* used_child = used_node ? used_node->children[child_index] : NULL;
 
       char new_word[index + 2];
 
@@ -204,7 +208,7 @@ static void _words_search(char*** words, size_t* count, node_t* node, const char
 
       snprintf(new_word, index + 2, "%.*s%c", index, word, letter);
 
-      _words_search(words, count, child, pattern, index + 1, new_word);
+      _words_search(words, count, child, used_child, pattern, index + 1, new_word);
     }
   }
 }
@@ -214,11 +218,11 @@ static void _words_search(char*** words, size_t* count, node_t* node, const char
  *
  * Maybe: remove args checking and add EXPECTS
  */
-int words_search(char*** words, size_t* count, trie_t* trie, const char* pattern)
+int words_search(char*** words, size_t* count, trie_t* trie, trie_t* used_trie, const char* pattern)
 {
   if(!words || !count || !trie || !pattern) return 1;
 
-  _words_search(words, count, (node_t*) trie, pattern, 0, "");
+  _words_search(words, count, (node_t*) trie, (node_t*) used_trie, pattern, 0, "");
 
   return 0;
 }
@@ -228,14 +232,15 @@ int words_search(char*** words, size_t* count, trie_t* trie, const char* pattern
  *
  * RETURN (int amount)
  */
-static int _words_exist_for_pattern(node_t* node, const char* pattern, int index, char* word, int max_amount)
+static int _words_exist_for_pattern(node_t* node, node_t* used_node, const char* pattern, int index, char* word, int max_amount)
 {
   // Base case - the end of the word
   if(pattern[index] == '\0')
   {
     // This evaluates to 0 if false and 1 if true
     // which represents that 'a' word exist
-    return (node->is_end_of_word && !node->is_used);
+    return (node->is_end_of_word &&
+           (!used_node || !used_node->is_end_of_word));
   }
 
   // Search words with next letter
@@ -250,13 +255,15 @@ static int _words_exist_for_pattern(node_t* node, const char* pattern, int index
     // If no words have the letter, amount 0 is returned
     if(!child) return 0;
 
+    node_t* used_child = used_node ? used_node->children[letter_index] : NULL;
+
     char new_word[index + 2];
 
     char letter = pattern[index];
 
     snprintf(new_word, index + 2, "%.*s%c", index, word, letter);
 
-    amount = _words_exist_for_pattern(child, pattern, index + 1, new_word, max_amount);
+    amount = _words_exist_for_pattern(child, used_child, pattern, index + 1, new_word, max_amount);
   }
   else
   {
@@ -267,6 +274,7 @@ static int _words_exist_for_pattern(node_t* node, const char* pattern, int index
       // Only go through the allocated letters
       if(!child) continue;
 
+      node_t* used_child = used_node ? used_node->children[child_index] : NULL;
 
       char new_word[index + 2];
 
@@ -276,7 +284,7 @@ static int _words_exist_for_pattern(node_t* node, const char* pattern, int index
 
       // max_amount - amount means that the next node
       // only get to search the REST of max_amount
-      amount += _words_exist_for_pattern(child, pattern, index + 1, new_word, max_amount - amount);
+      amount += _words_exist_for_pattern(child, used_child, pattern, index + 1, new_word, max_amount - amount);
 
       // This is opimization only for performance
       if(amount >= max_amount) break;
@@ -293,11 +301,11 @@ static int _words_exist_for_pattern(node_t* node, const char* pattern, int index
  * - min | 0
  * - max | max_amount
  */
-static int words_exist_for_pattern(trie_t* trie, const char* pattern, int max_amount)
+static int words_exist_for_pattern(trie_t* trie, trie_t* used_trie, const char* pattern, int max_amount)
 {
   if(!trie || !pattern) return 0;
 
-  return _words_exist_for_pattern((node_t*) trie, pattern, 0, "", max_amount);
+  return _words_exist_for_pattern((node_t*) trie, (node_t*) used_trie, pattern, 0, "", max_amount);
 }
 
 /*
@@ -307,13 +315,13 @@ static int words_exist_for_pattern(trie_t* trie, const char* pattern, int max_am
  * - min | 0
  * - max | max_amount
  */
-int wbase_words_exist_for_pattern(wbase_t* wbase, const char* pattern, int max_amount)
+int wbase_words_exist_for_pattern(wbase_t* wbase, trie_t* used_trie, const char* pattern, int max_amount)
 {
   int amount = 0;
 
   for(size_t index = 0; index < wbase->count; index++)
   {
-    amount += words_exist_for_pattern(wbase->tries[index], pattern, max_amount - amount);
+    amount += words_exist_for_pattern(wbase->tries[index], used_trie, pattern, max_amount - amount);
 
     if(amount >= max_amount) return max_amount;
   }
@@ -326,12 +334,13 @@ int wbase_words_exist_for_pattern(wbase_t* wbase, const char* pattern, int max_a
  *
  * RETURN (bool does_exist)
  */
-static bool _word_exists_for_pattern(node_t* node, const char* pattern, int index, char* word)
+static bool _word_exists_for_pattern(node_t* node, node_t* used_node, const char* pattern, int index, char* word)
 {
   // Base case - the end of the word
   if(pattern[index] == '\0')
   {
-    return node->is_end_of_word;
+    return (node->is_end_of_word);
+           // (!used_node || !used_node->is_end_of_word));
   }
 
   // Search words with next letter
@@ -344,13 +353,15 @@ static bool _word_exists_for_pattern(node_t* node, const char* pattern, int inde
     // If no words have the letter, amount 0 is returned
     if(!child) return false;
 
+    node_t* used_child = used_node ? used_node->children[letter_index] : NULL;
+
     char new_word[index + 2];
 
     char letter = pattern[index];
 
     snprintf(new_word, index + 2, "%.*s%c", index, word, letter);
 
-    return _word_exists_for_pattern(child, pattern, index + 1, new_word);
+    return _word_exists_for_pattern(child, used_child, pattern, index + 1, new_word);
   }
   else
   {
@@ -361,6 +372,7 @@ static bool _word_exists_for_pattern(node_t* node, const char* pattern, int inde
       // Only go through the allocated letters
       if(!child) continue;
 
+      node_t* used_child = used_node ? used_node->children[child_index] : NULL;
 
       char new_word[index + 2];
 
@@ -368,7 +380,7 @@ static bool _word_exists_for_pattern(node_t* node, const char* pattern, int inde
 
       snprintf(new_word, index + 2, "%.*s%c", index, word, letter);
 
-      if(_word_exists_for_pattern(child, pattern, index + 1, new_word))
+      if(_word_exists_for_pattern(child, used_child, pattern, index + 1, new_word))
       {
         return true;
       }
@@ -383,11 +395,11 @@ static bool _word_exists_for_pattern(node_t* node, const char* pattern, int inde
  *
  * RETURN (bool does_exist)
  */
-static bool word_exists_for_pattern(trie_t* trie, const char* pattern)
+static bool word_exists_for_pattern(trie_t* trie, trie_t* used_trie, const char* pattern)
 {
   if(!trie || !pattern) return false;
 
-  return _word_exists_for_pattern((node_t*) trie, pattern, 0, "");
+  return _word_exists_for_pattern((node_t*) trie, (node_t*) used_trie, pattern, 0, "");
 }
 
 /*
@@ -395,11 +407,11 @@ static bool word_exists_for_pattern(trie_t* trie, const char* pattern)
  *
  * RETURN (bool does_exist)
  */
-bool wbase_word_exists_for_pattern(wbase_t* wbase, const char* pattern)
+bool wbase_word_exists_for_pattern(wbase_t* wbase, trie_t* used_trie, const char* pattern)
 {
   for(size_t index = 0; index < wbase->count; index++)
   {
-    if(word_exists_for_pattern(wbase->tries[index], pattern))
+    if(word_exists_for_pattern(wbase->tries[index], used_trie, pattern))
     {
       return true;
     }

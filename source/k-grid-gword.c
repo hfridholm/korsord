@@ -57,12 +57,12 @@ void gwords_free(gword_t** gwords, size_t count)
  * - 0 | Success
  * - 1 | Failed to allocate gwords
  */
-static int gwords_search(gword_t** gwords, size_t* count, trie_t* trie, const char* pattern, int start, int stop)
+static int gwords_search(gword_t** gwords, size_t* count, trie_t* trie, trie_t* used_trie, const char* pattern, int start, int stop)
 {
   char** words = NULL;
   size_t word_count = 0;
 
-  words_search(&words, &word_count, trie, pattern);
+  words_search(&words, &word_count, trie, used_trie, pattern);
 
   if(word_count == 0)
   {
@@ -136,7 +136,7 @@ typedef struct gwords_t
 /*
  * Search grid words from an array of word bases
  */
-static void gwords_array_search(size_t* total_count, gwords_t* gwords_array, wbase_t* wbase, const char* pattern, int start, int stop)
+static void gwords_array_search(size_t* total_count, gwords_t* gwords_array, wbase_t* wbase, trie_t* used_trie, const char* pattern, int start, int stop)
 {
   for(size_t index = 0; index < wbase->count; index++)
   {
@@ -147,7 +147,7 @@ static void gwords_array_search(size_t* total_count, gwords_t* gwords_array, wba
 
     trie_t* curr_trie = wbase->tries[index];
 
-    gwords_search(curr_gwords, curr_count, curr_trie, pattern, start, stop);
+    gwords_search(curr_gwords, curr_count, curr_trie, used_trie, pattern, start, stop);
 
     // Increase total_count by how many gwords was added
     *total_count += (*curr_count - old_count);
@@ -260,7 +260,7 @@ int horiz_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gr
       // Create current pattern
       sprintf(pattern, "%.*s", length, full_pattern + start_x);
 
-      gwords_array_search(&total_count, gwords_array, wbase, pattern, start_x, stop_x);
+      gwords_array_search(&total_count, gwords_array, wbase, grid->words, pattern, start_x, stop_x);
     }
   }
 
@@ -363,7 +363,7 @@ int vert_gwords_get(gword_t** gwords, size_t* count, wbase_t* wbase, grid_t* gri
       // Create current pattern
       sprintf(pattern, "%.*s", length, full_pattern + start_y);
 
-      gwords_array_search(&total_count, gwords_array, wbase, pattern, start_y, stop_y);
+      gwords_array_search(&total_count, gwords_array, wbase, grid->words, pattern, start_y, stop_y);
     }
   }
 

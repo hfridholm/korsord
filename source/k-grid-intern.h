@@ -16,6 +16,8 @@
 
 #include "debug.h"
 
+#include "k-wbase.h"
+
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
@@ -62,6 +64,7 @@ typedef struct grid_t
   int       width;
   int       height;
   int       cross_count;
+  trie_t*   words;
 } grid_t;
 
 extern bool vert_start_block_brakes_words(wbase_t* wbase, grid_t* grid, int block_x, int block_y);

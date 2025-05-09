@@ -5,6 +5,8 @@
 #include "k-grid.h"
 #include "k-grid-intern.h"
 
+#include "k-wbase.h"
+
 /*
  * Extra SQUARE_BORDER squares are added around the grid
  *
@@ -45,6 +47,8 @@ grid_t* grid_create(int width, int height)
   }
 
   grid->cross_count = 0;
+
+  grid->words = trie_create();
 
   // Initialize empty squares and border squares
   for(int x = 0; x < (width + 5); x++)
@@ -134,6 +138,8 @@ grid_t* grid_copy(grid_t* copy, grid_t* grid)
 
   copy->cross_count = grid->cross_count;
 
+  trie_copy(&copy->words, grid->words);
+
   return copy;
 }
 
@@ -169,6 +175,8 @@ grid_t* grid_dup(grid_t* grid)
 
   dup->cross_count = grid->cross_count;
 
+  dup->words = trie_dup(grid->words);
+
   return dup;
 }
 
@@ -182,6 +190,8 @@ void grid_free(grid_t** grid)
   if(!grid || !(*grid)) return;
 
   free((*grid)->squares);
+
+  trie_free(&(*grid)->words);
 
   free(*grid);
 

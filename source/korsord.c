@@ -312,11 +312,11 @@ static int ncurses_init(void)
 
   use_default_colors();
 
-  init_pair(1, COLOR_GREEN, COLOR_BLACK);
-  init_pair(2, COLOR_WHITE, COLOR_BLACK);
-  init_pair(3, COLOR_BLUE,  COLOR_BLACK);
-  init_pair(4, COLOR_RED,   COLOR_BLACK);
-  init_pair(5, COLOR_RED,   COLOR_BLACK);
+  init_pair(1, COLOR_GREEN, -1);
+  init_pair(2, COLOR_WHITE, -1);
+  init_pair(3, COLOR_BLUE,  -1);
+  init_pair(4, COLOR_RED,   -1);
+  init_pair(5, COLOR_RED,   -1);
 
   erase();
   refresh();

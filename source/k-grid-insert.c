@@ -76,6 +76,8 @@ int vert_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int x, int 
   // Mark the word as used
   wbase_word_use(wbase, word);
 
+  trie_word_insert(grid->words, word);
+
   return is_perfect ? INSERT_PERFECT : INSERT_DONE;
 }
 
@@ -147,6 +149,8 @@ int horiz_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_
   // Mark the word as used
   wbase_word_use(wbase, word);
 
+  trie_word_insert(grid->words, word);
+
   return is_perfect ? INSERT_PERFECT : INSERT_DONE;
 }
 
@@ -194,6 +198,8 @@ void horiz_word_reset(wbase_t* wbase, grid_t* old_grid, grid_t* grid, const char
 
   // Unmark the word as used, so it can be used somewhere else
   wbase_word_unuse(wbase, word);
+
+  trie_word_remove(grid->words, word);
 }
 
 /*
@@ -240,4 +246,6 @@ void vert_word_reset(wbase_t* wbase, grid_t* old_grid, grid_t* grid, const char*
 
   // Unmark the word as used, so it can be used somewhere else
   wbase_word_unuse(wbase, word);
+
+  trie_word_remove(grid->words, word);
 }

@@ -32,7 +32,12 @@ extern void    trie_free(trie_t** trie);
 
 extern trie_t* trie_dup(trie_t* trie);
 
-extern trie_t* trie_copy(trie_t* copy, trie_t* trie);
+extern void    trie_copy(trie_t** copy, trie_t* trie);
+
+
+extern void trie_word_insert(trie_t* trie, const char* word);
+
+extern void trie_word_remove(trie_t* trie, const char* word);
 
 
 extern wbase_t* wbase_create(char** wfiles, size_t count);
@@ -42,7 +47,7 @@ extern void     wbase_reset(wbase_t* wbase);
 extern void     wbase_free(wbase_t** wbase);
 
 
-extern int  words_search(char*** words, size_t* count, trie_t* trie, const char* pattern);
+extern int  words_search(char*** words, size_t* count, trie_t* trie, trie_t* used_trie, const char* pattern);
 
 extern void words_shuffle(char** words, size_t count);
 
@@ -54,9 +59,9 @@ extern void wbase_word_use(wbase_t* wbase, const char* word);
 extern void wbase_word_unuse(wbase_t* wbase, const char* word);
 
 
-extern int  wbase_words_exist_for_pattern(wbase_t* wbase, const char* pattern, int max_amount);
+extern int  wbase_words_exist_for_pattern(wbase_t* wbase, trie_t* used_trie, const char* pattern, int max_amount);
 
-extern bool wbase_word_exists_for_pattern(wbase_t* wbase, const char* pattern);
+extern bool wbase_word_exists_for_pattern(wbase_t* wbase, trie_t* used_trie, const char* pattern);
 
 
 typedef struct grid_t grid_t;

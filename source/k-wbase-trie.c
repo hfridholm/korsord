@@ -50,7 +50,7 @@ void trie_free(trie_t** trie) { node_free((node_t**) trie); }
 /*
  * Insert word in trie
  */
-static void trie_word_insert(trie_t* trie, const char* word)
+void trie_word_insert(trie_t* trie, const char* word)
 {
   node_t* node = (node_t*) trie;
 
@@ -70,6 +70,47 @@ static void trie_word_insert(trie_t* trie, const char* word)
   }
 
   node->is_end_of_word = true;
+}
+
+/*
+ * Remove word from trie
+ */
+void trie_word_remove(trie_t* trie, const char* word)
+{
+  if (!trie || !word) return;
+
+  node_t** node = (node_t**) &trie;
+
+  for (int index = 0; word[index] != '\0'; index++)
+  {
+    int child_index = letter_index_get(word[index]);
+
+    if (child_index == -1) return;
+
+    node = &(*node)->children[child_index];
+
+    // If a letter node is missing, the word isn't in trie
+    if (!node || !(*node))
+    {
+      return;
+    }
+  }
+
+  if ((*node) != trie)
+  {
+    (*node)->is_end_of_word = false;
+
+    // Free node if it has no children
+    for (int index = 0; index < ALPHABET_SIZE; index++)
+    {
+      if ((*node)->children[index])
+      {
+        return;
+      }
+    }
+
+    node_free(node);
+  }
 }
 
 /*
@@ -240,23 +281,28 @@ trie_t* trie_dup(trie_t* trie) { return node_dup((node_t*) trie); }
 
 /*
  * Copy trie node
- *
- * EXPECTS:
- * - copy and node have the same structure
  */
-static node_t* node_copy(node_t* copy, node_t* node)
+static void node_copy(node_t** copy, node_t* node)
 {
-  if(!node || !copy) return NULL;
+  if (!copy || !(*copy)) return;
 
-  copy->is_end_of_word = node->is_end_of_word;
-  copy->is_used        = node->is_used;
+  if (!node)
+  {
+    node_free(copy);
+
+    return;
+  }
+
+  (*copy)->is_end_of_word = node->is_end_of_word;
+  (*copy)->is_used        = node->is_used;
 
   for(int index = 0; index < ALPHABET_SIZE; index++)
   {
-    node_copy(copy->children[index], node->children[index]);
+    node_copy(&(*copy)->children[index], node->children[index]);
   }
-
-  return copy;
 }
 
-trie_t* trie_copy(trie_t* copy, trie_t* trie) { return node_copy((node_t*) copy, (node_t*) trie); }
+void trie_copy(trie_t** copy, trie_t* trie)
+{
+  node_copy((node_t**) copy, (node_t*) trie);
+}

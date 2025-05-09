@@ -59,7 +59,7 @@ static bool vert_start_word_exists(wbase_t* wbase, grid_t* grid, int x, int star
     // Create current pattern
     sprintf(pattern, "%.*s", length, full_pattern + start_y);
 
-    if(wbase_word_exists_for_pattern(wbase, pattern))
+    if(wbase_word_exists_for_pattern(wbase, grid->words, pattern))
     {
       return true;
     }
@@ -109,7 +109,7 @@ static bool vert_stop_word_exists(wbase_t* wbase, grid_t* grid, int x, int stop_
     // Create current pattern
     sprintf(pattern, "%.*s", length, full_pattern + start_y);
 
-    if(wbase_word_exists_for_pattern(wbase, pattern))
+    if(wbase_word_exists_for_pattern(wbase, grid->words, pattern))
     {
       return true;
     }
@@ -158,7 +158,7 @@ static int horiz_start_word_exists(wbase_t* wbase, grid_t* grid, int start_x, in
     // Create current pattern
     sprintf(pattern, "%.*s", length, full_pattern + start_x);
 
-    if(wbase_word_exists_for_pattern(wbase, pattern))
+    if(wbase_word_exists_for_pattern(wbase, grid->words, pattern))
     {
       return true;
     }
@@ -207,7 +207,7 @@ static int horiz_stop_word_exists(wbase_t* wbase, grid_t* grid, int stop_x, int 
     // Create current pattern
     sprintf(pattern, "%.*s", length, full_pattern + start_x);
 
-    if(wbase_word_exists_for_pattern(wbase, pattern))
+    if(wbase_word_exists_for_pattern(wbase, grid->words, pattern))
     {
       return true;
     }
