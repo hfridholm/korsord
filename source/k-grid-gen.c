@@ -464,7 +464,7 @@ static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cros
 /*
  * Generate crossword grid
  */
-grid_t* grid_gen(wbase_t* wbase, const char* filepath)
+grid_t* grid_gen(wbase_t* wbase, char* filepath)
 {
   // 1. Load grid from the model
   grid_t* grid = grid_model_load(filepath);

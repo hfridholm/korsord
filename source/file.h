@@ -207,8 +207,6 @@ size_t dir_file_size_get(const char* dirpath, const char* name)
 
   sprintf(filepath, "%s/%s", dirpath, name);
 
-  printf("filepath: %s\n", filepath);
-
   return file_size_get(filepath);
 }
 

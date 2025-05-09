@@ -7,6 +7,8 @@
 
 #include "k-wbase.h"
 
+#include "k-intern.h"
+
 /*
  * Export used words
  *
@@ -91,8 +93,10 @@ int grid_words_export(grid_t* grid)
 
   char clues_file[1024];
 
-  sprintf(clues_file, "%s/.korsord/clues/temp.clues", getenv("HOME"));
-
+  if (clues_file_get(clues_file, "temp") != 0)
+  {
+    return 2;
+  }
 
   // 3. Open or create file to write to
   FILE* file = fopen(clues_file, "w");
@@ -136,9 +140,12 @@ int grid_export(grid_t* grid)
 
   char grid_file[1024];
 
-  sprintf(grid_file, "%s/.korsord/grids/temp.grid", getenv("HOME"));
+  if (grid_file_get(grid_file, "temp") != 0)
+  {
+    return 2;
+  }
 
-  printf("Exporting grid: (%s)\n", grid_file);
+  info_print("Exporting grid: (%s)", grid_file);
 
 
   // 3. Open or create file to write to

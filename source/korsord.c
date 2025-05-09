@@ -408,6 +408,8 @@ static void interact_routine(wbase_t* wbase)
   int key;
   while(is_running && (key = getch()) != ERR)
   {
+    info_print("key: %d", key);
+
     switch(key)
     {
       case 'g': case 'r': 
@@ -521,19 +523,11 @@ int main(int argc, char* argv[])
 
   // srand(time(NULL));
   
-  if(args.ncurses)
+  if(debug_file_open("debug.log") != 0)
   {
-    args.output = "output.log";
-  }
+    perror("debug_file_open");
 
-  if(args.output)
-  {
-    if(debug_file_open(args.output) != 0)
-    {
-      perror("debug_file_open");
-
-      return 1;
-    }
+    return 1;
   }
 
   info_print("Start main");

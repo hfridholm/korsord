@@ -9,22 +9,26 @@
 
 #include "file.h"
 
+#include "k-intern.h"
+
 /*
  * Load grid from model
  *
  * RETURN (grid_t* grid)
  */
-grid_t* grid_model_load(const char* model)
+grid_t* grid_model_load(char* model)
 {
   if(!model) return NULL;
 
-  char model_dir[1024];
+  char model_file[1024];
 
-  sprintf(model_dir, "%s/.korsord/models", getenv("HOME"));
-
+  if (model_file_get(model_file, model) != 0)
+  {
+    return NULL;
+  }
 
   // 1. Read model file
-  size_t file_size = dir_file_size_get(model_dir, model);
+  size_t file_size = file_size_get(model_file);
 
   if (file_size == 0)
   {
@@ -33,7 +37,7 @@ grid_t* grid_model_load(const char* model)
 
   char* buffer = malloc(sizeof(char) * (file_size + 1));
 
-  if(dir_file_read(buffer, file_size, model_dir, model) == 0)
+  if(file_read(buffer, file_size, model_file) == 0)
   {
     free(buffer);
 

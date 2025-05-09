@@ -7,6 +7,8 @@
 
 #include "file.h"
 
+#include "k-intern.h"
+
 extern int MAX_WORD_LENGTH;
 
 /*
@@ -94,22 +96,24 @@ static char* string_lower(char* string)
  * RETURN (trie_t* trie)
  * - NULL | Failed to read file
  */
-trie_t* trie_load(const char* wfile)
+trie_t* trie_load(char* wfile)
 {
   if(!wfile) return NULL;
 
-  char words_dir[1024];
+  char words_file[1024];
 
-  sprintf(words_dir, "%s/.korsord/words", getenv("HOME"));
+  if (words_file_get(words_file, wfile) != 0)
+  {
+    return NULL;
+  }
 
+  info_print("words_file: %s", words_file);
 
-  size_t file_size = dir_file_size_get(words_dir, wfile);
-
-  printf("file_size: %ld\n", file_size);
+  size_t file_size = file_size_get(words_file);
 
   char* buffer = malloc(sizeof(char) * (file_size + 1));
 
-  if(dir_file_read(buffer, file_size, words_dir, wfile) == 0)
+  if(file_read(buffer, file_size, words_file) == 0)
   {
     return NULL;
   }

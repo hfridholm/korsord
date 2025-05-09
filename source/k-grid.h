@@ -21,7 +21,7 @@ typedef struct grid_t grid_t;
 typedef struct wbase_t wbase_t;
 
 
-extern grid_t* grid_gen(wbase_t* wbase, const char* filepath);
+extern grid_t* grid_gen(wbase_t* wbase, char* filepath);
 
 extern void    grid_free(grid_t** grid);
 

@@ -24,7 +24,7 @@ extern char index_letter_get(int index);
 
 extern trie_t* trie_create(void);
 
-extern trie_t* trie_load(const char* wfile);
+extern trie_t* trie_load(char* wfile);
 
 extern void    trie_reset(trie_t* trie);
 
