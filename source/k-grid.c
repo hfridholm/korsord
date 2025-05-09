@@ -45,7 +45,6 @@ grid_t* grid_create(int width, int height)
   }
 
   grid->cross_count = 0;
-  grid->word_count = 0;
 
   // Initialize empty squares and border squares
   for(int x = 0; x < (width + 5); x++)
@@ -102,7 +101,6 @@ grid_t* grid_clear(grid_t* grid)
   }
 
   grid->cross_count = 0;
-  grid->word_count = 0;
 
   return grid;
 }
@@ -135,7 +133,6 @@ grid_t* grid_copy(grid_t* copy, grid_t* grid)
   memcpy(copy->squares, grid->squares, sizeof(square_t) * real_count);
 
   copy->cross_count = grid->cross_count;
-  copy->word_count = grid->word_count;
 
   return copy;
 }
@@ -171,7 +168,6 @@ grid_t* grid_dup(grid_t* grid)
   memcpy(dup->squares, grid->squares, sizeof(square_t) * real_count);
 
   dup->cross_count = grid->cross_count;
-  dup->word_count = grid->word_count;
 
   return dup;
 }

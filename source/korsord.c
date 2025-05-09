@@ -29,8 +29,6 @@
 
 bool is_running = false;
 
-#define INPUT_DELAY 100000
-
 extern int MAX_CROWD_AMOUNT;
 extern int MAX_WORD_LENGTH;
 extern int MAX_EXIST_AMOUNT;
@@ -455,7 +453,7 @@ static void interact_routine(wbase_t* wbase)
         break;
     }
 
-    usleep(INPUT_DELAY);
+    usleep(100000);
 
     flushinp(); // Flush input buffer
   }

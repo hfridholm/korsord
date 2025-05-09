@@ -75,6 +75,11 @@ static int horiz_word_embed(wbase_t* wbase, grid_t* old_grid, const char* word, 
 
     if(gen_status == GEN_FAIL)
     {
+      // if (index > 0)
+      // This means that one letter has already Succeded
+      // which means that the word has been Partially embed -> GEN_HALF
+      // return GEN_HALF
+
       grid_free(&new_grid);
 
       return GEN_FAIL;
@@ -138,6 +143,15 @@ static int horiz_word_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, c
     return GEN_DONE;
   }
 
+  /*
+  if (embed_status == GEN_HALF)
+  {
+    remove all non is_crossed letters in current horizontal word
+    and try re-generating with new partial success
+
+    return horiz_word_gen(wbase, new_grid, x, y);
+  }
+  */
 
   // 4. Remove the tested word from the grid
   horiz_word_reset(wbase, old_grid, new_grid, word, x, y);
