@@ -22,9 +22,6 @@
   (I have a fealing that the problem is that singles (1 letter words) don't get restored)
 - Delete debug.sh and valgrind.sh
 
-## Potential Quick Fixes
-- remove old_grid from _reset, instead set is_crossed on SQUARE_BLOCK and from that _reset
-
 ## Words
 - only read first word of each line in trie_load in korsord.c
 - make it possible to read word files with existing clues (word : clue)

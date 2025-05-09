@@ -38,12 +38,12 @@ int vert_words_exist(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
   int start_ys[cross_y + 1];
   int start_count = 0;
 
-  bool start_is_blocked = vert_start_ys_get(start_ys, &start_count, grid, cross_x, cross_y);
+  bool start_is_blocked = vert_non_break_start_ys_get(start_ys, &start_count, wbase, grid, cross_x, cross_y);
 
   int stop_ys[grid->height - cross_y];
   int stop_count = 0;
 
-  bool stop_is_blocked = vert_stop_ys_get(stop_ys, &stop_count, grid, cross_x, cross_y);
+  bool stop_is_blocked = vert_non_break_stop_ys_get(stop_ys, &stop_count, wbase, grid, cross_x, cross_y);
 
 
   // Both start and stop is cross_y (1 letter)
@@ -110,12 +110,12 @@ int horiz_words_exist(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
   int start_xs[cross_x + 1];
   int start_count = 0;
 
-  bool start_is_blocked = horiz_start_xs_get(start_xs, &start_count, grid, cross_x, cross_y);
+  bool start_is_blocked = horiz_non_break_start_xs_get(start_xs, &start_count, wbase, grid, cross_x, cross_y);
 
   int stop_xs[grid->width - cross_x];
   int stop_count = 0;
 
-  bool stop_is_blocked = horiz_stop_xs_get(stop_xs, &stop_count, grid, cross_x, cross_y);
+  bool stop_is_blocked = horiz_non_break_stop_xs_get(stop_xs, &stop_count, wbase, grid, cross_x, cross_y);
 
 
   // Both start and stop is cross_x (1 letter)

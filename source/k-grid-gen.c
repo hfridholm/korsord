@@ -8,6 +8,8 @@
 #include "k-grid-curr.h"
 #include "k-grid-best.h"
 
+#include "k-stats.h"
+
 bool is_generating = false;
 
 int HALF_WORD_AMOUNT = 10;
@@ -15,6 +17,7 @@ int HALF_WORD_AMOUNT = 10;
 #define GEN_DONE 0
 #define GEN_FAIL 1
 #define GEN_STOP 2
+#define GEN_HALF 3
 
 /*
  * If either vert_word_gen or horiz_word_gen
@@ -46,11 +49,8 @@ static int horiz_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cro
  *
  * RETURN (int status)
  */
-static int horiz_word_embed(wbase_t* wbase, grid_t* old_grid, const char* word, int start_x, int y, int* indexes, int count)
+static int horiz_word_embed(wbase_t* wbase, grid_t* grid, const char* word, int start_x, int y, int* indexes, int count)
 {
-  // 1. Duplicating the old grid, to work on seperate temp grid
-  grid_t* new_grid = grid_dup(old_grid);
-
   /*
    * Important to note that:
    * "index" is the index of the indexes array
@@ -68,34 +68,23 @@ static int horiz_word_embed(wbase_t* wbase, grid_t* old_grid, const char* word, 
      * the word that has been filled in is 
      * not available anymore
      */
-    if(xy_square_is_crossed(new_grid, x, y)) continue;
+    if(xy_square_is_crossed(grid, x, y)) continue;
 
     // Recursivly call the vertical gen function
-    int gen_status = vert_word_gen(wbase, new_grid, x, y);
+    int gen_status = vert_word_gen(wbase, grid, x, y);
 
     if(gen_status == GEN_FAIL)
     {
-      // if (index > 0)
       // This means that one letter has already Succeded
-      // which means that the word has been Partially embed -> GEN_HALF
-      // return GEN_HALF
-
-      grid_free(&new_grid);
-
-      return GEN_FAIL;
+      // which means that the word has been Partially embed
+      return (index > 0) ? GEN_HALF : GEN_FAIL;
     }
 
     if(gen_status == GEN_STOP)
     {
-      grid_free(&new_grid);
-
       return GEN_STOP;
     }
   }
-
-  grid_copy(old_grid, new_grid);
-
-  grid_free(&new_grid);
 
   return GEN_DONE;
 }
@@ -103,10 +92,10 @@ static int horiz_word_embed(wbase_t* wbase, grid_t* old_grid, const char* word, 
 /*
  *
  */
-static int horiz_word_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, const char* word, int x, int y)
+static int horiz_word_test(wbase_t* wbase, grid_t* grid, const char* word, int x, int y)
 {
   // 1. Insert the word in the grid
-  int insert_status = horiz_word_insert(wbase, new_grid, word, x, y);
+  int insert_status = horiz_word_insert(wbase, grid, word, x, y);
 
   if(insert_status == INSERT_PERFECT)
   {
@@ -118,20 +107,16 @@ static int horiz_word_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, c
   // Get an ordered list of indexes to letters to embed
   int indexes[strlen(word)];
 
-  int count = horiz_word_fits(indexes, wbase, new_grid, word, x, y);
+  int count = horiz_word_fits(indexes, wbase, grid, word, x, y);
 
   // 2. If the word doesn't fit
   if(count == 0)
   {
-    // 3. Remove the tested word from the grid
-    horiz_word_reset(wbase, old_grid, new_grid, word, x, y);
-
     return GEN_FAIL;
   }
 
-
   // 3. Embed the word horizontally, by generating words for letters
-  int embed_status = horiz_word_embed(wbase, new_grid, word, x, y, indexes, count);
+  int embed_status = horiz_word_embed(wbase, grid, word, x, y, indexes, count);
 
   if(embed_status == GEN_STOP)
   {
@@ -143,18 +128,16 @@ static int horiz_word_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, c
     return GEN_DONE;
   }
 
-  /*
   if (embed_status == GEN_HALF)
   {
-    remove all non is_crossed letters in current horizontal word
-    and try re-generating with new partial success
+    info_print("GEN_HALF horiz");
 
-    return horiz_word_gen(wbase, new_grid, x, y);
+    // remove all non is_crossed letters in current horizontal word
+    // and try re-generating with new partial success
+    horiz_word_remove(grid, word, x, y);
+
+    return horiz_word_gen(wbase, grid, x, y);
   }
-  */
-
-  // 4. Remove the tested word from the grid
-  horiz_word_reset(wbase, old_grid, new_grid, word, x, y);
 
   return GEN_FAIL;
 }
@@ -162,7 +145,7 @@ static int horiz_word_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, c
 /*
  *
  */
-static int horiz_words_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, gword_t* gwords, size_t word_count, int y)
+static int horiz_words_test(wbase_t* wbase, grid_t* grid, gword_t* gwords, size_t word_count, int y)
 {
   for(size_t index = 0; index < word_count; index++)
   {
@@ -173,12 +156,20 @@ static int horiz_words_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, 
     char* word  = gword.word;
     int start_x = gword.start;
 
-    int test_status = horiz_word_test(wbase, old_grid, new_grid, word, start_x, y);
+    grid_t* test_grid = grid_dup(grid);
+
+    int test_status = horiz_word_test(wbase, test_grid, word, start_x, y);
 
     if(test_status == GEN_DONE)
     {
+      grid_copy(grid, test_grid);
+
+      grid_free(&test_grid);
+
       return GEN_DONE;
     }
+
+    grid_free(&test_grid);
 
     if(test_status == GEN_STOP)
     {
@@ -192,33 +183,34 @@ static int horiz_words_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, 
 /*
  * Recursive function
  */
-static int horiz_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cross_y)
+static int horiz_word_gen(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 {
   if(!is_generating) return GEN_STOP;
 
+  stats_test_incr();
 
-  curr_grid_set(old_grid);
+  curr_grid_set(grid);
 
   // curr_grid_print();
   // usleep(1000000);
 
 
-  square_t* square = xy_square_get(old_grid, cross_x, cross_y);
+  square_t* square = xy_square_get(grid, cross_x, cross_y);
 
   if(!square || square->type == SQUARE_BLOCK) return GEN_FAIL;
 
 
-  if(old_grid->cross_count > best_grid_cross_count_get())
+  if(grid->cross_count > best_grid_cross_count_get())
   {
     // info_print("new best grid: %d", grid->cross_count);
-    best_grid_set(old_grid);
+    best_grid_set(grid);
   }
 
   // 1. Generate all possible words
   gword_t* gwords = NULL;
   size_t word_count = 0;
 
-  int gwords_status = horiz_gwords_get(&gwords, &word_count, wbase, old_grid, cross_x, cross_y);
+  int gwords_status = horiz_gwords_get(&gwords, &word_count, wbase, grid, cross_x, cross_y);
 
   // info_print("horiz_gwords_get count: %d status: %d", word_count, gwords_status);
 
@@ -226,7 +218,7 @@ static int horiz_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cro
   // If the length is 1, it should be marked as crossed
   if(gwords_status == GWORDS_SINGLE)
   {
-    xy_square_set_crossed(old_grid, cross_x, cross_y);
+    xy_square_set_crossed(grid, cross_x, cross_y);
 
     return GEN_DONE;
   }
@@ -237,22 +229,9 @@ static int horiz_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cro
     return GEN_FAIL;
   }
 
-
-  // 2. Test all words in the new grid
-  grid_t* new_grid = grid_dup(old_grid);
-
-
-  int test_status = horiz_words_test(wbase, old_grid, new_grid, gwords, word_count, cross_y);
+  int test_status = horiz_words_test(wbase, grid, gwords, word_count, cross_y);
 
   gwords_free(&gwords, word_count);
-
-
-  if(test_status == GEN_DONE)
-  {
-    grid_copy(old_grid, new_grid);
-  }
-
-  grid_free(&new_grid);
 
   return test_status;
 }
@@ -272,11 +251,8 @@ static int horiz_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cro
  *
  * RETURN (int status)
  */
-static int vert_word_embed(wbase_t* wbase, grid_t* old_grid, const char* word, int x, int start_y, int* indexes, int count)
+static int vert_word_embed(wbase_t* wbase, grid_t* grid, const char* word, int x, int start_y, int* indexes, int count)
 {
-  // 1. Duplicating the old grid, to work on seperate temp grid
-  grid_t* new_grid = grid_dup(old_grid);
-
   /*
    * Important to note that:
    * "index" is the index of the indexes array
@@ -287,29 +263,21 @@ static int vert_word_embed(wbase_t* wbase, grid_t* old_grid, const char* word, i
     int y = start_y + indexes[index];
 
     // A square that is already crossed is done
-    if(xy_square_is_crossed(new_grid, x, y)) continue;
+    if(xy_square_is_crossed(grid, x, y)) continue;
 
     // Recursivly call the horizontal gen function
-    int gen_status = horiz_word_gen(wbase, new_grid, x, y);
+    int gen_status = horiz_word_gen(wbase, grid, x, y);
 
     if(gen_status == GEN_FAIL)
     {
-      grid_free(&new_grid);
-
-      return GEN_FAIL;
+      return (index > 0) ? GEN_HALF : GEN_FAIL;
     }
 
     if(gen_status == GEN_STOP)
     {
-      grid_free(&new_grid);
-
       return GEN_STOP;
     }
   }
-
-  grid_copy(old_grid, new_grid);
-
-  grid_free(&new_grid);
 
   return GEN_DONE;
 }
@@ -317,10 +285,10 @@ static int vert_word_embed(wbase_t* wbase, grid_t* old_grid, const char* word, i
 /*
  *
  */
-static int vert_word_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, const char* word, int x, int y)
+static int vert_word_test(wbase_t* wbase, grid_t* grid, const char* word, int x, int y)
 {
   // 1. Insert the word in the grid
-  int insert_status = vert_word_insert(wbase, new_grid, word, x, y);
+  int insert_status = vert_word_insert(wbase, grid, word, x, y);
 
   if(insert_status == INSERT_PERFECT)
   {
@@ -332,20 +300,16 @@ static int vert_word_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, co
   // Get an ordered list of indexes to letters to embed
   int indexes[strlen(word)];
 
-  int count = vert_word_fits(indexes, wbase, new_grid, word, x, y);
+  int count = vert_word_fits(indexes, wbase, grid, word, x, y);
 
   // 2. If the word doesn't fit
   if(count == 0)
   {
-    // 3. Remove the tested word from the grid
-    vert_word_reset(wbase, old_grid, new_grid, word, x, y);
-
     return GEN_FAIL;
   }
 
-
   // 3. Embed the word vertically, by generating words for letters
-  int embed_status = vert_word_embed(wbase, new_grid, word, x, y, indexes, count);
+  int embed_status = vert_word_embed(wbase, grid, word, x, y, indexes, count);
 
   if(embed_status == GEN_STOP)
   {
@@ -357,9 +321,16 @@ static int vert_word_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, co
     return GEN_DONE;
   }
 
+  if (embed_status == GEN_HALF)
+  {
+    info_print("GEN_HALF vert");
 
-  // 4. Remove the tested word from the grid
-  vert_word_reset(wbase, old_grid, new_grid, word, x, y);
+    // remove all non is_crossed letters in current vertical word
+    // and try re-generating with new partial success
+    vert_word_remove(grid, word, x, y);
+
+    return vert_word_gen(wbase, grid, x, y);
+  }
 
   return GEN_FAIL;
 }
@@ -367,7 +338,7 @@ static int vert_word_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, co
 /*
  *
  */
-static int vert_words_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, gword_t* gwords, size_t word_count, int x)
+static int vert_words_test(wbase_t* wbase, grid_t* grid, gword_t* gwords, size_t word_count, int x)
 {
   for(size_t index = 0; index < word_count; index++)
   {
@@ -378,12 +349,20 @@ static int vert_words_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, g
     char* word  = gword.word;
     int start_y = gword.start;
 
-    int test_status = vert_word_test(wbase, old_grid, new_grid, word, x, start_y);
+    grid_t* test_grid = grid_dup(grid);
+
+    int test_status = vert_word_test(wbase, test_grid, word, x, start_y);
 
     if(test_status == GEN_DONE)
     {
+      grid_copy(grid, test_grid);
+
+      grid_free(&test_grid);
+
       return GEN_DONE;
     }
+
+    grid_free(&test_grid);
 
     if(test_status == GEN_STOP)
     {
@@ -397,32 +376,33 @@ static int vert_words_test(wbase_t* wbase, grid_t* old_grid, grid_t* new_grid, g
 /*
  * Recursive function
  */
-static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cross_y)
+static int vert_word_gen(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 {
   if(!is_generating) return GEN_STOP;
 
+  stats_test_incr();
 
-  curr_grid_set(old_grid);
+  curr_grid_set(grid);
   // curr_grid_print();
   // usleep(1000000);
 
 
-  square_t* square = xy_square_get(old_grid, cross_x, cross_y);
+  square_t* square = xy_square_get(grid, cross_x, cross_y);
 
   if(!square || square->type == SQUARE_BLOCK) return GEN_FAIL;
 
 
-  if(old_grid->cross_count > best_grid_cross_count_get())
+  if(grid->cross_count > best_grid_cross_count_get())
   {
     // info_print("new best grid: %d", grid->cross_count);
-    best_grid_set(old_grid);
+    best_grid_set(grid);
   }
 
   // 1. Generate all possible words
   gword_t* gwords = NULL;
   size_t word_count = 0;
 
-  int gwords_status = vert_gwords_get(&gwords, &word_count, wbase, old_grid, cross_x, cross_y);
+  int gwords_status = vert_gwords_get(&gwords, &word_count, wbase, grid, cross_x, cross_y);
 
   // info_print("vert_gwords_get count: %d status: %d", word_count, gwords_status);
 
@@ -430,7 +410,7 @@ static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cros
   // If the length is 1, it should be marked as crossed
   if(gwords_status == GWORDS_SINGLE)
   {
-    xy_square_set_crossed(old_grid, cross_x, cross_y);
+    xy_square_set_crossed(grid, cross_x, cross_y);
 
     return GEN_DONE;
   }
@@ -441,22 +421,9 @@ static int vert_word_gen(wbase_t* wbase, grid_t* old_grid, int cross_x, int cros
     return GEN_FAIL;
   }
 
-
-  // 2. Test all words in the new grid
-  grid_t* new_grid = grid_dup(old_grid);
-
-
-  int test_status = vert_words_test(wbase, old_grid, new_grid, gwords, word_count, cross_x);
+  int test_status = vert_words_test(wbase, grid, gwords, word_count, cross_x);
 
   gwords_free(&gwords, word_count);
-
-
-  if(test_status == GEN_DONE)
-  {
-    grid_copy(old_grid, new_grid);
-  }
-
-  grid_free(&new_grid);
 
   return test_status;
 }
@@ -484,14 +451,7 @@ grid_t* grid_gen(wbase_t* wbase, char* filepath)
         
       int gen_status = vert_word_gen(wbase, grid, x, y);
 
-      if(gen_status == GEN_STOP)
-      {
-        grid_free(&grid);
-
-        return NULL;
-      }
-
-      if(gen_status == GEN_FAIL)
+      if (gen_status == GEN_STOP || gen_status == GEN_FAIL)
       {
         grid_free(&grid);
 

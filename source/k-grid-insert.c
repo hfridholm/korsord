@@ -72,7 +72,6 @@ int vert_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int x, int 
     }
   }
 
-
   // Mark the word as used
   wbase_word_use(wbase, word);
 
@@ -155,97 +154,51 @@ int horiz_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_
 }
 
 /*
- * Reset horizontal word
+ * Remove non crossed letters of horizontal word
  */
-void horiz_word_reset(wbase_t* wbase, grid_t* old_grid, grid_t* grid, const char* word, int start_x, int y)
+void horiz_word_remove(grid_t* grid, const char* word, int start_x, int y)
 {
-  // Reset word letters
-  int index, x;
-  square_t *old_square, *square;
-
-  for(index = 0; word[index] != '\0'; index++)
+  for (int index = 0; word[index] != '\0'; index++)
   {
-    x = start_x + index;
+    int x = start_x + index;
 
-    old_square = xy_square_get(old_grid, x, y);
+    square_t* square = xy_square_get(grid, x, y);
 
-    square = xy_square_get(grid, x, y);
-
-    if(!old_square || !square) break;
-
-
-    if(square->is_crossed) grid->cross_count--;
-
-    *square = *old_square;
+    if (square && !square->is_crossed)
+    {
+      *square = (square_t)
+      {
+        .type       = SQUARE_EMPTY,
+        .letter     = 0,
+        .is_crossed = false,
+      };
+    }
   }
-
-  // Reset the block at the end of the word
-  if(start_x + index < grid->width)
-  {
-    int square_index = xy_index_get(grid, start_x + index, y);
-
-    grid->squares[square_index] = old_grid->squares[square_index];
-  }
-
-  // Reset the block at the beginning of word
-  if(start_x > 0)
-  {
-    int square_index = xy_index_get(grid, start_x - 1, y);
-
-    grid->squares[square_index] = old_grid->squares[square_index];
-  }
-
-
-  // Unmark the word as used, so it can be used somewhere else
-  wbase_word_unuse(wbase, word);
 
   trie_word_remove(grid->words, word);
 }
 
 /*
- * Reset vertical word
+ * Remove non crossed letters of vertical word
  */
-void vert_word_reset(wbase_t* wbase, grid_t* old_grid, grid_t* grid, const char* word, int x, int start_y)
+void vert_word_remove(grid_t* grid, const char* word, int x, int start_y)
 {
-  // Reset word letters
-  int index, y;
-  square_t *old_square, *square;
-
-  for(index = 0; word[index] != '\0'; index++)
+  for (int index = 0; word[index] != '\0'; index++)
   {
-    y = start_y + index;
+    int y = start_y + index;
 
-    old_square = xy_square_get(old_grid, x, y);
+    square_t* square = xy_square_get(grid, x, y);
 
-    square = xy_square_get(grid, x, y);
-
-    if(!old_square || !square) break;
-
-
-    if(square->is_crossed) grid->cross_count--;
-
-    *square = *old_square;
+    if (square && !square->is_crossed)
+    {
+      *square = (square_t)
+      {
+        .type       = SQUARE_EMPTY,
+        .letter     = 0,
+        .is_crossed = false,
+      };
+    }
   }
-
-  // Reset the block at the end of the word
-  if(start_y + index < grid->height)
-  {
-    int square_index = xy_index_get(grid, x, start_y + index);
-
-    grid->squares[square_index] = old_grid->squares[square_index];
-  }
-
-  // Reset the block at the beginning of word
-  if(start_y > 0)
-  {
-    int square_index = xy_index_get(grid, x, start_y - 1);
-
-    grid->squares[square_index] = old_grid->squares[square_index];
-  }
-
-
-  // Unmark the word as used, so it can be used somewhere else
-  wbase_word_unuse(wbase, word);
 
   trie_word_remove(grid->words, word);
 }
