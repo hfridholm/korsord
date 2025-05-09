@@ -72,9 +72,6 @@ int vert_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int x, int 
     }
   }
 
-  // Mark the word as used
-  wbase_word_use(wbase, word);
-
   trie_word_insert(grid->words, word);
 
   return is_perfect ? INSERT_PERFECT : INSERT_DONE;
@@ -143,10 +140,6 @@ int horiz_word_insert(wbase_t* wbase, grid_t* grid, const char* word, int start_
       square->type = SQUARE_BLOCK;
     }
   }
-
-
-  // Mark the word as used
-  wbase_word_use(wbase, word);
 
   trie_word_insert(grid->words, word);
 

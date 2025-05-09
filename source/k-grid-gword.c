@@ -64,21 +64,19 @@ static int gwords_search(gword_t** gwords, size_t* count, trie_t* trie, trie_t* 
 
   words_search(&words, &word_count, trie, used_trie, pattern);
 
-  if(word_count == 0)
+  if (word_count == 0)
   {
     // No words to add
     return 0;
   }
 
-  if(*count == 0 || ((*count) + word_count) >= CAPACITY(*count))
+  if (*count == 0 || ((*count) + word_count) >= CAPACITY(*count))
   {
     gword_t* new_gwords = realloc(*gwords, sizeof(gword_t) * CAPACITY((*count) + word_count));
 
-    if(!new_gwords)
+    if (!new_gwords)
     {
       words_free(&words, word_count);
-
-      perror("realloc gwords");
 
       return 1;
     }
@@ -86,7 +84,7 @@ static int gwords_search(gword_t** gwords, size_t* count, trie_t* trie, trie_t* 
     *gwords = new_gwords;
   }
 
-  for(size_t index = 0; index < word_count; index++)
+  for (size_t index = 0; index < word_count; index++)
   {
     (*gwords)[(*count) + index] = (gword_t)
     { 

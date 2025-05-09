@@ -93,36 +93,3 @@ void wbase_free(wbase_t** wbase)
 
   *wbase = NULL;
 }
-
-/*
- * Reset word base - remove _used mark from words
- */
-void wbase_reset(wbase_t* wbase)
-{
-  for(size_t index = 0; index < wbase->count; index++)
-  {
-    trie_reset(wbase->tries[index]);
-  }
-}
-
-/*
- * Mark word in word base as _used
- */
-void wbase_word_use(wbase_t* wbase, const char* word)
-{
-  for(size_t index = 0; index < wbase->count; index++)
-  {
-    trie_word_use(wbase->tries[index], word);
-  }
-}
-
-/*
- * Remove _used mark from word in word base
- */
-void wbase_word_unuse(wbase_t* wbase, const char* word)
-{
-  for(size_t index = 0; index < wbase->count; index++)
-  {
-    trie_word_unuse(wbase->tries[index], word);
-  }
-}

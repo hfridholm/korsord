@@ -159,7 +159,7 @@ extern grid_t* grid_dup(grid_t* grid);
 
 extern grid_t* grid_model_load(char* model);
 
-extern void    grid_prep(wbase_t* wbase, grid_t* grid);
+extern void    grid_prep(grid_t* grid);
 
 
 extern void grid_print(grid_t* grid);

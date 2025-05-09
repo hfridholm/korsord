@@ -26,8 +26,6 @@ extern trie_t* trie_create(void);
 
 extern trie_t* trie_load(char* wfile);
 
-extern void    trie_reset(trie_t* trie);
-
 extern void    trie_free(trie_t** trie);
 
 extern trie_t* trie_dup(trie_t* trie);
@@ -42,8 +40,6 @@ extern void trie_word_remove(trie_t* trie, const char* word);
 
 extern wbase_t* wbase_create(char** wfiles, size_t count);
 
-extern void     wbase_reset(wbase_t* wbase);
-
 extern void     wbase_free(wbase_t** wbase);
 
 
@@ -52,11 +48,6 @@ extern int  words_search(char*** words, size_t* count, trie_t* trie, trie_t* use
 extern void words_shuffle(char** words, size_t count);
 
 extern void words_free(char*** words, size_t count);
-
-
-extern void wbase_word_use(wbase_t* wbase, const char* word);
-
-extern void wbase_word_unuse(wbase_t* wbase, const char* word);
 
 
 extern int  wbase_words_exist_for_pattern(wbase_t* wbase, trie_t* used_trie, const char* pattern, int max_amount);

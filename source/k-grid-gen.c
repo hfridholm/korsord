@@ -439,7 +439,7 @@ grid_t* grid_gen(wbase_t* wbase, char* filepath)
   if(!grid) return NULL;
 
   // 2. Prepare the grid for generation
-  grid_prep(wbase, grid);
+  grid_prep(grid);
 
   is_generating = true;
 

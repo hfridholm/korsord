@@ -95,7 +95,7 @@ pip-packages:
 	done
 
 DEBUG_COMPILE_FLAGS := -Wall -Wno-unused-function -Wno-unused-variable -g -pg -O0 -oFast -pthread -funroll-loops -ftree-vectorize -floop-strip-mine -march=native
-DEBUG_LINKER_FLAGS  := -lncurses -lpthread -pg -g -O0
+DEBUG_LINKER_FLAGS  := -lncurses -lpthread -g -O0
 
 SPEED_COMPILE_FLAGS := -O3 -pthread -oFast -Wno-unused-function
 SPEED_LINKER_FLAGS  := -lncurses -lpthread

@@ -19,7 +19,6 @@ static node_t* node_create(void)
   node_t* node = malloc(sizeof(node_t));
 
   node->is_end_of_word = false;
-  node->is_used = false;
 
   memset(node->children, 0, sizeof(node_t*) * ALPHABET_SIZE);
 
@@ -186,75 +185,6 @@ trie_t* trie_load(char* wfile)
 }
 
 /*
- * Mark word in trie as used
- */
-void trie_word_use(trie_t* trie, const char* word)
-{
-  node_t* node = (node_t*) trie;
-
-  for(int index = 0; word[index] != '\0'; index++)
-  {
-    int child_index = letter_index_get(word[index]);
-
-    if(child_index == -1) return;
-
-
-    if(!node->children[child_index])
-    {
-      node = NULL;
-      break;
-    }
-
-    node = node->children[child_index];
-  }
-
-  if(node) node->is_used = true;
-}
-
-/*
- * Remove used mark of word in trie
- */
-void trie_word_unuse(trie_t* trie, const char* word)
-{
-  node_t* node = (node_t*) trie;
-
-  for(int index = 0; word[index] != '\0'; index++)
-  {
-    int child_index = letter_index_get(word[index]);
-
-    if(child_index == -1) return;
-
-
-    if(!node->children[child_index])
-    {
-      node = NULL;
-      break;
-    }
-
-    node = node->children[child_index];
-  }
-
-  if(node) node->is_used = false;
-}
-
-/*
- * Reset trie node, by removing the used mark
- */
-static void node_reset(node_t* node)
-{
-  if(!node) return;
-
-  for(int index = 0; index < ALPHABET_SIZE; index++)
-  {
-    node_reset(node->children[index]);
-  }
-
-  node->is_used = false;
-}
-
-void trie_reset(trie_t* trie) { node_reset((node_t*) trie); }
-
-/*
  * Duplicate trie node
  *
  * RETURN (node_t* dup)
@@ -267,7 +197,6 @@ static node_t* node_dup(node_t* node)
   node_t* dup = malloc(sizeof(node_t));
 
   dup->is_end_of_word = node->is_end_of_word;
-  dup->is_used        = node->is_used;
 
   for(int index = 0; index < ALPHABET_SIZE; index++)
   {
@@ -294,7 +223,6 @@ static void node_copy(node_t** copy, node_t* node)
   }
 
   (*copy)->is_end_of_word = node->is_end_of_word;
-  (*copy)->is_used        = node->is_used;
 
   for(int index = 0; index < ALPHABET_SIZE; index++)
   {

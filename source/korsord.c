@@ -353,9 +353,6 @@ static void ncurses_free(void)
  */
 static void* gen_routine(void* wbase)
 {
-  // 1. Un-using every word in word base
-  wbase_reset(wbase);
-
   curr_grid_set(NULL);
   best_grid_set(NULL);
 

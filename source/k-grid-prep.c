@@ -1,8 +1,5 @@
 /*
  * k-grid-prep.c - prepare grid before generation
- *
- * Change the preperation.
- * Call grid_words_use from outside prep call
  */
 
 #include "k-grid.h"
@@ -240,9 +237,13 @@ static void grid_prep_left_blocks(grid_t* grid, int start_x, int start_y)
 }
 
 /*
+ * Prepare the grid before generation
+ *
  * Add blocks at left and top side of grid
+ *
+ * Extract words from grid
  */
-static void grid_prep_blocks(grid_t* grid)
+void grid_prep(grid_t* grid)
 {
   // 1. Get the squares in the corners
   int* indexes = NULL;
@@ -280,36 +281,17 @@ static void grid_prep_blocks(grid_t* grid)
   }
 
   free(indexes);
-}
 
-/*
- * Identify words in grid and _use them,
- * so they can't be used elsewhere in the grid
- */
-static void grid_words_use(wbase_t* wbase, grid_t* grid)
-{
   char** words = NULL;
-  size_t count = 0;
+  size_t word_count = 0;
 
-  if(grid_words_get(&words, &count, grid) != 0)
+  if (grid_words_get(&words, &word_count, grid) == 0)
   {
-    return;
+    for (size_t index = 0; index < word_count; index++)
+    {
+      trie_word_insert(grid->words, words[index]);
+    }
+
+    words_free(&words, word_count);
   }
-
-  for(size_t index = 0; index < count; index++)
-  {
-    wbase_word_use(wbase, words[index]);
-  }
-
-  words_free(&words, count);
-}
-
-/*
- * Prepare the grid before generation
- */
-void grid_prep(wbase_t* wbase, grid_t* grid)
-{
-  grid_prep_blocks(grid);
-
-  grid_words_use(wbase, grid);
 }

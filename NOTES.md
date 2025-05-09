@@ -31,13 +31,6 @@
   (this ensures that at least these words from the first word list are in the solution)
   (it maybe also make the generation easier, or harder, I don't know)
 
-## Used Trie
-- this is a new field (trie_t* words) in grid_t
-- replace the old _word_use functions with inserting the word in used_words trie
-- pass along current used_words node in _search and _exist functions
-- store a temporary copy of used_words along side the temporary copy of grid in _gen
-- remove _used flag from trie node
-
 ## Gen Half
 - return new status code GEN_HALF when _word_embed partially succeeds
 
