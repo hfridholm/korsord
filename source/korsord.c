@@ -360,7 +360,9 @@ static void* gen_routine(void* wbase)
   // 2. Generate grid
   info_print("Generating grid");
 
-  grid_t* grid = grid_gen(wbase, args.model);
+  grid_t* model = model_load(args.model);
+
+  grid_t* grid = grid_gen(wbase, model);
 
   if(grid)
   {
@@ -373,22 +375,19 @@ static void* gen_routine(void* wbase)
     // 3. Export result to file
     info_print("Exporting results");
 
-    grid_export(grid);
-
-    grid_words_export(grid);
-
-    used_words_export(grid);
+    grid_export(grid, "temp");
 
     info_print("Exported results");
 
 
-    // 4. Free grid
     grid_free(&grid);
   }
   else
   {
     error_print("Generation failed");
   }
+
+  grid_free(&model);
 
   return NULL;
 }

@@ -281,17 +281,4 @@ void grid_prep(grid_t* grid)
   }
 
   free(indexes);
-
-  char** words = NULL;
-  size_t word_count = 0;
-
-  if (grid_words_get(&words, &word_count, grid) == 0)
-  {
-    for (size_t index = 0; index < word_count; index++)
-    {
-      trie_word_insert(grid->words, words[index]);
-    }
-
-    words_free(&words, word_count);
-  }
 }

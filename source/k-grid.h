@@ -21,15 +21,12 @@ typedef struct grid_t grid_t;
 typedef struct wbase_t wbase_t;
 
 
-extern grid_t* grid_gen(wbase_t* wbase, char* filepath);
+extern int     grid_export(grid_t* grid, char* name);
+
+extern grid_t* model_load(char* name);
+
+extern grid_t* grid_gen(wbase_t* wbase, grid_t* model);
 
 extern void    grid_free(grid_t** grid);
-
-
-extern int grid_words_export(grid_t* grid);
-
-extern int used_words_export(grid_t* grid);
-
-extern int grid_export(grid_t* grid);
 
 #endif // K_GRID_H

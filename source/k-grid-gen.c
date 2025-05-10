@@ -431,10 +431,9 @@ static int vert_word_gen(wbase_t* wbase, grid_t* grid, int cross_x, int cross_y)
 /*
  * Generate crossword grid
  */
-grid_t* grid_gen(wbase_t* wbase, char* filepath)
+grid_t* grid_gen(wbase_t* wbase, grid_t* model)
 {
-  // 1. Load grid from the model
-  grid_t* grid = grid_model_load(filepath);
+  grid_t* grid = grid_dup(model);
 
   if(!grid) return NULL;
 

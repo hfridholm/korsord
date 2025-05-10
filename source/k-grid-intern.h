@@ -157,8 +157,6 @@ extern grid_t* grid_copy(grid_t* copy, grid_t* grid);
 
 extern grid_t* grid_dup(grid_t* grid);
 
-extern grid_t* grid_model_load(char* model);
-
 extern void    grid_prep(grid_t* grid);
 
 
