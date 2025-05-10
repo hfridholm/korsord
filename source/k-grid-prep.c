@@ -12,8 +12,8 @@
  */
 int PREP_EMPTY_CHANCE = 70;
 
-// __builtin_clz counts the leading zeros, so the bit length is:
-#define CAPACITY(n) (1 << (sizeof(n) * 8 - __builtin_clz(n)))
+// __builtin_clzll counts the leading zeros, so the bit length is:
+#define CAPACITY(n) (1ULL << (64 - __builtin_clzll(n)))
 
 /*
  * Append index to index array
@@ -251,7 +251,6 @@ void grid_prep(grid_t* grid)
 
   grid_corner_indexes_get(&indexes, &count, grid);
 
-
   // 2. Assign SQUARE_BLOCK to the squares in the corners
   for(int index = 0; index < count; index++)
   {
@@ -265,7 +264,6 @@ void grid_prep(grid_t* grid)
     square->type    = SQUARE_BLOCK;
     square->is_prep = true;
   }
-
 
   // 3. Randomly assign SQUARE_BLOCK to squares at edges
   for(int index = 0; index < count; index++)

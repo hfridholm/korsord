@@ -128,8 +128,6 @@ static int horiz_word_test(wbase_t* wbase, grid_t* grid, const char* word, int x
 
   if (embed_status == GEN_HALF)
   {
-    info_print("GEN_HALF horiz");
-
     // remove all non is_crossed letters in current horizontal word
     // and try re-generating with new partial success
     horiz_word_remove(grid, word, x, y);
@@ -321,8 +319,6 @@ static int vert_word_test(wbase_t* wbase, grid_t* grid, const char* word, int x,
 
   if (embed_status == GEN_HALF)
   {
-    info_print("GEN_HALF vert");
-
     // remove all non is_crossed letters in current vertical word
     // and try re-generating with new partial success
     vert_word_remove(grid, word, x, y);

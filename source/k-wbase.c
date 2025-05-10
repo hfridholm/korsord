@@ -48,7 +48,7 @@ int letter_index_get(char letter)
  */
 wbase_t* wbase_create(char** wfiles, size_t count)
 {
-  if(!wfiles || count == 0) return NULL;
+  if (!wfiles || count == 0) return NULL;
 
   // 1. Allocate memory for wbase
   wbase_t* wbase = malloc(sizeof(wbase_t));

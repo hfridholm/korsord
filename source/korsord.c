@@ -64,8 +64,8 @@ struct args args =
   .interact    = false,
 };
 
-// __builtin_clz counts the leading zeros, so the bit length is:
-#define CAPACITY(n) (1 << (sizeof(n) * 8 - __builtin_clz(n)))
+// __builtin_clzll counts the leading zeros, so the bit length is:
+#define CAPACITY(n) (1ULL << (64 - __builtin_clzll(n)))
 
 /*
  * Append word file to array of word files
@@ -427,7 +427,7 @@ int main(int argc, char* argv[])
 
     free(args.wfiles);
 
-    return 3;
+    return 2;
   }
 
   info_print("Created word base");

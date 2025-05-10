@@ -163,6 +163,8 @@ trie_t* trie_load(char* wfile)
 
   trie_t* trie = trie_create();
 
+  size_t count = 0;
+
   char* token = strtok(buffer, "\n");
 
   while(token)
@@ -171,6 +173,8 @@ trie_t* trie_load(char* wfile)
 
     if(strlen(word) <= MAX_WORD_LENGTH)
     {
+      count++;
+
       trie_word_insert(trie, word);
     }
 
@@ -180,6 +184,8 @@ trie_t* trie_load(char* wfile)
   }
 
   free(buffer);
+
+  info_print("%s: %ld", wfile, count);
 
   return trie;
 }

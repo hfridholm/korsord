@@ -43,7 +43,7 @@ def words_file_load(filepath):
 # Load words from files of inputted names
 #
 def words_load(words_names):
-    words = []
+    words = set()
 
     for words_name in words_names:
         print(f"Loading words: {words_name}")
@@ -54,13 +54,11 @@ def words_load(words_names):
 
         if not curr_words:
             print(f"Failed to load words: {words_name}")
-            continue
+            return None
 
-        for word in curr_words:
-            if word not in words:
-                words.append(word)
+        words.update(curr_words)
 
-    return words
+    return list(words)
 
 #
 # Get the number of words used in crossword
@@ -155,13 +153,19 @@ if __name__ == "__main__":
 
 
     # Define arguments for grid-gen.c program
-    words_arg = [name + ".words" for name in args.words + [args.backup]]
+    words_arg = args.words + [args.backup]
 
-    model_arg = [f"{args.model}.model"]
+    model_arg = [args.model]
+
+    print(f"words_arg {model_arg}")
 
 
     # Load all theme words
     theme_words = words_load(args.words)
+
+    if args.words and not theme_words:
+        print(f"Failed to load words")
+        sys.exit(2)
 
 
     # Generate best grid and clues
@@ -185,8 +189,6 @@ if __name__ == "__main__":
             # Get amount of words from 'temp.words'
             curr_count = used_word_amount_get(theme_words)
 
-            print(f"Theme words: {curr_count}")
-
             if curr_count > best_count:
                 best_grid  = file_read(grid_file)
 
@@ -197,7 +199,6 @@ if __name__ == "__main__":
         except subprocess.TimeoutExpired:
             print(f"korsord: Grid generation timed out")
             continue
-
 
     # Store best grid and clues
     if best_grid:

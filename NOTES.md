@@ -7,6 +7,7 @@
 - add 'model', 'grid', 'clues', 'image' which gets overwritten at each step
 - change 'theme' to 'prompt' in gen.py. Theme, image_pos and image_prompt is then extracted from prompt
 - don't print "Använd inte följande ord:" om inga ord finns
+- add command in words.py 'filter' with arg pattern ("......")
 
 ## korsord.c
 - return proper exit code on fail in korsord.c

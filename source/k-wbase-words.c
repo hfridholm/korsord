@@ -7,8 +7,8 @@
 
 #include "k-grid-intern.h"
 
-// __builtin_clz counts the leading zeros, so the bit length is:
-#define CAPACITY(n) (1 << (sizeof(n) * 8 - __builtin_clz(n)))
+// __builtin_clzll counts the leading zeros, so the bit length is:
+#define CAPACITY(n) (1ULL << (64 - __builtin_clzll(n)))
 
 /*
  * Append word in word array
