@@ -13,7 +13,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <time.h>
 #include <unistd.h>
 #include <argp.h>
@@ -32,9 +31,6 @@ bool is_running = false;
 extern int MAX_CROWD_AMOUNT;
 extern int MAX_WORD_LENGTH;
 extern int MAX_EXIST_AMOUNT;
-extern int HALF_WORD_AMOUNT;
-extern int PREP_EMPTY_CHANCE;
-
 
 static char doc[] = "korsord - swedish crossword generator";
 
@@ -42,16 +38,11 @@ static char args_doc[] = "[MODEL] [WORDS...]";
 
 static struct argp_option options[] =
 {
-  { "visual",   'v', 0,        0, "Visualize generation" },
-  { "interact", 'i', 0,        0, "Enter interactive mode" },
-  { "output",   'o', "FILE",   0, "Output debug to file" },
-  { "used",     'u', "FILE",   0, "Disregard used words" },
-  { "fps",      'f', "AMOUNT", 0, "Frames per second" },
+  { "interact", 'i', 0,        0, "Interactive generation" },
   { "length",   'l', "LENGTH", 0, "Max length of words" },
   { "crowd",    'c', "AMOUNT", 0, "Max amount of nerby blocks" },
   { "exist",    'e', "AMOUNT", 0, "Amount of precission" },
-  { "half",     'h', "AMOUNT", 0, "Progress preserve amount" },
-  { "prep",     'p', "AMOUNT", 0, "Prepare empty procentage" },
+  { "name",     'n', "NAME",   0, "Name of grid and clues" },
   { 0 }
 };
 
@@ -60,11 +51,8 @@ struct args
   char*  model;
   char** wfiles;
   size_t wfile_count;
-  char*  used_wfile;
-  bool   visual;
-  bool   ncurses;
-  int    fps;
-  char*  output;
+  bool   interact;
+  char*  name;
 };
 
 // Default values of korsord arguments
@@ -73,10 +61,7 @@ struct args args =
   .model       = NULL,
   .wfiles      = NULL,
   .wfile_count = 0,
-  .visual      = false,
-  .ncurses     = false,
-  .fps         = 1,
-  .output      = NULL
+  .interact    = false,
 };
 
 // __builtin_clz counts the leading zeros, so the bit length is:
@@ -112,32 +97,6 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
 
   switch(key)
   {
-    case 'f':
-      if(!arg || *arg == '-') argp_usage(state);
-
-      number = atoi(arg);
-
-      if(number >= 1 && number <= 100)
-      {
-        args->fps = number;
-      }
-      else argp_usage(state);
-
-      break;
-
-    case 'p':
-      if(!arg || *arg == '-') argp_usage(state);
-
-      number = atoi(arg);
-
-      if(number >= 0 && number <= 100)
-      {
-        PREP_EMPTY_CHANCE = number;
-      }
-      else argp_usage(state);
-
-      break;
-
     case 'c':
       if(!arg || *arg == '-') argp_usage(state);
 
@@ -146,19 +105,6 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
       if(number >= 1 && number <= 7)
       {
         MAX_CROWD_AMOUNT = number;
-      }
-      else argp_usage(state);
-
-      break;
-
-    case 'h':
-      if(!arg || *arg == '-') argp_usage(state);
-
-      number = atoi(arg);
-
-      if(number >= 1)
-      {
-        HALF_WORD_AMOUNT = number;
       }
       else argp_usage(state);
 
@@ -190,26 +136,12 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
 
       break;
 
-    case 'v':
-      args->visual = true;
-      break;
-
     case 'i':
-      args->ncurses = true;
-
-      args->visual = true;
+      args->interact = true;
       break;
 
-    case 'o':
-      if(!arg || *arg == '-') argp_usage(state);
-
-      args->output = arg;
-      break;
-
-    case 'u':
-      if(!arg || *arg == '-') argp_usage(state);
-
-      args->used_wfile = arg;
+    case 'n':
+      args->name = arg;
       break;
 
     case ARGP_KEY_ARG:
@@ -239,32 +171,20 @@ static error_t opt_parse(int key, char* arg, struct argp_state* state)
  */
 static void* print_routine(void* arg)
 {
-  if(!args.visual) return NULL;
-
   info_print("Start print routine");
 
-  int delay = 1000000 / args.fps;
+  int delay = 1000000 / 30;
 
   while(is_running)
   {
-    if(args.ncurses)
-    {
-      erase();
+    erase();
 
-      best_grid_ncurses_print();
-      curr_grid_ncurses_print();
+    best_grid_ncurses_print();
+    curr_grid_ncurses_print();
 
-      stats_ncurses_print();
+    stats_ncurses_print();
 
-      refresh();
-    }
-    else
-    {
-      best_grid_print();
-      curr_grid_print();
-
-      stats_print();
-    }
+    refresh();
 
     usleep(delay);
   }
@@ -272,21 +192,6 @@ static void* print_routine(void* arg)
   info_print("Stop print routine");
 
   return NULL;
-}
-
-/*
- * Stop signal handler
- *
- * In case of the user killing the program,
- * everything should be cleaned up afterwards
- */
-static void stop_handler(int signum)
-{
-  info_print("Stop program");
-
-  is_generating = false;
-
-  is_running = false;
 }
 
 /*
@@ -305,7 +210,7 @@ static int ncurses_init(void)
   {
     endwin();
 
-    perror("ncurses colors");
+    error_print("ncurses colors");
 
     return 1;
   }
@@ -375,7 +280,7 @@ static void* gen_routine(void* wbase)
     // 3. Export result to file
     info_print("Exporting results");
 
-    grid_export(grid, "temp");
+    grid_export(grid, args.name);
 
     info_print("Exported results");
 
@@ -395,18 +300,34 @@ static void* gen_routine(void* wbase)
 /*
  * Routine for interactivly generating crossword grids using ncurses
  */
-static void interact_routine(wbase_t* wbase)
+static int interact_routine(wbase_t* wbase)
 {
   info_print("Start interact routine");
 
-  pthread_t thread = 0;
+  if(ncurses_init() != 0)
+  {
+    error_print("ncurses_init");
+
+    return 2;
+  }
+
+  pthread_t print_thread = 0;
+
+  if(pthread_create(&print_thread, NULL, print_routine, NULL) != 0)
+  {
+    error_print("Failed to create print thread");
+
+    ncurses_free();
+
+    return 1;
+  }
+
+  pthread_t gen_thread = 0;
 
   int key;
-  while(is_running && (key = getch()) != ERR)
+  while (is_running && (key = getch()) != ERR)
   {
-    info_print("key: %d", key);
-
-    switch(key)
+    switch (key)
     {
       case 'g': case 'r': 
         // Break the switch statement
@@ -416,13 +337,13 @@ static void interact_routine(wbase_t* wbase)
         // This will stop the gen routine
         is_generating = false;
 
-        pthread_join(thread, NULL);
-        thread = 0;
+        pthread_join(gen_thread, NULL);
+        gen_thread = 0;
           
         curr_grid_set(NULL);
         stats_clear();
 
-        if(pthread_create(&thread, NULL, gen_routine, wbase) != 0)
+        if(pthread_create(&gen_thread, NULL, gen_routine, wbase) != 0)
         {
           error_print("Failed to create gen thread");
         }
@@ -435,17 +356,18 @@ static void interact_routine(wbase_t* wbase)
         info_print("Stopping grid generation");
 
         is_generating = false;
-        // Wait for the second thread to finish
-        // pthread_cancel(thread);
 
-        pthread_join(thread, NULL);
-        thread = 0;
+        pthread_join(gen_thread, NULL);
+        gen_thread = 0;
 
         info_print("Stopped grid generation");
         break;
 
-      case 'q':
-        stop_handler(SIGINT);
+      case 'q': case 3:
+        is_generating = false;
+
+        is_running = false;
+        break;
 
       default:
         break;
@@ -458,48 +380,17 @@ static void interact_routine(wbase_t* wbase)
   
   is_generating = false;
 
-  // Wait for the second thread to finish
-  // pthread_cancel(thread);
+  pthread_join(gen_thread, NULL);
+  gen_thread = 0;
 
-  pthread_join(thread, NULL);
-  thread = 0;
+  pthread_join(print_thread, NULL);
+  print_thread = 0;
+
+  ncurses_free();
 
   info_print("Stop interact routine");
-}
 
-/*
- * This is the main routine for debug mode
- */
-static void debug_routine(wbase_t* wbase)
-{
-  info_print("Start debug routine");
-
-  curr_grid_set(NULL);
-  stats_clear();
-
-  pthread_t thread = 0;
-
-  if(pthread_create(&thread, NULL, gen_routine, wbase) != 0)
-  {
-    error_print("Failed to create gen thread");
-  }
-
-  // Wait for the second thread to finish
-  // pthread_cancel(thread);
-
-  pthread_join(thread, NULL);
-
-  best_grid_print();
-  curr_grid_print();
-
-  stats_print();
-
-  curr_grid_set(NULL);
-  best_grid_set(NULL);
-
-  stats_clear();
-
-  info_print("Stop debug routine");
+  return 0;
 }
 
 static struct argp argp = { options, opt_parse, args_doc, doc };
@@ -513,43 +404,25 @@ static struct argp argp = { options, opt_parse, args_doc, doc };
  */
 int main(int argc, char* argv[])
 {
-  argp_parse(&argp, argc, argv, 0, 0, &args);
-
-  signal(SIGINT, stop_handler);
-
-  // srand(time(NULL));
-  
   if(debug_file_open("debug.log") != 0)
   {
-    perror("debug_file_open");
+    error_print("debug_file_open");
 
     return 1;
   }
 
+  argp_parse(&argp, argc, argv, 0, 0, &args);
+
   info_print("Start main");
-
-  if(args.ncurses)
-  {
-    if(ncurses_init() != 0)
-    {
-      perror("ncurses_init");
-
-      return 2;
-    }
-  }
-
 
   info_print("Creating word base");
 
-  // 1. Load the word bases
   wbase_t* wbase = wbase_create(args.wfiles, args.wfile_count);
 
   if(!wbase)
   {
-    perror("Failed to create word base");
+    error_print("Failed to create word base");
 
-    ncurses_free();
-    
     debug_file_close();
 
     free(args.wfiles);
@@ -560,65 +433,23 @@ int main(int argc, char* argv[])
   info_print("Created word base");
 
 
-  info_print("Loading used words");
-
-  trie_t* used_words = trie_load(args.used_wfile);
-
-  if(!used_words) used_words = trie_create();
-
-  info_print("Loaded used words");
-
-
   curr_grid_init();
   best_grid_init();
 
   stats_init();
 
-
   is_running = true;
 
-  pthread_t thread = 0;
-
-  if(pthread_create(&thread, NULL, print_routine, NULL) != 0)
-  {
-    perror("Failed to create thread");
-
-    ncurses_free();
-
-    wbase_free(&wbase);
-
-    curr_grid_free();
-    best_grid_free();
-    
-    stats_free();
-
-    return 1;
-  }
-
-
-  // Enter the main routine (main loop)
-  if(args.ncurses)
+  if(args.interact)
   {
     interact_routine(wbase);
   }
   else
   {
-    debug_routine(wbase);
+    gen_routine(wbase);
   }
 
-
   is_running = false;
-
-  // Wait for the second thread to finish
-  // pthread_cancel(thread);
-
-  pthread_join(thread, NULL);
-
-
-  trie_free(&used_words);
-
-  wbase_free(&wbase);
-
 
   curr_grid_free();
   best_grid_free();
@@ -626,10 +457,8 @@ int main(int argc, char* argv[])
   stats_free();
 
 
-  if(args.ncurses)
-  {
-    ncurses_free();
-  }
+  wbase_free(&wbase);
+
 
   info_print("Stop main");
 

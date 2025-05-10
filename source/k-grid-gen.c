@@ -12,8 +12,6 @@
 
 bool is_generating = false;
 
-int HALF_WORD_AMOUNT = 10;
-
 #define GEN_DONE 0
 #define GEN_FAIL 1
 #define GEN_STOP 2
