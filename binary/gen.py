@@ -32,7 +32,12 @@ def words_gen(args):
 
     max_length = max(args.width, args.height)
 
-    result = subprocess.run(["python", words_script, "--new", args.theme, "--amount", str(word_amount), "--length", str(max_length)])
+    result = subprocess.run(["python",   words_script, args.theme,
+                             "--new",
+                             "--amount", str(word_amount),
+                             "--length", str(max_length),
+                             "--name",   args.name
+                            ])
 
     return result.returncode
 
@@ -48,7 +53,10 @@ def model_gen(args):
 
     image_arg = ["--image", args.image] if args.image else []
 
-    result = subprocess.run(["python", model_script, "--force", str(args.width), str(args.height)] + image_arg)
+    result = subprocess.run(["python", model_script, str(args.width), str(args.height),
+                             "--force",
+                             "--name", args.name,
+                            ] + image_arg)
 
     return result.returncode
 
@@ -62,7 +70,11 @@ def grid_gen(args):
         print(f"korsord: {grid_script}: File not found")
         sys.exit(1)
 
-    result = subprocess.run(["python", grid_script, args.model + args.words])
+    words_arg = args.words if args.words else ["svenska/270k"]
+
+    result = subprocess.run(["python", grid_script, args.model,
+                             "--name", args.name,
+                            ] + words_arg)
 
     return result.returncode
 
@@ -80,7 +92,9 @@ def image_gen(args):
         print(f"korsord: {image_script}: File not found")
         sys.exit(1)
 
-    result = subprocess.run(["python", image_script, args.theme])
+    result = subprocess.run(["python", image_script, args.theme,
+                             "--name", args.name
+                             ])
 
     return result.returncode
 
@@ -96,7 +110,10 @@ def clues_gen(args):
 
     theme_arg = ["--theme", args.theme] if args.theme else []
 
-    result = subprocess.run(["python", clues_script, "--force"] + theme_arg)
+    result = subprocess.run(["python", clues_script,
+                             "--force",
+                             "--name", args.name,
+                            ] + theme_arg)
 
     return result.returncode
 
@@ -110,9 +127,11 @@ def render_gen(args):
         print(f"korsord: {render_script}: File not found")
         sys.exit(1)
 
-    image_arg = ["--image", "temp"]
-
-    result = subprocess.run(["python", render_script] + image_arg)
+    result = subprocess.run(["python", render_script,
+                             "--image", args.name,
+                             "--grid", args.name,
+                             "--clues", args.name,
+                            ])
 
     return result.returncode
 
@@ -148,6 +167,11 @@ if __name__ == "__main__":
     parser.add_argument("--step",
         type=str, default="words",
         help="Start at step of generation"
+    )
+
+    parser.add_argument("--name",
+        type=str, default="temp",
+        help="Name of korsord"
     )
 
     # Define arguments for each step result
@@ -213,7 +237,7 @@ if __name__ == "__main__":
             print(f"Failed to generate words")
             sys.exit(2)
 
-        args.words = ["temp"]
+        args.words = [args.name]
 
     # 2. Generate model
     if step_index <= 1 and not args.model:
@@ -221,7 +245,7 @@ if __name__ == "__main__":
             print(f"Failed to generate model")
             sys.exit(3)
 
-        args.model = "temp"
+        args.model = args.name
 
     # 3. Generate grid
     if step_index <= 2 and grid_gen(args) != 0:

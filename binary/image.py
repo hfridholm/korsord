@@ -41,7 +41,7 @@ def image_view(extra_args):
         print(f"korsord: {view_args.name}: Image not found")
         sys.exit(0)
 
-    subprocess.run(["feh", image_file])
+    subprocess.run(["xdg-open", image_file])
 
 #
 # Handling the 'del' command

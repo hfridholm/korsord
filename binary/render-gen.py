@@ -253,16 +253,16 @@ def clues_save(clues, clues_name):
         print(f"Failed to write words file")
 
 #
-# Save missing clues by appending them to temp.clues
+# Save missing clues by appending them to missing.clues
 #
 def missing_clues_save(missing_clues):
-    clues = clues_load(["temp"])
+    clues = clues_load(["missing"])
 
     for word in missing_clues:
         if word not in clues.keys():
             clues[word] = ""
 
-    clues_save(clues, "temp")
+    clues_save(clues, "missing")
 
 #
 # Find blocks and their words
@@ -616,23 +616,27 @@ def numbers_draw(draw, grid):
 def arrow_draw(img, x, y, direction):
     arrow_file = os.path.join(BASE_DIR, "../assets/images/arrow.png")
 
-    arrow_image = Image.open(arrow_file)
+    try:
+        arrow_image = Image.open(arrow_file)
 
-    if direction == "down":
-        img_x = (x * SQUARE_SIZE)
-        img_y = (y * SQUARE_SIZE)
+        if direction == "down":
+            img_x = (x * SQUARE_SIZE)
+            img_y = (y * SQUARE_SIZE)
 
-        arrow_image = arrow_image.rotate(0, expand=True)
+            arrow_image = arrow_image.rotate(0, expand=True)
 
-        img.paste(arrow_image, (img_x, img_y), arrow_image)
+            img.paste(arrow_image, (img_x, img_y), arrow_image)
 
-    if direction == "right":
-        img_x = (x * SQUARE_SIZE)
-        img_y = ((y + 1) * SQUARE_SIZE) - 60
+        if direction == "right":
+            img_x = (x * SQUARE_SIZE)
+            img_y = ((y + 1) * SQUARE_SIZE) - 60
 
-        arrow_image = arrow_image.rotate(90, expand=True)
+            arrow_image = arrow_image.rotate(90, expand=True)
 
-        img.paste(arrow_image, (img_x, img_y), arrow_image)
+            img.paste(arrow_image, (img_x, img_y), arrow_image)
+
+    except:
+        print(f"korsord: Arrow image not found")
 
 #
 # Draw direction arrows from clue squares
@@ -723,26 +727,30 @@ def image_draw(img, grid, image_name):
 
     image_file = image_file_get(image_name)
 
-    image = Image.open(image_file)
+    try:
+        image = Image.open(image_file)
 
-    box_width  = SQUARE_SIZE * (max_x - min_x)
-    box_height = SQUARE_SIZE * (max_y - min_y)
+        box_width  = SQUARE_SIZE * (max_x - min_x)
+        box_height = SQUARE_SIZE * (max_y - min_y)
 
-    original_width, original_height = image.size
+        original_width, original_height = image.size
 
-    scaling_factor = max(box_width / original_width, box_height / original_height)
+        scaling_factor = max(box_width / original_width, box_height / original_height)
 
-    new_width  = int(original_width  * scaling_factor)
-    new_height = int(original_height * scaling_factor)
+        new_width  = int(original_width  * scaling_factor)
+        new_height = int(original_height * scaling_factor)
 
-    resized_image = image.resize((new_width, new_height))
+        resized_image = image.resize((new_width, new_height))
 
-    img_x = min_x * SQUARE_SIZE + (box_width  - new_width)  // 2
-    img_y = min_y * SQUARE_SIZE + (box_height - new_height) // 2
+        img_x = min_x * SQUARE_SIZE + (box_width  - new_width)  // 2
+        img_y = min_y * SQUARE_SIZE + (box_height - new_height) // 2
 
-    print(f"image_draw {img_x}, {img_y} {new_width}x{new_height}")
+        print(f"image_draw {img_x}, {img_y} {new_width}x{new_height}")
 
-    img.paste(resized_image, (img_x, img_y))
+        img.paste(resized_image, (img_x, img_y))
+
+    except:
+        print(f"korsord: Image {image_name} not found")
 
 #
 # Initialize image
@@ -903,6 +911,7 @@ if __name__ == "__main__":
 
     print(f"Drawing clues")
 
+    # Add 'words' arg with split instead of REMAINDER
     words_files = words_files_load(["temp", "svenska/270k"])
 
     is_complete = clues_draw(draw, grid, block_words, clues, words_files)

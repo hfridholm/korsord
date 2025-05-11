@@ -62,7 +62,7 @@ def render_view(extra_args):
         print(f"korsord: {view_args.name}: Image not found")
         sys.exit(0)
 
-    subprocess.run(["feh", render_file])
+    subprocess.run(["xdg-open", render_file])
 
 #
 # Get all render files

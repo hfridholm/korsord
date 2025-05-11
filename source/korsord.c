@@ -62,6 +62,7 @@ struct args args =
   .wfiles      = NULL,
   .wfile_count = 0,
   .interact    = false,
+  .name        = "temp",
 };
 
 // __builtin_clzll counts the leading zeros, so the bit length is:

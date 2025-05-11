@@ -1,6 +1,8 @@
 # Notes
 
 ## Quick Fixes
+- add 'length' arg to gen.py words-gen.py and grid-gen.py
+- remove required arg 'words' from grid-gen.py and use backup if empty
 - change all args.REMAINDER to string.split(' ')
 - add 'words' to render-gen.py
 - add 'words' arg to gen.py, which consists of pre generated words (in priority order)

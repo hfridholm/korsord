@@ -1,5 +1,5 @@
 #
-# grid-gen.py - generate best grid using grid-gen.c
+# grid-gen.py - generate best grid using grid-gen
 #
 # Written by Hampus Fridholm
 #
@@ -66,7 +66,7 @@ def words_load(words_names):
 def used_word_amount_get(theme_words):
     used_count = 0
 
-    clues_file = clues_file_get("temp")
+    clues_file = clues_file_get(args.name)
 
     grid_words = words_file_load(clues_file)
 
@@ -109,7 +109,7 @@ def file_write(filepath, data):
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description="Generate best grid using grid-gen.c"
+        description="Generate best grid using grid-gen"
     )
 
     parser.add_argument("model",
@@ -125,6 +125,16 @@ if __name__ == "__main__":
     parser.add_argument("--backup",
         type=str, default="svenska/270k",
         help="Name of backup words"
+    )
+
+    parser.add_argument("--name",
+        type=str, default="temp",
+        help="Name of grid and clues"
+    )
+
+    parser.add_argument("--length",
+        type=int, default=8,
+        help="Max length of words"
     )
 
     parser.add_argument("--amount",
@@ -144,7 +154,7 @@ if __name__ == "__main__":
         args.words = args.words.split(' ')
 
 
-    # Load grid-gen.c
+    # Load grid-gen
     grid_program = os.path.join(BASE_DIR, "grid-gen")
 
     if not os.path.isfile(grid_program):
@@ -152,12 +162,8 @@ if __name__ == "__main__":
         sys.exit(1)
 
 
-    # Define arguments for grid-gen.c program
+    # Define arguments for grid-gen program
     words_arg = args.words + [args.backup]
-
-    model_arg = [args.model]
-
-    print(f"words_arg {model_arg}")
 
 
     # Load all theme words
@@ -169,8 +175,8 @@ if __name__ == "__main__":
 
 
     # Generate best grid and clues
-    grid_file  = grid_file_get("temp")
-    clues_file = clues_file_get("temp")
+    grid_file  = grid_file_get(args.name)
+    clues_file = clues_file_get(args.name)
 
     best_grid  = None
     best_clues = None
@@ -178,7 +184,12 @@ if __name__ == "__main__":
 
     for iteration in range(args.amount):
         try:
-            result = subprocess.run([grid_program] + model_arg + words_arg, timeout=args.time)
+            result = subprocess.run([grid_program,
+                                     "--name",   args.name,
+                                     "--length", str(args.length),
+                                     args.model,
+                                    ] + words_arg,
+                                    timeout=args.time)
 
             # To make next grid generation random, wait 1 more second
             time.sleep(1)
