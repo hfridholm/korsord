@@ -1,15 +1,12 @@
 # Notes
 
 ## Quick Fixes
-- add 'length' arg to gen.py words-gen.py and grid-gen.py
-- remove required arg 'words' from grid-gen.py and use backup if empty
 - change all args.REMAINDER to string.split(' ')
 - add 'words' to render-gen.py
 - add 'words' arg to gen.py, which consists of pre generated words (in priority order)
 - add 'model', 'grid', 'clues', 'image' which gets overwritten at each step
 - change 'theme' to 'prompt' in gen.py. Theme, image_pos and image_prompt is then extracted from prompt
 - don't print "Använd inte följande ord:" om inga ord finns
-- add command in words.py 'filter' with arg pattern ("......")
 
 ## korsord.c
 - return proper exit code on fail in korsord.c

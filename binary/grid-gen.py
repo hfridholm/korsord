@@ -118,7 +118,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument("words",
-        type=str,
+        type=str, default=None,
         help="Names of words"
     )
 
@@ -149,11 +149,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # Expand arguments
-    if args.words:
-        args.words = args.words.split(' ')
-
-
     # Load grid-gen
     grid_program = os.path.join(BASE_DIR, "grid-gen")
 
@@ -163,15 +158,24 @@ if __name__ == "__main__":
 
 
     # Define arguments for grid-gen program
-    words_arg = args.words + [args.backup]
+    words_arg = []
+
+    if args.words:
+        args.words = args.words.split(' ')
+        words_arg += args.words
+
+    words_arg.append(args.backup)
 
 
     # Load all theme words
-    theme_words = words_load(args.words)
+    theme_words = None
 
-    if args.words and not theme_words:
-        print(f"Failed to load words")
-        sys.exit(2)
+    if args.words:
+        theme_words = words_load(args.words)
+
+        if not theme_words:
+            print(f"Failed to load words")
+            sys.exit(2)
 
 
     # Generate best grid and clues
@@ -197,12 +201,16 @@ if __name__ == "__main__":
             if result.returncode != 0:
                 continue
 
+            if not theme_words:
+                best_grid  = file_read(grid_file)
+                best_clues = file_read(clues_file)
+                break
+
             # Get amount of words from 'temp.words'
             curr_count = used_word_amount_get(theme_words)
 
             if curr_count > best_count:
                 best_grid  = file_read(grid_file)
-
                 best_clues = file_read(clues_file)
 
                 best_count = curr_count

@@ -35,7 +35,7 @@ def words_gen(args):
     result = subprocess.run(["python",   words_script, args.theme,
                              "--new",
                              "--amount", str(word_amount),
-                             "--length", str(max_length),
+                             "--length", str(args.length) if args.length else str(max_length),
                              "--name",   args.name
                             ])
 
@@ -70,11 +70,13 @@ def grid_gen(args):
         print(f"korsord: {grid_script}: File not found")
         sys.exit(1)
 
-    words_arg = args.words if args.words else ["svenska/270k"]
+    words_arg = [f"{' '.join(args.words)}"] if args.words else []
+
+    length_arg = ["--length", str(args.length)] if args.length else []
 
     result = subprocess.run(["python", grid_script, args.model,
                              "--name", args.name,
-                            ] + words_arg)
+                            ] + length_arg + words_arg)
 
     return result.returncode
 
@@ -157,6 +159,11 @@ if __name__ == "__main__":
     parser.add_argument("--height",
         type=int, default=None,
         help="Height of grid"
+    )
+
+    parser.add_argument("--length",
+        type=int, default=None,
+        help="Max length of words"
     )
 
     parser.add_argument("--image",

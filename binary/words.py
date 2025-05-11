@@ -8,7 +8,9 @@ import argparse
 import subprocess
 import sys
 import os
+import re
 from common import *
+
 #
 # Handling the 'gen' command
 #
@@ -261,8 +263,10 @@ def words_file_load(filepath):
 #
 # Load words from files of inputted names
 #
+# grid-gen.py has this same function, maybe add it to common?
+#
 def words_load(words_names):
-    words = []
+    words = set()
 
     for words_name in words_names:
         print(f"Loading words: {words_name}")
@@ -275,11 +279,9 @@ def words_load(words_names):
             print(f"Failed to load words: {words_name}")
             continue
 
-        for word in curr_words:
-            if word not in words:
-                words.append(word)
+        words.update(curr_words)
 
-    return words
+    return list(words)
 
 #
 # Save words
@@ -329,6 +331,71 @@ def words_merge(extra_args):
     words_save(words, words_file)
 
 #
+# Handling the 'filter' command
+#
+def words_filter(extra_args):
+    filter_parser = argparse.ArgumentParser(description="Count filtered words")
+
+    filter_parser.add_argument('words',
+        type=str,
+        help="Words to filter"
+    )
+
+    filter_parser.add_argument('--length',
+        type=int, default=None,
+        help="Max length of word"
+    )
+
+    filter_parser.add_argument('--pattern',
+        type=str, default=None,
+        help="Word must match pattern"
+    )
+
+    filter_parser.add_argument('--name',
+        type=str, default=None,
+        help="Name of filterd words"
+    )
+
+    filter_parser.add_argument('--force',
+        action='store_true',
+        help="Overwrite existing words"
+    )
+
+    filter_args = filter_parser.parse_args(extra_args)
+
+    if not filter_args.words:
+        filter_parser.print_help()
+        sys.exit(0)
+
+    filter_args.words = filter_args.words.split(' ')
+
+    words = words_load(filter_args.words)
+
+    pattern = f"^{filter_args.pattern}$" if filter_args.pattern else None
+
+    filtered_words = []
+
+    for word in words:
+        if pattern and not re.match(pattern, word):
+            continue
+
+        if filter_args.length and len(word) > filter_args.length:
+            continue
+
+        filtered_words.append(word)
+
+    print(f"Filtered words: {len(filtered_words)}")
+
+    if filter_args.name:
+        words_file = words_file_get(filter_args.name)
+
+        if os.path.exists(words_file) and not filter_args.force:
+            print(f"korsord: {filter_args.name}: Words already exists")
+            sys.exit(0)
+
+        words_save(filtered_words, words_file)
+
+#
 # Main function
 #
 if __name__ == "__main__":
@@ -340,7 +407,7 @@ if __name__ == "__main__":
 
     parser.add_argument("command",
         nargs="?",
-        help="gen, view, edit, new, del, copy, list, merge"
+        help="gen, view, edit, new, del, copy, list, merge, filter"
     )
 
     args, extra_args = parser.parse_known_args()
@@ -385,6 +452,9 @@ if __name__ == "__main__":
 
     elif args.command == "merge":
         words_merge(extra_args)
+
+    elif args.command == "filter":
+        words_filter(extra_args)
 
     else:
         print(f"korsord: {args.command}: Command not found")
