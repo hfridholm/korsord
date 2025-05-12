@@ -405,11 +405,20 @@ static struct argp argp = { options, opt_parse, args_doc, doc };
  */
 int main(int argc, char* argv[])
 {
-  if(debug_file_open("debug.log") != 0)
+  char debug_file[64];
+
+  if (debug_file_get(debug_file) != 0)
   {
-    error_print("debug_file_open");
+    fprintf(stderr, "korsord: Failed to get debug.log");
 
     return 1;
+  }
+
+  if (debug_file_open(debug_file) != 0)
+  {
+    fprintf(stderr, "korsord: Failed to open debug.log");
+
+    return 2;
   }
 
   argp_parse(&argp, argc, argv, 0, 0, &args);

@@ -10,6 +10,24 @@
 /*
  *
  */
+int debug_file_get(char* file)
+{
+  if (!file)
+  {
+    return 1;
+  }
+
+  if (sprintf(file, "%s/.korsord/debug.log", getenv("HOME")) < 0)
+  {
+    return 2;
+  }
+
+  return 0;
+}
+
+/*
+ *
+ */
 int grid_file_get(char* file, char* name)
 {
   if (!file || !name)

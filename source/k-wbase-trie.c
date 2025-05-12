@@ -147,8 +147,6 @@ trie_t* trie_load(char* wfile)
     return NULL;
   }
 
-  info_print("words_file: %s", words_file);
-
   size_t file_size = file_size_get(words_file);
 
   char* buffer = malloc(sizeof(char) * (file_size + 1));
@@ -184,8 +182,6 @@ trie_t* trie_load(char* wfile)
   }
 
   free(buffer);
-
-  info_print("%s: %ld", wfile, count);
 
   return trie;
 }
