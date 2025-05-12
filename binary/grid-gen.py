@@ -117,7 +117,7 @@ if __name__ == "__main__":
         help="Name of model"
     )
 
-    parser.add_argument("words",
+    parser.add_argument("--words",
         type=str, default=None,
         help="Names of words"
     )

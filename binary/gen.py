@@ -70,13 +70,12 @@ def grid_gen(args):
         print(f"korsord: {grid_script}: File not found")
         sys.exit(1)
 
-    words_arg = [f"{' '.join(args.words)}"] if args.words else []
-
     length_arg = ["--length", str(args.length)] if args.length else []
 
     result = subprocess.run(["python", grid_script, args.model,
-                             "--name", args.name,
-                            ] + length_arg + words_arg)
+                             "--name",  args.name,
+                             "--words", ' '.join(args.words),
+                            ] + length_arg)
 
     return result.returncode
 
@@ -131,8 +130,9 @@ def render_gen(args):
 
     result = subprocess.run(["python", render_script,
                              "--image", args.name,
-                             "--grid", args.name,
+                             "--grid",  args.name,
                              "--clues", args.name,
+                             "--words", ' '.join(args.words),
                             ])
 
     return result.returncode

@@ -783,8 +783,13 @@ if __name__ == "__main__":
     )
 
     parser.add_argument("--clues",
-        nargs=argparse.REMAINDER, default=["temp"],
+        type=str, default="temp",
         help="Name of clues"
+    )
+
+    parser.add_argument("--words",
+        type=str, default=None,
+        help="Name of words"
     )
 
     parser.add_argument("--partial",
@@ -799,6 +804,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    if args.words:
+        args.words = args.words.split(' ')
+
+    if args.clues:
+        args.clues = args.clues.split(' ')
 
     # Load grid
     print(f"Loading grid")
@@ -911,8 +921,7 @@ if __name__ == "__main__":
 
     print(f"Drawing clues")
 
-    # Add 'words' arg with split instead of REMAINDER
-    words_files = words_files_load(["temp", "svenska/270k"])
+    words_files = words_files_load(args.words)
 
     is_complete = clues_draw(draw, grid, block_words, clues, words_files)
 

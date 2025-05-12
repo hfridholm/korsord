@@ -307,7 +307,7 @@ def words_merge(extra_args):
     )
 
     merge_parser.add_argument('words',
-        nargs=argparse.REMAINDER,
+        type=str,
         help="Words to merge"
     )
 
@@ -317,6 +317,9 @@ def words_merge(extra_args):
     )
 
     merge_args = merge_parser.parse_args(extra_args)
+
+    if merge_args.words:
+        merge_args.words = merge_args.words.split(' ')
 
     print(f"words: {merge_args.words}")
 
