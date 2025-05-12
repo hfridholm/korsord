@@ -256,7 +256,12 @@ def clues_save(clues, clues_name):
 # Save missing clues by appending them to missing.clues
 #
 def missing_clues_save(missing_clues):
-    clues = clues_load(["missing"])
+    clues_file = clues_file_get("missing")
+
+    clues = clues_file_load(clues_file)
+
+    if not clues:
+        clues = {}
 
     for word in missing_clues:
         if word not in clues.keys():
@@ -745,8 +750,6 @@ def image_draw(img, grid, image_name):
         img_x = min_x * SQUARE_SIZE + (box_width  - new_width)  // 2
         img_y = min_y * SQUARE_SIZE + (box_height - new_height) // 2
 
-        print(f"image_draw {img_x}, {img_y} {new_width}x{new_height}")
-
         img.paste(resized_image, (img_x, img_y))
 
     except:
@@ -810,46 +813,41 @@ if __name__ == "__main__":
     if args.clues:
         args.clues = args.clues.split(' ')
 
-    # Load grid
-    print(f"Loading grid")
+
+    print(f"Loading grid: {args.grid}")
 
     grid = grid_load(args.grid)
 
     if not grid:
-        print(f"Failed to load grid")
+        print(f"Error: Failed to load grid")
         sys.exit(1)
 
     print(f"Loaded grid")
 
 
 
-    print(f"Finding words in grid")
+    print(f"Extracting words")
 
-    # Get blocks and their words
     block_words = block_words_find(grid)
 
     if not block_words:
-        print(f"Failed to find block words")
+        print(f"Error: Failed to extract words")
         sys.exit(2)
 
-    print(f"Found words in grid")
+    print(f"Extracted words")
 
-
-
-    print(f"Loading clues")
 
     clues = clues_load(args.clues)
-
-    
-    print(f"Checking missing clues")
 
     missing_clues = missing_clues_get(block_words, clues)
 
     if not args.partial and missing_clues:
-        print(f"korsord: Some clues are missing")
-        print(missing_clues)
+        print(f"Error: Some clues are missing")
+
         missing_clues_save(missing_clues)
         sys.exit(3)
+
+    print(f"Loaded clues")
 
 
     if not os.path.exists(RENDER_DIR):
@@ -890,7 +888,7 @@ if __name__ == "__main__":
     is_complete = clues_draw(draw, grid, block_words, clues, None)
 
     if not args.partial and not is_complete:
-        print(f"korsord: Some clues were missing")
+        print(f"Error: Some clues were missing")
         sys.exit(5);
     
     print(f"Drew clues")
@@ -902,42 +900,37 @@ if __name__ == "__main__":
 
     print(f"Drew arrows")
 
-
     image_save(img, "normal")
 
-    print(f"Saved normal crossword image")
 
-
-    print(f"Drawing letter numbers")
+    print(f"Drawing numbers")
 
     numbers_draw(draw, grid)
 
-    print(f"Drew letter numbers")
+    print(f"Drew numbers")
 
     image_save(img, "helping")
 
-    print(f"Saved helping crossword image")
 
+    print(f"Drawing colored clues")
 
-    print(f"Drawing clues")
-
-    words_files = words_files_load(args.words)
+    words_files = words_files_load(args.words) if args.words else None
 
     is_complete = clues_draw(draw, grid, block_words, clues, words_files)
 
     if not args.partial and not is_complete:
-        print(f"korsord: Some clues were missing")
-        sys.exit(5);
+        print(f"Error: Some clues were missing")
+        sys.exit(6);
     
-    print(f"Drew clues")
+    print(f"Drew colored clues")
 
 
-    print(f"Filling in words")
+    print(f"Drawing letters")
 
     letters_draw(draw, grid)
 
-    print(f"Filled in words")
+    print(f"Drew letters")
 
     image_save(img, "solved")
 
-    print(f"Saved solved crossword image")
+    print(f"Done")

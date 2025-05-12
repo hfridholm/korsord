@@ -112,12 +112,7 @@ def model_edit(extra_args):
 
     if not os.path.exists(model_file):
         if not edit_args.new:
-            if edit_args.name == "temp":
-                print(f"korsord: Model not found")
-
-            else:
-                print(f"korsord: {edit_args.name}: Model not found")
-
+            print(f"korsord: {edit_args.name}: Model not found")
             sys.exit(0)
 
         else:
@@ -163,7 +158,7 @@ def model_list(extra_args):
         model_size = grid_size_get(file)
 
         if not model_size:
-            continue
+            model_size = [0, 0]
 
         curr_width = max_width - len(name)
 

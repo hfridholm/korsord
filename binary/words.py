@@ -112,12 +112,7 @@ def words_edit(extra_args):
 
     if not os.path.exists(words_file):
         if not edit_args.new:
-            if edit_args.name == "temp":
-                print(f"korsord: Words not found")
-
-            else:
-                print(f"korsord: {edit_args.name}: Words not found")
-
+            print(f"korsord: {edit_args.name}: Words not found")
             sys.exit(0)
 
         else:
@@ -141,14 +136,8 @@ def words_view(extra_args):
     words_file = words_file_get(view_args.name)
 
     if not os.path.exists(words_file):
-        if not view_args.new:
-            if view_args.name == "temp":
-                print(f"korsord: Words not found")
-
-            else:
-                print(f"korsord: {view_args.name}: Words not found")
-
-            sys.exit(0)
+        print(f"korsord: {view_args.name}: Words not found")
+        sys.exit(0)
 
     subprocess.run(["less", words_file])
 
@@ -190,7 +179,7 @@ def words_list(extra_args):
         line_count = line_count_get(file)
 
         if not line_count:
-            continue
+            line_count = 0
 
         curr_width = max_width - len(name)
 
@@ -321,8 +310,6 @@ def words_merge(extra_args):
     if merge_args.words:
         merge_args.words = merge_args.words.split(' ')
 
-    print(f"words: {merge_args.words}")
-
     words = words_load(merge_args.words)
 
     words_file = words_file_get(merge_args.name)
@@ -354,7 +341,7 @@ def words_filter(extra_args):
         help="Word must match pattern"
     )
 
-    filter_parser.add_argument('--name',
+    filter_parser.add_argument('--save',
         type=str, default=None,
         help="Name of filterd words"
     )
@@ -389,11 +376,11 @@ def words_filter(extra_args):
 
     print(f"Filtered words: {len(filtered_words)}")
 
-    if filter_args.name:
-        words_file = words_file_get(filter_args.name)
+    if filter_args.save:
+        words_file = words_file_get(filter_args.save)
 
         if os.path.exists(words_file) and not filter_args.force:
-            print(f"korsord: {filter_args.name}: Words already exists")
+            print(f"korsord: {filter_args.save}: Words already exists")
             sys.exit(0)
 
         words_save(filtered_words, words_file)

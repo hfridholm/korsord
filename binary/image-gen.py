@@ -44,22 +44,27 @@ if __name__ == "__main__":
 
     print(f"Generating image")
 
-    # Call the OpenAI API to generate an image
-    response = client.images.generate(
-      prompt=args.prompt,
-      n=1,           # Number of images to generate
-      size="256x256" # Image size, you can adjust as needed
-    )
+    try:
+        response = client.images.generate(
+          prompt=args.prompt,
+          n=1,
+          size="256x256"
+        )
 
-    print(f"Generated image")
+        print(f"Generated image")
 
-    # Get the image URL from the response
-    image_url = response.data[0].url
+        # Get the image URL from the response
+        image_url = response.data[0].url
 
-    # Fetch the image from the URL
-    image_response = requests.get(image_url)
-    img = Image.open(BytesIO(image_response.content))
+        # Fetch the image from the URL
+        image_response = requests.get(image_url)
+        img = Image.open(BytesIO(image_response.content))
 
-    image_file = image_file_get(args.name)
+        image_file = image_file_get(args.name)
 
-    img.save(image_file)
+        img.save(image_file)
+
+        print(f"Done")
+
+    except:
+        print(f"Error: Failed to generate image")

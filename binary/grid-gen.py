@@ -177,6 +177,10 @@ if __name__ == "__main__":
             print(f"Failed to load words")
             sys.exit(2)
 
+        print(f"Loaded words")
+
+
+    print(f"Generating grid... ({args.amount} times)")
 
     # Generate best grid and clues
     grid_file  = grid_file_get(args.name)
@@ -186,8 +190,10 @@ if __name__ == "__main__":
     best_clues = None
     best_count = 0
 
-    for iteration in range(args.amount):
+    for iteration in range(1, args.amount + 1):
         try:
+            print(f"Generating grid #{iteration:02d}...")
+
             result = subprocess.run([grid_program,
                                      "--name",   args.name,
                                      "--length", str(args.length),
@@ -199,9 +205,12 @@ if __name__ == "__main__":
             time.sleep(1)
 
             if result.returncode != 0:
+                print(f"Failed to generate grid #{iteration:02d}")
                 continue
 
             if not theme_words:
+                print(f"Generated grid #{iteration:02d}")
+
                 best_grid  = file_read(grid_file)
                 best_clues = file_read(clues_file)
                 break
@@ -214,6 +223,8 @@ if __name__ == "__main__":
                 best_clues = file_read(clues_file)
 
                 best_count = curr_count
+
+            print(f"Generated grid #{iteration:02d}: {best_count} theme words")
     
         except subprocess.TimeoutExpired:
             print(f"korsord: Grid generation timed out")
@@ -231,4 +242,6 @@ if __name__ == "__main__":
         print(f"korsord: Failed to generate grid")
         sys.exit(1)
 
-    print(f"Best theme words: {best_count}")
+    print(f"Generated grid: {best_count} theme words")
+
+    print(f"Done")

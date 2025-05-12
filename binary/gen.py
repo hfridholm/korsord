@@ -38,6 +38,8 @@ def words_gen(args):
                              "--length", str(args.length) if args.length else str(max_length),
                              "--name",   args.name
                             ])
+    
+    print(f"")
 
     return result.returncode
 
@@ -58,6 +60,8 @@ def model_gen(args):
                              "--name", args.name,
                             ] + image_arg)
 
+    print(f"")
+
     return result.returncode
 
 #
@@ -76,6 +80,8 @@ def grid_gen(args):
                              "--name",  args.name,
                              "--words", ' '.join(args.words),
                             ] + length_arg)
+
+    print(f"")
 
     return result.returncode
 
@@ -97,6 +103,8 @@ def image_gen(args):
                              "--name", args.name
                              ])
 
+    print(f"")
+
     return result.returncode
 
 #
@@ -116,6 +124,8 @@ def clues_gen(args):
                              "--name", args.name,
                             ] + theme_arg)
 
+    print(f"")
+
     return result.returncode
 
 #
@@ -128,12 +138,15 @@ def render_gen(args):
         print(f"korsord: {render_script}: File not found")
         sys.exit(1)
 
+    words_arg = ["--words", ' '.join(args.words)] if args.words else []
+
     result = subprocess.run(["python", render_script,
                              "--image", args.name,
                              "--grid",  args.name,
-                             "--clues", args.name,
-                             "--words", ' '.join(args.words),
-                            ])
+                             "--clues", args.clues,
+                            ] + words_arg)
+
+    print(f"")
 
     return result.returncode
 
@@ -185,6 +198,11 @@ if __name__ == "__main__":
     parser.add_argument("--words",
         type=str, default=None,
         help="Names of words"
+    )
+
+    parser.add_argument("--clues",
+        type=str, default=None,
+        help="Name of clues"
     )
 
     parser.add_argument("--model",
@@ -260,9 +278,12 @@ if __name__ == "__main__":
         sys.exit(4)
 
     # 4. Generate clues
-    if step_index <= 3 and clues_gen(args) != 0:
-        print(f"Failed to generate clues")
-        sys.exit(5)
+    if step_index <= 3 and not args.clues:
+        if clues_gen(args) != 0:
+            print(f"Failed to generate clues")
+            sys.exit(5)
+
+        args.clues = args.name
 
     # 5. Generate image
     if step_index <= 4 and args.theme and image_gen(args) != 0:
@@ -271,5 +292,7 @@ if __name__ == "__main__":
 
     # 6. Render images
     if step_index <= 5 and render_gen(args) != 0:
-        print(f"Failed to render images")
+        print(f"Failed to generate render")
         sys.exit(7)
+
+    print(f"Done")

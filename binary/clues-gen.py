@@ -152,17 +152,17 @@ if __name__ == "__main__":
 
         if not os.path.exists(words_file):
             print(f"korsord: {args.words}: Words not found")
-            exit(0)
+            sys.exit(0)
 
         if os.path.exists(clues_file) and not args.force:
             print(f"korsord: {args.name}: Clues already exist")
-            exit(0)
+            sys.exit(0)
 
         word_clues = word_clues_load(words_file)
 
     elif not os.path.exists(clues_file):
         print(f"korsord: {args.name}: Clues not found")
-        exit(0)
+        sys.exit(0)
 
     else:
         word_clues = word_clues_load(clues_file)
@@ -170,8 +170,10 @@ if __name__ == "__main__":
 
     if not word_clues:
         print(f"korsord: {args.name}: Failed to load words")
-        exit(1)
+        sys.exit(1)
 
+
+    print(f"Generating clues")
 
     # Get max width for alignment
     max_width = 0
@@ -197,5 +199,8 @@ if __name__ == "__main__":
 
         word_clues[word] = clue
 
-    # Save result
+    print(f"Generated clues")
+
     word_clues_save(word_clues, clues_file)
+
+    print(f"Done")

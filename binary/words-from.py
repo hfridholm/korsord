@@ -60,17 +60,11 @@ def words_extract(input_file):
 def words_filter(words):
     print(f"Filtering words: {len(words)}")
 
-    seen_words = set()
-    result = []
+    filtered_words = list(set(words))
 
-    for word in words:
-        if word not in seen_words:
-            result.append(word)
-            seen_words.add(word)
+    print(f"Filtered words: {len(filtered_words)}")
 
-    print(f"Filtered words: {len(result)}")
-
-    return result
+    return filtered_words
 
 #
 # Save words

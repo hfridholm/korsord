@@ -32,8 +32,6 @@ def model_image_values_get(image_prompt):
 
     prompt = prompt_load("model", prompt_values)
 
-    print(f"Prompt:\n{prompt}\n")
-
     try:
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -47,11 +45,9 @@ def model_image_values_get(image_prompt):
         message = completion.choices[0].message.content
 
         lines = message.split("\n")
-        
-        print(f"Response:\n{message}\n")
 
         if len(lines) < 3:
-            print(f"Values are missing!")
+            print(f"Error: Values are missing!")
             return None
 
         ypos = int(lines[0].strip())
@@ -196,13 +192,11 @@ if __name__ == "__main__":
     model_file = model_file_get(args.name)
 
     if os.path.exists(model_file) and not args.force:
-        if args.name == "temp":
-            print(f"korsord: Model already exists")
-        else:
-            print(f"korsord: {args.name}: Model already exists")
-
+        print(f"korsord: {args.name}: Model already exists")
         sys.exit(0)
 
+
+    print(f"Generating model...")
 
     model = model_create(args.width, args.height)
 
@@ -211,7 +205,6 @@ if __name__ == "__main__":
 
     model_save(model, model_file)
 
-    if args.name == "temp":
-        print(f"Generated model")
-    else:
-        print(f"Generated model named '{args.name}'")
+    print(f"Generated model '{args.name}'")
+
+    print(f"Done")

@@ -29,7 +29,7 @@ def clues_del(extra_args):
     del_parser = argparse.ArgumentParser(description="Delete clues")
 
     del_parser.add_argument('--name',
-        type=str, default"temp",
+        type=str, default="temp",
         help="Name of clues"
     )
 
@@ -59,12 +59,7 @@ def clues_edit(extra_args):
     clues_file = clues_file_get(edit_args.name)
 
     if not os.path.exists(clues_file):
-        if edit_args.name == "temp":
-            print(f"korsord: Clues not found")
-
-        else:
-            print(f"korsord: {edit_args.name}: Clues not found")
-
+        print(f"korsord: {edit_args.name}: Clues not found")
         sys.exit(0)
 
     subprocess.run(["vim", clues_file])
@@ -85,14 +80,8 @@ def clues_view(extra_args):
     clues_file = clues_file_get(view_args.name)
 
     if not os.path.exists(clues_file):
-        if not view_args.new:
-            if view_args.name == "temp":
-                print(f"korsord: Words not found")
-
-            else:
-                print(f"korsord: {view_args.name}: Words not found")
-
-            sys.exit(0)
+        print(f"korsord: {view_args.name}: Words not found")
+        sys.exit(0)
 
     subprocess.run(["less", clues_file])
 

@@ -80,12 +80,7 @@ def grid_edit(extra_args):
     grid_file = grid_file_get(edit_args.name)
 
     if not os.path.exists(grid_file):
-        if edit_args.name == "temp":
-            print(f"korsord: Grid not found")
-
-        else:
-            print(f"korsord: {edit_args.name}: Grid not found")
-
+        print(f"korsord: {edit_args.name}: Grid not found")
         sys.exit(0)
 
     subprocess.run(["vim", grid_file])
