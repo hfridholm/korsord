@@ -75,8 +75,8 @@ def words_new(extra_args):
 def words_del(extra_args):
     del_parser = argparse.ArgumentParser(description="Delete words")
 
-    del_parser.add_argument('name',
-        type=str,
+    del_parser.add_argument('--name',
+        type=str, default="temp",
         help="Name of words"
     )
 

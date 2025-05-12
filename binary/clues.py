@@ -28,8 +28,8 @@ def clues_gen(extra_args):
 def clues_del(extra_args):
     del_parser = argparse.ArgumentParser(description="Delete clues")
 
-    del_parser.add_argument('name',
-        type=str,
+    del_parser.add_argument('--name',
+        type=str, default"temp",
         help="Name of clues"
     )
 

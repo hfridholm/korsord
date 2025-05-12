@@ -28,8 +28,8 @@ def model_gen(extra_args):
 def model_new(extra_args):
     new_parser = argparse.ArgumentParser(description="New model")
 
-    new_parser.add_argument('name',
-        type=str,
+    new_parser.add_argument('--name',
+        type=str, default="temp",
         help="Name of new model"
     )
 
@@ -54,8 +54,8 @@ def model_new(extra_args):
 def model_del(extra_args):
     del_parser = argparse.ArgumentParser(description="Delete model")
 
-    del_parser.add_argument('name',
-        type=str,
+    del_parser.add_argument('--name',
+        type=str, default="temp",
         help="Name of model"
     )
 

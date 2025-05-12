@@ -49,7 +49,7 @@ def image_view(extra_args):
 def image_del(extra_args):
     del_parser = argparse.ArgumentParser(description="Delete image")
 
-    del_parser.add_argument('name',
+    del_parser.add_argument('--name',
         type=str, default="temp",
         help="Name of image"
     )
