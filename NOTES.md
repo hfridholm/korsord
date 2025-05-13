@@ -1,5 +1,4 @@
 # Notes
-- don't print "Använd inte följande ord:" om inga ord finns
 - return proper exit code on fail in korsord.c
 - Delete debug.sh and valgrind.sh
 

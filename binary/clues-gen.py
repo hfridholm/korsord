@@ -40,11 +40,14 @@ def word_clue_gen(word):
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "Du har en stor språkförståelse"},
+                {"role": "system", "content": "Du är en erfaren konstruktör av svenska korsord. "
+    "När du får ett svenskt ord svarar du med en ledtråd som skulle passa i ett korsord. "
+    "Ledtråden ska vara kort, fyndig eller dubbeltydig, inte en direkt definition. "
+    "Svar endast på svenska. Undvik att använda själva svaret i ledtråden."},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=args.length,
-            temperature=0.7
+            temperature=1.0
         )
 
         message = completion.choices[0].message.content

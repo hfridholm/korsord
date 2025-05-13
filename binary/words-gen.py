@@ -38,21 +38,21 @@ def words_gen(existing_words):
         print(f"Failed to load prompt")
         return None
 
-    print(f"Prompt:\n{prompt}\n")
+    # print(f"Prompt:\n{prompt}\n")
 
     try:
         completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-3.5-turbo", # gpt-4-turbo
             messages=[
-                {"role": "system", "content": "Du har kunskap från svenska ordböcker"},
+                {"role": "system", "content": "Du är en expert på svenska korsord och svenska ordböcker. Du hjälper till att lista vanliga svenska ord som ofta förekommer i korsord, särskilt korta och användbara ord."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.7
+            temperature=1.0,
         )
 
         message = completion.choices[0].message.content
 
-        print(f"Response:\n{message}\n")
+        # print(f"Response:\n{message}\n")
 
         gen_words = []
 
@@ -201,6 +201,8 @@ if __name__ == "__main__":
     else: # if no words exist
         existing_words = []
 
+    print(f"Generating words...")
+
     new_words = []
 
     for count in range(1, 10):
@@ -219,3 +221,5 @@ if __name__ == "__main__":
     words_save(existing_words + new_words, words_file)
 
     print(f"Generated words")
+
+    print(f"Done")
