@@ -108,9 +108,7 @@ def file_write(filepath, data):
 #
 if __name__ == "__main__":
     # Parse command line arguments
-    parser = argparse.ArgumentParser(
-        description="Generate best grid using grid-gen"
-    )
+    parser = argparse.ArgumentParser(description="Generate grid")
 
     parser.add_argument("model",
         type=str,

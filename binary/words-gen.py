@@ -151,7 +151,7 @@ def words_filter(words):
 #
 if __name__ == "__main__":
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description="generate crossword words using ai")
+    parser = argparse.ArgumentParser(description="Generate words")
 
     parser.add_argument("theme",
         type=str,

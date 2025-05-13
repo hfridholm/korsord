@@ -168,7 +168,7 @@ def model_list(extra_args):
 # Handling the 'copy' command
 #
 def model_copy(extra_args):
-    copy_parser = argparse.ArgumentParser(description="Save copy of model")
+    copy_parser = argparse.ArgumentParser(description="Copy model")
 
     copy_parser.add_argument('--name',
         type=str, default="temp",
@@ -206,7 +206,7 @@ def model_copy(extra_args):
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description="Crossword model handler",
+        description="Model handler",
         add_help=False
     )
 

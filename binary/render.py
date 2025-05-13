@@ -104,7 +104,7 @@ def render_list(extra_args):
 # Handling the 'copy' command
 #
 def render_copy(extra_args):
-    copy_parser = argparse.ArgumentParser(description="Save copy of render")
+    copy_parser = argparse.ArgumentParser(description="Copy render")
 
     copy_parser.add_argument('--name',
         type=str, default="temp",
@@ -147,7 +147,7 @@ def render_copy(extra_args):
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description="Crossword render handler",
+        description="Render handler",
         add_help=False
     )
 

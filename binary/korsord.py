@@ -17,9 +17,7 @@ from common import *
 
 if __name__ == "__main__":
     # Parse command line arguments
-    parser = argparse.ArgumentParser(
-        description="Swedish crossword generator"
-    )
+    parser = argparse.ArgumentParser(description="Swedish crossword generator")
 
     parser.add_argument("command",
         nargs="?",

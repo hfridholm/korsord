@@ -189,7 +189,7 @@ def words_list(extra_args):
 # Handling the 'copy' command
 #
 def words_copy(extra_args):
-    copy_parser = argparse.ArgumentParser(description="Save copy of words")
+    copy_parser = argparse.ArgumentParser(description="Copy words")
 
     copy_parser.add_argument('--name',
         type=str, default="temp",
@@ -288,7 +288,7 @@ def words_save(words, filepath):
 # Handling the 'merge' command
 #
 def words_merge(extra_args):
-    merge_parser = argparse.ArgumentParser(description="Merge words together")
+    merge_parser = argparse.ArgumentParser(description="Merge words")
 
     merge_parser.add_argument('--name',
         type=str, default="temp",
@@ -324,7 +324,7 @@ def words_merge(extra_args):
 # Handling the 'filter' command
 #
 def words_filter(extra_args):
-    filter_parser = argparse.ArgumentParser(description="Count filtered words")
+    filter_parser = argparse.ArgumentParser(description="Filter words")
 
     filter_parser.add_argument('words',
         type=str,
@@ -391,7 +391,7 @@ def words_filter(extra_args):
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description="Crossword words handler",
+        description="Words handler",
         add_help=False
     )
 

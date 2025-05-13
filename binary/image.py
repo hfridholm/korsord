@@ -91,7 +91,7 @@ def image_list(extra_args):
 # Handling the 'copy' command
 #
 def image_copy(extra_args):
-    copy_parser = argparse.ArgumentParser(description="Save copy of image")
+    copy_parser = argparse.ArgumentParser(description="Copy image")
 
     copy_parser.add_argument('--name',
         type=str, default="temp",
@@ -134,7 +134,7 @@ def image_copy(extra_args):
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description="Crossword image handler",
+        description="Image handler",
         add_help=False
     )
 

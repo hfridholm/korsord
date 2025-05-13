@@ -155,9 +155,7 @@ def render_gen(args):
 #
 if __name__ == "__main__":
     # Parse command line arguments
-    parser = argparse.ArgumentParser(
-        description="Generate crossword completely using openai"
-    )
+    parser = argparse.ArgumentParser(description="Generate crossword")
 
     parser.add_argument("--theme",
         type=str, default=None,

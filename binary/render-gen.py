@@ -765,7 +765,7 @@ def image_save(img, dir_name, file_name):
 # Main function
 #
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="render grid to image")
+    parser = argparse.ArgumentParser(description="Generate render")
 
     parser.add_argument('--name',
         type=str, default="temp",

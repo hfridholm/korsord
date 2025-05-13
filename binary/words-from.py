@@ -82,7 +82,7 @@ def words_save(words, filepath):
 # Main routine
 #
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Extract words from file")
+    parser = argparse.ArgumentParser(description="Extract words")
     
     parser.add_argument('file',
         type=str,

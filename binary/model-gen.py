@@ -153,7 +153,7 @@ def model_save(model, model_file):
 #
 if __name__ == "__main__":
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description="Generate crossword model using openai")
+    parser = argparse.ArgumentParser(description="Generate model")
 
     parser.add_argument("width",
         type=int,

@@ -1,9 +1,7 @@
 #
-# clues.py - generate crossword clues using openai
+# clues-gen.py - generate clues using openai
 #
 # Written by Hampus Fridholm
-#
-# https://github.com/openai/openai-python
 #
 
 from openai import OpenAI
@@ -110,7 +108,7 @@ def word_clues_save(word_clues, filepath):
 #
 if __name__ == "__main__":
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description="generate crossword clues using openai")
+    parser = argparse.ArgumentParser(description="Generate clues")
 
     parser.add_argument("--theme",
         type=str, default=None,

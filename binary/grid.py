@@ -133,7 +133,7 @@ def grid_list(extra_args):
 # Handling the 'copy' command
 #
 def grid_copy(extra_args):
-    copy_parser = argparse.ArgumentParser(description="Save copy of grid")
+    copy_parser = argparse.ArgumentParser(description="Copy grid")
 
     copy_parser.add_argument('--name',
         type=str, default="temp",
@@ -171,7 +171,7 @@ def grid_copy(extra_args):
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description="Swedish crossword generator",
+        description="Grid handler",
         add_help=False
     )
 
