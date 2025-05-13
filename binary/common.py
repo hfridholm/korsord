@@ -12,12 +12,6 @@ BASE_DIR = os.path.expanduser("~/Documents/Programming/korsord/binary/")
 
 CONFIG_DIR = os.path.join(os.path.expanduser('~'), ".korsord")
 
-#
-# Check if string is file path or just file name
-#
-def string_is_file(string):
-    return any(char in string for char in ('/', '\\', '.', ':'))
-
 
 PROMPT_DIR = os.path.join(BASE_DIR, "../assets/prompts")
 
@@ -85,10 +79,18 @@ def image_name_get(file):
 RENDER_DIR = os.path.join(CONFIG_DIR, "render")
 
 #
+# Get the path to render dir by name
+#
+def render_dir_get(name):
+    return os.path.join(RENDER_DIR, name)
+
+#
 # Get the file path of a render image by name
 #
-def render_file_get(name):
-    return os.path.join(RENDER_DIR, f"{name}.png")
+def render_file_get(dir_name, file_name):
+    render_dir = render_dir_get(dir_name)
+
+    return os.path.join(RENDER_DIR, render_dir, f"{file_name}.png")
 
 #
 # Get name of render image file

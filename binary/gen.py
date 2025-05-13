@@ -262,6 +262,7 @@ if __name__ == "__main__":
             print(f"Failed to generate words")
             sys.exit(2)
 
+    if not args.words:
         args.words = [args.name]
 
     # 2. Generate model
@@ -270,6 +271,7 @@ if __name__ == "__main__":
             print(f"Failed to generate model")
             sys.exit(3)
 
+    if not args.model:
         args.model = args.name
 
     # 3. Generate grid
@@ -283,6 +285,7 @@ if __name__ == "__main__":
             print(f"Failed to generate clues")
             sys.exit(5)
 
+    if not args.clues:
         args.clues = args.name
 
     # 5. Generate image

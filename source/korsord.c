@@ -26,6 +26,8 @@
 #include "k-grid-curr.h"
 #include "k-grid-best.h"
 
+#include "k-intern.h"
+
 bool is_running = false;
 
 extern int MAX_CROWD_AMOUNT;
@@ -405,6 +407,8 @@ static struct argp argp = { options, opt_parse, args_doc, doc };
  */
 int main(int argc, char* argv[])
 {
+  srand(time(NULL));
+
   char debug_file[64];
 
   if (debug_file_get(debug_file) != 0)
