@@ -25,9 +25,7 @@ client = OpenAI(api_key=api_key)
 
 if __name__ == "__main__":
     # Parse command line arguments
-    parser = argparse.ArgumentParser(
-        description="Image generator"
-    )
+    parser = argparse.ArgumentParser(description="Generate image")
 
     parser.add_argument("prompt",
         type=str,
@@ -45,8 +43,20 @@ if __name__ == "__main__":
     print(f"Generating image")
 
     try:
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "Du är en expert på att skapa bildbeskrivningar för DALL-E, OpenAIs bildgenereringsmodell. När du får ett ord, begrepp eller tema, svarar du med en mycket beskrivande och kreativ prompt som kan användas direkt för att generera en bild. Svar endast med själva prompten – inga förklaringar, inga rubriker, ingen extra text." },
+                {"role": "user", "content": args.prompt}
+            ],
+        )
+
+        image_prompt = completion.choices[0].message.content
+
+        print(f"{image_prompt}")
+
         response = client.images.generate(
-          prompt=args.prompt,
+          prompt=image_prompt,
           n=1,
           size="256x256"
         )

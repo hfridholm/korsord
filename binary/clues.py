@@ -133,7 +133,7 @@ def clues_list(extra_args):
 # Handling the 'copy' command
 #
 def clues_copy(extra_args):
-    copy_parser = argparse.ArgumentParser(description="Save copy of clues")
+    copy_parser = argparse.ArgumentParser(description="Copy clues")
 
     copy_parser.add_argument('--name',
         type=str, default="temp",
@@ -171,7 +171,7 @@ def clues_copy(extra_args):
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description="Crossword clues handler",
+        description="Clues handler",
         add_help=False
     )
 

@@ -548,19 +548,6 @@ def clues_draw(draw, grid, block_words, clues, words_files):
     return is_complete
 
 #
-# Get path to new result directory
-#
-# def new_result_dir_get():
-#     count = 1
-#     new_result_dir = f"korsord{count}"
-# 
-#     while os.path.exists(f"{args.results_dir}/{new_result_dir}"):
-#         count += 1
-#         new_result_dir = f"korsord{count}"
-# 
-#     return new_result_dir
-
-#
 # Draw helping letter number
 #
 def number_draw(draw, x, y, number):
@@ -769,8 +756,8 @@ def image_init(width, height):
 #
 # Save image with name
 #
-def image_save(img, name):
-    file = render_file_get(name)
+def image_save(img, dir_name, file_name):
+    file = render_file_get(dir_name, file_name)
 
     img.save(file, "PNG")
 
@@ -778,7 +765,12 @@ def image_save(img, name):
 # Main function
 #
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="render grid to image")
+    parser = argparse.ArgumentParser(description="Generate render")
+
+    parser.add_argument('--name',
+        type=str, default="temp",
+        help="Name of render"
+    )
 
     parser.add_argument("--grid",
         type=str, default="temp",
@@ -805,6 +797,11 @@ if __name__ == "__main__":
         help="Name of image"
     )
 
+    parser.add_argument('--force',
+        action='store_true',
+        help="Overwrite existing render"
+    )
+
     args = parser.parse_args()
 
     if args.words:
@@ -812,6 +809,17 @@ if __name__ == "__main__":
 
     if args.clues:
         args.clues = args.clues.split(' ')
+
+
+    render_dir = render_dir_get(args.name)
+
+    if os.path.exists(render_dir):
+        if not args.force:
+            print(f"korsord: {args.name}: Render already exists")
+            sys.exit(1)
+
+    else:
+        os.makedirs(render_dir)
 
 
     print(f"Loading grid: {args.grid}")
@@ -823,7 +831,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
     print(f"Loaded grid")
-
 
 
     print(f"Extracting words")
@@ -848,10 +855,6 @@ if __name__ == "__main__":
         sys.exit(3)
 
     print(f"Loaded clues")
-
-
-    if not os.path.exists(RENDER_DIR):
-        os.makedirs(RENDER_DIR)
 
 
     print(f"Loading font")
@@ -900,7 +903,7 @@ if __name__ == "__main__":
 
     print(f"Drew arrows")
 
-    image_save(img, "normal")
+    image_save(img, args.name, "normal")
 
 
     print(f"Drawing numbers")
@@ -909,7 +912,7 @@ if __name__ == "__main__":
 
     print(f"Drew numbers")
 
-    image_save(img, "helping")
+    image_save(img, args.name, "helping")
 
 
     print(f"Drawing colored clues")
@@ -931,6 +934,6 @@ if __name__ == "__main__":
 
     print(f"Drew letters")
 
-    image_save(img, "solved")
+    image_save(img, args.name, "solved")
 
     print(f"Done")

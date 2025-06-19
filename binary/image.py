@@ -9,6 +9,7 @@ import subprocess
 import sys
 import os
 from common import *
+from shutil import which
 
 #
 # Handling the 'gen' command
@@ -40,6 +41,10 @@ def image_view(extra_args):
     if not os.path.exists(image_file):
         print(f"korsord: {view_args.name}: Image not found")
         sys.exit(0)
+
+    if which("xdg-open") is None:
+        print(f"Error: Command 'xdg-open' not found")
+        sys.exit(1)
 
     subprocess.run(["xdg-open", image_file])
 
@@ -86,7 +91,7 @@ def image_list(extra_args):
 # Handling the 'copy' command
 #
 def image_copy(extra_args):
-    copy_parser = argparse.ArgumentParser(description="Save copy of image")
+    copy_parser = argparse.ArgumentParser(description="Copy image")
 
     copy_parser.add_argument('--name',
         type=str, default="temp",
@@ -107,7 +112,7 @@ def image_copy(extra_args):
 
     image_file = image_file_get(copy_args.name)
 
-    if string_is_file(copy_args.copy):
+    if os.path.isdir(os.path.dirname(copy_args.copy)):
         copy_file = copy_args.copy
 
     else:
@@ -129,7 +134,7 @@ def image_copy(extra_args):
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description="Crossword image handler",
+        description="Image handler",
         add_help=False
     )
 
